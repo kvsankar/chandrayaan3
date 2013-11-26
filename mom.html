@@ -1,0 +1,75 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<!-- Copyright (c) 2013 Sankaranarayanan K. V. All rights reserved. -->
+
+<html>
+    <head>
+        <meta name="description" content="ISRO's Mars Orbiter Mission - Orbit Animation" />
+        <meta name="author" content="Sankaranarayanan K V" />
+        <meta name="keywords" content="mom, isro, mars, india, space, astronomy, animation" />
+
+        <script src="d3.v3.js" type="text/javascript" charset="utf-8"></script>
+        <script src="mom.js" type="text/javascript" charset="utf-8"></script>
+
+        <link rel="stylesheet" type="text/css" href="mom.css" />
+        
+        <title>ISRO's Mars Orbiter Mission - Orbit Animation</title>
+    </head>
+    <body onload="onload()">
+        <div class="body">
+            <div class="blurb">
+                <p>
+                <a href="http://www.isro.org/mars/home.aspx">Mars Orbiter Mission, Indian Space Research Organization</a><br/>
+                Inner solar system and MOM / MAVEN orbit diagram generated using NASA JPL HORIZONS Ephemerides.<br/>
+                Works best with Google Chrome. Firefox animation may be jittery. On IE, some buttons don't seem to work.</br>
+                </p>
+            </div>
+
+            <div class="vspace"></div>
+
+            <div class="info">
+            <p>
+            Orbit data epoch: JD = <label id="epochjd"></label> | UTC = <label id="epochdate"></label><br/>
+            </p>
+            </div>
+
+
+            <button type="button" class="button" onclick="animate()"><b>Animate!</b></button>
+            <button type="button" class="button" onclick="slower()"> Slower </button>
+            <button type="button" class="button" onclick="faster()"> Faster </button>
+            <button type="button" class="button" onclick="stopAnimation()">Stop</button> |
+
+            <button type="button" class="button" onclick="missionStart()">Launch</button>
+            <button type="button" class="button" onclick="missionNow()">Now</button>
+            <button type="button" class="button" onclick="missionTMI()">TMI</button>
+            <button type="button" class="button" onclick="missionMartian()">MOI</button>
+            <button type="button" class="button" onclick="missionEnd()">End</button> | 
+            <button type="button" class="button" onclick="backward()"> -5d </button>
+            <button type="button" class="button" onclick="forward()"> +5d </button>
+            
+            <div class="date">
+                <table summary="Animation Date"><tr><td>Animation Time</td><td><pre><label id="date"></label></pre></td></tr></table>
+            </div>
+            <div class="phase">
+            Mission phase: 
+                <label id="phase-1"></label> | 
+                <label id="phase-2"></label> | 
+                <label id="phase-3"></label><br/>
+            </div>
+
+            <div class="message">
+                <p id="message"></p>
+            </div>
+
+            <div id="svg">
+            </div>
+
+            <div class="footer">
+                <p>
+                Copyright (c) 2013 Sankaranarayan K V; this file is published under the Creative Commons CC-BY-SA 2.0 license.<br/>
+                </p>
+            </div>
+        </div>
+    </body>
+</html>

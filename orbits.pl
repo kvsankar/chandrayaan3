@@ -4,15 +4,16 @@
 
 use strict;
 
+use Getopt::Long;
 use FileHandle;
 use LWP;
-use Getopt::Long;
 use Time::Local;
+use JSON;
 
 # constants - ephemerides related
 
-my ($start_year, $start_month, $start_day) = ("2013", "11", "06");
-my ($stop_year, $stop_month, $stop_day) =    ("2014", "09", "24");
+my ($start_year, $start_month, $start_day) = ("2013", "11", "06"); # MOM launch date
+my ($stop_year, $stop_month, $stop_day) =    ("2015", "06", "24"); # MOM last orbit data date at HORIZONS
 my $step_size_in_hours = 6;
 
 my $MAVEN   = -202;
@@ -23,7 +24,7 @@ my $VENUS   = 299;
 my $EARTH   = 399;
 my $MARS    = 499;
 
-my @planets = ($MERCURY, $VENUS, $EARTH, $MARS, $MOM);
+my @planets = ($MERCURY, $VENUS, $EARTH, $MARS, $MOM, $MAVEN);
 
 my $data_dir = ".";
 my $use_cached_data = 0;
@@ -57,6 +58,7 @@ my $count_duration = 0; # set later in code
 my $now = time();
 my $jd = my_jd($now);
 my $gmtime = gmtime($now);
+my %orbits_raw;
 my %orbits; 
 my $earth_rotation = 0;
 
@@ -112,7 +114,7 @@ sub save_fetched_data () {
         unless ($fh->open(">$ho_file_name")) {
             print_err("Can't write to $ho_file_name: $!");
         }
-        my $horizons = $orbits{$planet}->{'elements_content'};
+        my $horizons = $orbits_raw{$planet}->{'elements_content'};
         print $fh $horizons;
         close $fh;
 
@@ -121,11 +123,27 @@ sub save_fetched_data () {
         unless ($fh->open(">$ho_file_name")) {
             print_err("Can't write to $ho_file_name: $!");
         }
-        $horizons = $orbits{$planet}->{'vectors_content'};
+        $horizons = $orbits_raw{$planet}->{'vectors_content'};
         print $fh $horizons;
         close $fh;
     }
 } 
+
+sub save_orbit_data_json() {
+    my $json = JSON->new;
+    
+    my $utf8_encoded_json_text = $json->canonical->encode(\%orbits);
+
+    my $json_file_name = "$data_dir/orbits.json";
+    my $fh = FileHandle->new;
+    unless ($fh->open(">$json_file_name")) {
+        print_err("Can't write to $json_file_name: $!");
+        return 0;
+    }
+    print $fh $utf8_encoded_json_text;
+    close $fh;
+    return 1;
+}
 
 sub save_orbit_data () {
 
@@ -202,7 +220,7 @@ sub fetch_horizons_data ($$) {
 
     # Check the outcome of the response
     if ($res->is_success) {
-        $orbits{$planet}->{$content_key} .= $res->content;
+        $orbits_raw{$planet}->{$content_key} .= $res->content;
         return 1;
     }
     else {
@@ -251,7 +269,7 @@ sub load_cached_data {
                     if (open IN, "<$fn") {
 
                         while (my $line = <IN>) {
-                            $orbits{$planet}->{"${key}_content"} .= $line;  
+                            $orbits_raw{$planet}->{"${key}_content"} .= $line;  
                         }
                         
                         close IN;
@@ -282,7 +300,7 @@ sub parse_horizons_elements ($$) {
     my $parse = 0;
 
     my $key = ($code eq 'elements') ? 'elements_content' : 'vectors_content';
-    my @lines = split("\n", $orbits{$planet}->{$key});
+    my @lines = split("\n", $orbits_raw{$planet}->{$key});
 
     my $count = 0;
     foreach my $line (@lines) {
@@ -337,21 +355,31 @@ sub parse_horizons_elements ($$) {
             
             } elsif ($code eq 'vectors') {
 
-                my ($jdct, $date, $x, $y) = split(/,\s*/, $line);
+                my ($jdct, $date, $x, $y, $z, $vx, $vy, $vz, $lt, $rg, $rr) = split(/,\s*/, $line);
 
                 my $rec;
                 $rec->{'jdct'} = $jdct;
+                $rec->{'date'} = $date;
                 $rec->{'x'} = $x;
                 $rec->{'y'} = $y;
+                # $rec->{'z'} = $z;
+                # $rec->{'vx'} = $vy;
+                # $rec->{'vy'} = $vx;
+                # $rec->{'vz'} = $vz;
+                # $rec->{'lt'} = $lt;
+                # $rec->{'rg'} = $rg;
+                # $rec->{'rr'} = $rr;
 
-                if (exists $orbits{$planet}->{'elements'}->{$jdct}) {
-                	# print_debug("Merging vectors for planet=$planet, jdct=$jdct");
-                    my $exrec = $orbits{$planet}->{'elements'}->{$jdct};
-                    @$exrec{keys %$rec} = values %$rec;
-                } else {
-                	# print_debug("Merging vectors for planet=$planet, jdct=$jdct");
-                    $orbits{$planet}->{'elements'}->{$jdct} = $rec;
-                }
+                push @{$orbits{$planet}->{'vectors'}}, $rec;
+                
+                # if (exists $orbits{$planet}->{'vectors'}->{$jdct}) {
+                # 	# print_debug("Merging vectors for planet=$planet, jdct=$jdct");
+                #     my $exrec = $orbits{$planet}->{'vectors'}->{$jdct};
+                #     @$exrec{keys %$rec} = values %$rec;
+                # } else {
+                # 	# print_debug("Merging vectors for planet=$planet, jdct=$jdct");
+                #     $orbits{$planet}->{'vectors'}->{$jdct} = $rec;
+                # }
             }
             
         }
@@ -582,7 +610,7 @@ EOT
 
 	        my %svg_params = %{$orbits{$planet}->{'svg_params'}};
 
-	        foreach my $jdct (sort keys %svg_params) {
+	        foreach my $jdct (sort { $a <=> $b } keys %svg_params) {
 
 	            my $rec = $svg_params{$jdct};
 
@@ -767,7 +795,8 @@ sub main {
         unless ($use_cached_data) {
 
             fetch_elements($planet);
-            fetch_vectors($planet);
+            
+            # fetch_vectors($planet);
         
             fetch_horizons_data($planet, {
                 'table_type' => 'vectors',
@@ -787,13 +816,14 @@ sub main {
 
         parse_horizons_elements('elements', $planet);
         parse_horizons_elements('vectors', $planet);
-        my $svg_params = generate_svg_params($planet);
-        $orbits{$planet}->{'svg_params'} = $svg_params;
+        # my $svg_params = generate_svg_params($planet);
+        # $orbits{$planet}->{'svg_params'} = $svg_params;
     }
 
     save_orbit_data();
+    save_orbit_data_json();
 
-    generate_html("mom.html");
+    # generate_html("mom.html");
 }
 
 main;

@@ -1,0 +1,42 @@
+
+/* Copyright (c) 2013 Sankaranarayanan K V. All rights reserved. */
+
+<style type="text/css">
+
+/* TODO requires further tuning */
+
+.blurb {
+  color: DarkGray;
+  font-size: x-small;
+  font-family: sans-serif;  
+}
+
+.info {
+  color: DarkGray;
+  font-size: x-small;
+  font-family: sans-serif;  
+}
+
+.date {
+  color: DarkGray;
+  font-size: x-small;
+  font-family: sans-serif;      
+}
+
+.body {
+  background-color: black; 
+  color: DarkGray;
+  font-size: x-small;
+  font-family: sans-serif;  
+  /*background-image: */
+}
+
+.vpspace {
+  height: 1em;
+}
+
+.button {
+  font-size: .9em !important;
+}
+
+</style>
