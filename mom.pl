@@ -407,6 +407,8 @@ sub generate_html ($) {
 
 <script>
 
+    <!-- The HTML and JavaScript have been generated with a Perl script. The generated code needs some cleanup. -->
+
     var count = 0;
     var stopAnimationFlag = false;
     var startLocationCxs = {};
@@ -420,6 +422,26 @@ sub generate_html ($) {
         var d = new Date(t);
         document.getElementById("date").innerHTML = d;
 
+        startLocationCxs[$MERCURY] = document.getElementById("location-$MERCURY").getAttribute('cx');
+        startLocationCys[$MERCURY] = document.getElementById("location-$MERCURY").getAttribute('cy');
+        startLabelXs[$MERCURY] = document.getElementById("label-$MERCURY").getAttribute('x');
+        startLabelYs[$MERCURY] = document.getElementById("label-$MERCURY").getAttribute('y');
+
+        startLocationCxs[$VENUS] = document.getElementById("location-$VENUS").getAttribute('cx');
+        startLocationCys[$VENUS] = document.getElementById("location-$VENUS").getAttribute('cy');
+        startLabelXs[$VENUS] = document.getElementById("label-$VENUS").getAttribute('x');
+        startLabelYs[$VENUS] = document.getElementById("label-$VENUS").getAttribute('y');
+
+        startLocationCxs[$EARTH] = document.getElementById("location-$EARTH").getAttribute('cx');
+        startLocationCys[$EARTH] = document.getElementById("location-$EARTH").getAttribute('cy');
+        startLabelXs[$EARTH] = document.getElementById("label-$EARTH").getAttribute('x');
+        startLabelYs[$EARTH] = document.getElementById("label-$EARTH").getAttribute('y');
+
+        startLocationCxs[$MARS] = document.getElementById("location-$MARS").getAttribute('cx');
+        startLocationCys[$MARS] = document.getElementById("location-$MARS").getAttribute('cy');
+        startLabelXs[$MARS] = document.getElementById("label-$MARS").getAttribute('x');
+        startLabelYs[$MARS] = document.getElementById("label-$MARS").getAttribute('y');
+
         startLocationCxs[$MOM] = document.getElementById("location-$MOM").getAttribute('cx');
         startLocationCys[$MOM] = document.getElementById("location-$MOM").getAttribute('cy');
         startLabelXs[$MOM] = document.getElementById("label-$MOM").getAttribute('x');
@@ -429,14 +451,33 @@ sub generate_html ($) {
     function changeLocation() {
 
         if (!stopAnimationFlag) {
-            document.getElementById("location-$MOM").setAttribute('cx', planet_MOM_locations[count].cx);
-            document.getElementById("location-$MOM").setAttribute('cy', planet_MOM_locations[count].cy);
-
-            document.getElementById("label-$MOM").setAttribute('x', planet_MOM_labels[count].x);
-            document.getElementById("label-$MOM").setAttribute('y', planet_MOM_labels[count].y);
-
             var d = new Date(($start_time_gm + count * 86400) * 1000);
             document.getElementById("date").innerHTML = d;
+
+            document.getElementById("location-$MERCURY").setAttribute('cx', planet_Mercury_locations[count].cx);
+            document.getElementById("location-$MERCURY").setAttribute('cy', planet_Mercury_locations[count].cy);
+            document.getElementById("label-$MERCURY").setAttribute('x', planet_Mercury_labels[count].x);
+            document.getElementById("label-$MERCURY").setAttribute('y', planet_Mercury_labels[count].y);
+
+            document.getElementById("location-$VENUS").setAttribute('cx', planet_Venus_locations[count].cx);
+            document.getElementById("location-$VENUS").setAttribute('cy', planet_Venus_locations[count].cy);
+            document.getElementById("label-$VENUS").setAttribute('x', planet_Venus_labels[count].x);
+            document.getElementById("label-$VENUS").setAttribute('y', planet_Venus_labels[count].y);
+
+            document.getElementById("location-$EARTH").setAttribute('cx', planet_Earth_locations[count].cx);
+            document.getElementById("location-$EARTH").setAttribute('cy', planet_Earth_locations[count].cy);
+            document.getElementById("label-$EARTH").setAttribute('x', planet_Earth_labels[count].x);
+            document.getElementById("label-$EARTH").setAttribute('y', planet_Earth_labels[count].y);
+
+            document.getElementById("location-$MARS").setAttribute('cx', planet_Mars_locations[count].cx);
+            document.getElementById("location-$MARS").setAttribute('cy', planet_Mars_locations[count].cy);
+            document.getElementById("label-$MARS").setAttribute('x', planet_Mars_labels[count].x);
+            document.getElementById("label-$MARS").setAttribute('y', planet_Mars_labels[count].y);
+
+            document.getElementById("location-$MOM").setAttribute('cx', planet_MOM_locations[count].cx);
+            document.getElementById("location-$MOM").setAttribute('cy', planet_MOM_locations[count].cy);
+            document.getElementById("label-$MOM").setAttribute('x', planet_MOM_labels[count].x);
+            document.getElementById("label-$MOM").setAttribute('y', planet_MOM_labels[count].y);
 
             ++count;
             if (count < planet_MOM_locations.length) {
@@ -464,6 +505,26 @@ sub generate_html ($) {
         var d = new Date(t);
         document.getElementById("date").innerHTML = d;
 
+        document.getElementById("location-$MERCURY").setAttribute('cx', startLocationCxs[$MERCURY]);
+        document.getElementById("location-$MERCURY").setAttribute('cy', startLocationCys[$MERCURY]);
+        document.getElementById("label-$MERCURY").setAttribute('x', startLabelXs[$MERCURY]);
+        document.getElementById("label-$MERCURY").setAttribute('y', startLabelYs[$MERCURY]);
+
+        document.getElementById("location-$VENUS").setAttribute('cx', startLocationCxs[$VENUS]);
+        document.getElementById("location-$VENUS").setAttribute('cy', startLocationCys[$VENUS]);
+        document.getElementById("label-$VENUS").setAttribute('x', startLabelXs[$VENUS]);
+        document.getElementById("label-$VENUS").setAttribute('y', startLabelYs[$VENUS]);
+
+        document.getElementById("location-$EARTH").setAttribute('cx', startLocationCxs[$EARTH]);
+        document.getElementById("location-$EARTH").setAttribute('cy', startLocationCys[$EARTH]);
+        document.getElementById("label-$EARTH").setAttribute('x', startLabelXs[$EARTH]);
+        document.getElementById("label-$EARTH").setAttribute('y', startLabelYs[$EARTH]);
+
+        document.getElementById("location-$MARS").setAttribute('cx', startLocationCxs[$MARS]);
+        document.getElementById("location-$MARS").setAttribute('cy', startLocationCys[$MARS]);
+        document.getElementById("label-$MARS").setAttribute('x', startLabelXs[$MARS]);
+        document.getElementById("label-$MARS").setAttribute('y', startLabelYs[$MARS]);
+
         document.getElementById("location-$MOM").setAttribute('cx', startLocationCxs[$MOM]);
         document.getElementById("location-$MOM").setAttribute('cy', startLocationCys[$MOM]);
         document.getElementById("label-$MOM").setAttribute('x', startLabelXs[$MOM]);
@@ -487,28 +548,10 @@ EOT
 
             my $rec = $svg_params{$jdct};
 
-            if ($planet != $MOM) {
-                # print OUT "<!-- " . $rec->{'name'} . ", JDCT = $jdct -->\n";
-    
-                # print OUT "<ellipse id=\"orbit-$planet\" cx=\"$rec->{'cx'}\" cy=\"0\" rx=\"$rec->{'rx'}\" ry=\"$rec->{'ry'}\" " . 
-                #     "stroke=\"$rec->{'fill'}\" stroke-width=\"1\" fill=\"none\" transform=\"rotate(" . $rec->{'orbit_rotation'} . " 0 0)\" />\n";
-
-                # print OUT "<circle id=\"location-$planet\" cx=\"$rec->{'x'}\" cy=\"$rec->{'y'}\" r=\"$fill_radii{$planet}\" " . 
-                #     "stroke=\"black\" stroke-width=\"0\" fill=\"$rec->{'fill'}\" transform=\"rotate(" . $earth_rotation . " 0 0)\" />\n";
-
-                # my ($lx, $ly) = rotate($planet, $rec->{'x'}, $rec->{'y'}, $earth_rotation);
-                # print OUT "<text id=\"label-$planet\" x=\"" . ($lx+5) . "\" y=\"" . ($ly+5) . 
-                #     " font-size=\"10\" fill=\"DarkGrey\" transform=\"rotate(0 0 0)\">$rec->{'name'}</text>\n";                
-
-                # print OUT "<text x=\"" . ($rec->{'x'}) . "\" y=\"" . ($rec->{'y'}) . 
-                    # " font-size=\"10\" fill=\"white\" transform=\"rotate(" . $earth_rotation . " 0 0)\"   >$rec->{'name'}</text>\n";              
-
-                # print OUT "\n";
-            } else {
-                print OUT ("    planet = new Object(); planet.cx = $rec->{'x'}; planet.cy = $rec->{'y'}; planet_${names{$planet}}_locations.push(planet);\n");
-                my ($lx, $ly) = rotate($planet, $rec->{'x'}, $rec->{'y'}, $earth_rotation);
-                print OUT ("    label = new Object(); label.x = " . ($lx+5) . "; label.y = " . ($ly+5) . "; planet_${names{$planet}}_labels.push(label);\n");
-            }
+            print OUT ("    planet = new Object(); planet.cx = $rec->{'x'}; planet.cy = $rec->{'y'}; planet_${names{$planet}}_locations.push(planet);\n");
+            my ($lx, $ly) = rotate($planet, $rec->{'x'}, $rec->{'y'}, $earth_rotation);
+            my ($ex, $ey) = ($planet == $MOM) ? (-20, 15) : (5, 5);
+            print OUT ("    label = new Object(); label.x = " . ($lx+$ex) . "; label.y = " . ($ly+$ey) . "; planet_${names{$planet}}_labels.push(label);\n");
         }
     }
 
@@ -566,7 +609,7 @@ EOT
         
         foreach my $jdct (sort keys %svg_params) {
 
-            next if (($planet == $MOM) && (abs($jd - $jdct) > 0.1)); # TODO improve this crude calculation
+            next if (abs($jd - $jdct) > 0.1); # TODO improve this crude calculation
 
             my $rec = $svg_params{$jdct};
 
@@ -583,7 +626,7 @@ EOT
                 "stroke=\"black\" stroke-width=\"0\" fill=\"$rec->{'fill'}\" transform=\"rotate(" . $earth_rotation . " 0 0)\" />\n";
 
             # draw the label for the current location
-            my ($ex, $ey) = ($planet == $MOM) ? (-10, -10) : (5, 5);
+            my ($ex, $ey) = ($planet == $MOM) ? (-20, 15) : (5, 5);
             my ($lx, $ly) = rotate($planet, $rec->{'x'}, $rec->{'y'}, $earth_rotation);
             print OUT "<text id=\"label-$planet\" x=\"" . ($lx+$ex) . "\" y=\"" . ($ly+$ey) . 
                 " font-size=\"10\" fill=\"DarkGrey\" transform=\"rotate(0 0 0)\">$rec->{'name'}</text>\n";              
@@ -660,14 +703,14 @@ sub main {
             fetch_elements($planet);
             fetch_vectors($planet);
         
-            if ($planet == $MOM) {
+            # if ($planet == $MOM) {
                 fetch_horizons_data($planet, {
                     'table_type' => 'vectors',
                     'range' => 1,
                     'start_time' => $start_time,
                     'stop_time' => $stop_time,
                     'step_size' => $step_size});        
-            }
+            # }
             save_data();
         }
     }
