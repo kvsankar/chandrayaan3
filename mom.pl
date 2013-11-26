@@ -9,16 +9,13 @@ use LWP;
 use Getopt::Long;
 use Time::Local;
 
-# constants
-my $start_time_gm = 0;
-my $start_time = '2013-11-06';
-my $stop_time = '2014-09-24';
-my $step_size = '1%20d';
-my $km_per_au = 149597870.691;
-my $degrees_in_radian = 57.2957795;
-my $pixels_per_au = 150; 
-my $offset = 300;
+# constants - ephemerides related
 
+my ($start_year, $start_month, $start_day) = ("2013", "11", "06");
+my ($stop_year, $stop_month, $stop_day) =    ("2014", "09", "24");
+my $step_size_in_hours = 6;
+
+my $MAVEN   = -202;
 my $MOM     = -3;
 my $SUN     = 10;
 my $MERCURY = 199;
@@ -32,16 +29,48 @@ my $data_dir = ".";
 my $use_cached_data = 0;
 my $debugging = 1;
 
-my %fills =      ($SUN => 'white', $MERCURY => 'orange',  $VENUS => 'grey',  $MARS => 'red',  $EARTH => 'blue',  $MOM => 'purple');
-my %names =      ($SUN => 'Sun',   $MERCURY => 'Mercury', $VENUS => 'Venus', $MARS => 'Mars', $EARTH => 'Earth', $MOM => 'MOM');
-my %fill_radii = ($SUN => 5,       $MERCURY => 5,         $VENUS => 5,       $MARS => 5,      $EARTH =>  5,      $MOM => 5);
+# constants - rendering related
 
-# data structures
+my $km_per_au = 149597870.691;
+my $degrees_in_radian = 57.2957795;
+
+my $pixels_per_au = 150; 
+my $offset = 300;
+my $planet_label_offset_x = 10;
+my $planet_label_offset_y = 10;
+my $mars_label_offset_x = -50;
+my $mars_label_offset_y = 0;
+
+my %fills =      ($SUN => 'white', $MERCURY => 'orange',  $VENUS => 'grey',  $MARS => 'red',  $EARTH => 'blue',  $MOM => 'purple', $MAVEN => 'orange');
+my %names =      ($SUN => 'Sun',   $MERCURY => 'Mercury', $VENUS => 'Venus', $MARS => 'Mars', $EARTH => 'Earth', $MOM => 'MOM',    $MAVEN => 'MAVEN');
+my %fill_radii = ($SUN => 5,       $MERCURY => 5,         $VENUS => 5,       $MARS => 5,      $EARTH =>  5,      $MOM => 5,        $MAVEN => 5);
+
+# global data structures
+
+my $start_time_gm = 0;  # set later in code
+my $stop_time_gm = 0;   # set later in code
+my $start_time = '';    # set later in code 
+my $stop_time = '';     # set later in code
+my $step_size = '';     # set later in code
+my $count_duration = 0; # set later in code
+
 my $now = time();
 my $jd = my_jd($now);
 my $gmtime = gmtime($now);
 my %orbits; 
 my $earth_rotation = 0;
+
+sub set_start_and_stop_times () {
+
+	$start_time ="$start_year\-$start_month\-$start_day";
+	$start_time_gm = timegm(0, 0, 0, $start_day, $start_month-1, $start_year);
+
+	$stop_time ="$stop_year\-$stop_month\-$stop_day";
+	$stop_time_gm = timegm(0, 0, 0, $stop_day, $stop_month-1, $stop_year);
+
+	$step_size = "${step_size_in_hours}%20h";
+	$count_duration = $step_size_in_hours * 3600;
+}
 
 sub print_debug ($) {
     my $msg = shift;
@@ -61,7 +90,12 @@ sub my_jd ($) {
     return $jd;
 }
 
-sub save_data () {
+sub is_craft($) {
+	my $planet = shift;
+	return ($planet < 0);
+}
+
+sub save_fetched_data () {
 
     my $cache_file_name = "$data_dir/momcache.txt";
     my $fh = FileHandle->new;
@@ -90,13 +124,21 @@ sub save_data () {
         $horizons = $orbits{$planet}->{'vectors_content'};
         print $fh $horizons;
         close $fh;
+    }
+} 
 
-        $ho_file_name = "$data_dir/ho-$planet-orbit.txt";
-        $fh = FileHandle->new;
+sub save_orbit_data () {
+
+    foreach my $planet (@planets) {
+        
+        my $ho_file_name = "$data_dir/ho-$planet-orbit.txt";
+        my $fh = FileHandle->new;
         unless ($fh->open(">$ho_file_name")) {
             print_err("Can't write to $ho_file_name: $!");
         }
         my $elements = $orbits{$planet}->{'elements'};
+
+        # print_debug("Planet $planet has elements at: " . join(",", (sort keys %{$elements})));
 
         foreach my $jdct (sort keys %{$elements}) {
             print_elements($fh, $elements->{$jdct});    
@@ -106,8 +148,6 @@ sub save_data () {
         print $fh "\n";
         close $fh;
     }
-        
-
 } 
 
 sub fetch_horizons_data ($$) {
@@ -153,7 +193,6 @@ sub fetch_horizons_data ($$) {
 
     use LWP::UserAgent;
     my $ua = LWP::UserAgent->new;
-    # $ua->agent("MyApp/0.1 ");
 
     # Create a request
     my $req = HTTP::Request->new(GET => $url);
@@ -280,16 +319,19 @@ sub parse_horizons_elements ($$) {
                 $rec->{'pr'} = $pr;
 
                 if ($planet == $EARTH) {
-                    $earth_rotation = $rec->{'om'} + $rec->{'w'};
+                    # $earth_rotation = $rec->{'om'} + $rec->{'w'};
+                    $earth_rotation = 0;
                     while ($earth_rotation >= 360.0) { $earth_rotation -= 360.0; }
-                    $earth_rotation = -1 * $earth_rotation;
-                    print_debug "earth_rotation = $earth_rotation";
+                    $earth_rotation = $earth_rotation;
+                    # print_debug "earth_rotation = $earth_rotation";
                 }
 
                 if (exists $orbits{$planet}->{'elements'}->{$jdct}) {
+                    # print_debug("Merging elements for planet=$planet, jdct=$jdct");
                     my $exrec = $orbits{$planet}->{'elements'}->{$jdct};
                     @$exrec{keys %$rec} = values %$rec;
                 } else {
+                	# print_debug("Adding elements for planet=$planet, jdct=$jdct");
                     $orbits{$planet}->{'elements'}->{$jdct} = $rec;
                 }
             
@@ -298,13 +340,16 @@ sub parse_horizons_elements ($$) {
                 my ($jdct, $date, $x, $y) = split(/,\s*/, $line);
 
                 my $rec;
+                $rec->{'jdct'} = $jdct;
                 $rec->{'x'} = $x;
                 $rec->{'y'} = $y;
 
                 if (exists $orbits{$planet}->{'elements'}->{$jdct}) {
+                	# print_debug("Merging vectors for planet=$planet, jdct=$jdct");
                     my $exrec = $orbits{$planet}->{'elements'}->{$jdct};
                     @$exrec{keys %$rec} = values %$rec;
                 } else {
+                	# print_debug("Merging vectors for planet=$planet, jdct=$jdct");
                     $orbits{$planet}->{'elements'}->{$jdct} = $rec;
                 }
             }
@@ -354,16 +399,21 @@ sub generate_svg_params ($) {
         # om - longitude of ascending node
         # w  - argument of perifocus
         my $angle = $rec->{'om'} + $rec->{'w'};
+        # my $angle = 0;
         while ($angle >= 360.0) { $angle -= 360.0; }
+
         $svg_params_rec->{'orbit_rotation'} = -1 * $angle;
-        $svg_params_rec->{'orbit_rotation'} += 90.0;
-        $svg_params_rec->{'planet_rotation'} = $earth_rotation;
-        $svg_params_rec->{'cx'} = ($pixels_per_au * $rec->{'a'} / $km_per_au) * $rec->{'ec'};
-        $svg_params_rec->{'rx'} = ($pixels_per_au * $rec->{'a'} / $km_per_au);
-        $svg_params_rec->{'ry'} = ($pixels_per_au * $rec->{'a'} / $km_per_au) * (1 - ($rec->{'ec'} * $rec->{'ec'}));
-        $svg_params_rec->{'x'} = ($pixels_per_au * $rec->{'x'} / $km_per_au); 
-        $svg_params_rec->{'y'} = -1 * ($pixels_per_au * $rec->{'y'} / $km_per_au); # y is up in co-ordinates; but down in screen
-        $svg_params_rec->{'fill'} = $fills{$planet} || 'black';
+        # $svg_params_rec->{'orbit_rotation'} += 90.0; # TODO
+        $svg_params_rec->{'planet_rotation'} = -1 * $earth_rotation;
+
+        $svg_params_rec->{'a'}  =      ($pixels_per_au *  ($rec->{'a'} / $km_per_au));
+        $svg_params_rec->{'cx'} = -1 * ($pixels_per_au * (($rec->{'a'} / $km_per_au)) * $rec->{'ec'});
+        $svg_params_rec->{'rx'} =      ($pixels_per_au *  ($rec->{'a'} / $km_per_au));
+        $svg_params_rec->{'ry'} =      ($pixels_per_au * (($rec->{'a'} / $km_per_au)) * sqrt(1 - $rec->{'ec'} * $rec->{'ec'}));
+        $svg_params_rec->{'x'}  =      ($pixels_per_au *  ($rec->{'x'} / $km_per_au)); 
+        $svg_params_rec->{'y'}  = -1 * ($pixels_per_au *  ($rec->{'y'} / $km_per_au)); # y is up in co-ordinates; but down in screen
+
+        $svg_params_rec->{'fill'} = $fills{$planet} || 'white';
         $svg_params_rec->{'name'} = $names{$planet} || 'unknown';
 
         $svg_params{$jdct} = $svg_params_rec;
@@ -387,7 +437,7 @@ sub rotate($$$$) {
         $rety = $y * cos($phi) + $x * sin($phi);
     }
 
-    print_debug("Rotating planet $names{$planet}: x = $x, y = $y, phi (degrees) = $phi_degrees, retx = $retx, rety = $rety");
+    # print_debug("Rotating planet $names{$planet}: x = $x, y = $y, phi (degrees) = $phi_degrees, retx = $retx, rety = $rety");
 
     return ($retx, $rety);
 }
@@ -409,6 +459,7 @@ sub generate_html ($) {
 
     <!-- The HTML and JavaScript have been generated with a Perl script. The generated code needs some cleanup. -->
 
+    var timeout = 25;
     var count = 0;
     var stopAnimationFlag = false;
     var startLocationCxs = {};
@@ -417,71 +468,42 @@ sub generate_html ($) {
     var startLabelYs = {};
 
     function init() {
+    	var svg = document.getElementById("svg");
+    	svg.setAttribute("width", window.innerWidth);
+    	svg.setAttribute("height", window.innerHeight);
+    	initData();
+        missionNow();
+    }
 
-        var t = ($start_time_gm + count * 86400) * 1000;
-        var d = new Date(t);
+    function setLocation() {
+        var d = new Date(($start_time_gm + count * $count_duration) * 1000);
         document.getElementById("date").innerHTML = d;
 
-        startLocationCxs[$MERCURY] = document.getElementById("location-$MERCURY").getAttribute('cx');
-        startLocationCys[$MERCURY] = document.getElementById("location-$MERCURY").getAttribute('cy');
-        startLabelXs[$MERCURY] = document.getElementById("label-$MERCURY").getAttribute('x');
-        startLabelYs[$MERCURY] = document.getElementById("label-$MERCURY").getAttribute('y');
+EOT
 
-        startLocationCxs[$VENUS] = document.getElementById("location-$VENUS").getAttribute('cx');
-        startLocationCys[$VENUS] = document.getElementById("location-$VENUS").getAttribute('cy');
-        startLabelXs[$VENUS] = document.getElementById("label-$VENUS").getAttribute('x');
-        startLabelYs[$VENUS] = document.getElementById("label-$VENUS").getAttribute('y');
+		foreach my $planet (@planets) {
+			print OUT <<"EOT";
+        document.getElementById("location-$planet").setAttribute('cx', planet_${names{$planet}}_locations[count].cx);
+        document.getElementById("location-$planet").setAttribute('cy', planet_${names{$planet}}_locations[count].cy);
+        document.getElementById("label-$planet").setAttribute('x', planet_${names{$planet}}_labels[count].x);
+        document.getElementById("label-$planet").setAttribute('y', planet_${names{$planet}}_labels[count].y);
 
-        startLocationCxs[$EARTH] = document.getElementById("location-$EARTH").getAttribute('cx');
-        startLocationCys[$EARTH] = document.getElementById("location-$EARTH").getAttribute('cy');
-        startLabelXs[$EARTH] = document.getElementById("label-$EARTH").getAttribute('x');
-        startLabelYs[$EARTH] = document.getElementById("label-$EARTH").getAttribute('y');
+EOT
+		}
 
-        startLocationCxs[$MARS] = document.getElementById("location-$MARS").getAttribute('cx');
-        startLocationCys[$MARS] = document.getElementById("location-$MARS").getAttribute('cy');
-        startLabelXs[$MARS] = document.getElementById("label-$MARS").getAttribute('x');
-        startLabelYs[$MARS] = document.getElementById("label-$MARS").getAttribute('y');
+		print OUT <<"EOT";
 
-        startLocationCxs[$MOM] = document.getElementById("location-$MOM").getAttribute('cx');
-        startLocationCys[$MOM] = document.getElementById("location-$MOM").getAttribute('cy');
-        startLabelXs[$MOM] = document.getElementById("label-$MOM").getAttribute('x');
-        startLabelYs[$MOM] = document.getElementById("label-$MOM").getAttribute('y');
-    }
+	} // end of setLocation
 
     function changeLocation() {
 
         if (!stopAnimationFlag) {
-            var d = new Date(($start_time_gm + count * 86400) * 1000);
-            document.getElementById("date").innerHTML = d;
 
-            document.getElementById("location-$MERCURY").setAttribute('cx', planet_Mercury_locations[count].cx);
-            document.getElementById("location-$MERCURY").setAttribute('cy', planet_Mercury_locations[count].cy);
-            document.getElementById("label-$MERCURY").setAttribute('x', planet_Mercury_labels[count].x);
-            document.getElementById("label-$MERCURY").setAttribute('y', planet_Mercury_labels[count].y);
-
-            document.getElementById("location-$VENUS").setAttribute('cx', planet_Venus_locations[count].cx);
-            document.getElementById("location-$VENUS").setAttribute('cy', planet_Venus_locations[count].cy);
-            document.getElementById("label-$VENUS").setAttribute('x', planet_Venus_labels[count].x);
-            document.getElementById("label-$VENUS").setAttribute('y', planet_Venus_labels[count].y);
-
-            document.getElementById("location-$EARTH").setAttribute('cx', planet_Earth_locations[count].cx);
-            document.getElementById("location-$EARTH").setAttribute('cy', planet_Earth_locations[count].cy);
-            document.getElementById("label-$EARTH").setAttribute('x', planet_Earth_labels[count].x);
-            document.getElementById("label-$EARTH").setAttribute('y', planet_Earth_labels[count].y);
-
-            document.getElementById("location-$MARS").setAttribute('cx', planet_Mars_locations[count].cx);
-            document.getElementById("location-$MARS").setAttribute('cy', planet_Mars_locations[count].cy);
-            document.getElementById("label-$MARS").setAttribute('x', planet_Mars_labels[count].x);
-            document.getElementById("label-$MARS").setAttribute('y', planet_Mars_labels[count].y);
-
-            document.getElementById("location-$MOM").setAttribute('cx', planet_MOM_locations[count].cx);
-            document.getElementById("location-$MOM").setAttribute('cy', planet_MOM_locations[count].cy);
-            document.getElementById("label-$MOM").setAttribute('x', planet_MOM_labels[count].x);
-            document.getElementById("label-$MOM").setAttribute('y', planet_MOM_labels[count].y);
+            setLocation();
 
             ++count;
             if (count < planet_MOM_locations.length) {
-                setTimeout(function() { changeLocation(); }, 100);
+                setTimeout(function() { changeLocation(); }, timeout);
             }            
         }
     }
@@ -492,43 +514,52 @@ sub generate_html ($) {
         changeLocation();
     }
 
+    function backward() {
+    	count -= 20; 
+    	if (count < 0) count = 0;
+    	setLocation();
+    }
+
     function stopAnimation() {
         stopAnimationFlag = true;
         clearTimeout();
     }
 
-    function reset() {
+    function forward() {
+    	count += 20; 
+    	if (count >= planet_MOM_locations.length) {
+    		count = planet_MOM_locations.length - 1;
+    	}
+    	setLocation();
+    }
+
+    function missionStart() {
         stopAnimation();
         count = 0;
+        setLocation();
+    }
 
-        var t = ($start_time_gm + count * 86400) * 1000;
-        var d = new Date(t);
-        document.getElementById("date").innerHTML = d;
+    function missionNow() {
+    	stopAnimation();
+    	var t = new Date().getTime();
+    	var x = ((t/1000) - $start_time_gm) / $count_duration;
+    	count = Math.max(0, Math.floor(x));
+        setLocation();
+    }
 
-        document.getElementById("location-$MERCURY").setAttribute('cx', startLocationCxs[$MERCURY]);
-        document.getElementById("location-$MERCURY").setAttribute('cy', startLocationCys[$MERCURY]);
-        document.getElementById("label-$MERCURY").setAttribute('x', startLabelXs[$MERCURY]);
-        document.getElementById("label-$MERCURY").setAttribute('y', startLabelYs[$MERCURY]);
+    function missionEnd() {
+        stopAnimation();
+        count = planet_MOM_locations.length - 1;
+        setLocation();
+    }
 
-        document.getElementById("location-$VENUS").setAttribute('cx', startLocationCxs[$VENUS]);
-        document.getElementById("location-$VENUS").setAttribute('cy', startLocationCys[$VENUS]);
-        document.getElementById("label-$VENUS").setAttribute('x', startLabelXs[$VENUS]);
-        document.getElementById("label-$VENUS").setAttribute('y', startLabelYs[$VENUS]);
+    function faster() {
+    	timeout -= 5;
+    	if (timeout < 0) timeout = 0;
+    }
 
-        document.getElementById("location-$EARTH").setAttribute('cx', startLocationCxs[$EARTH]);
-        document.getElementById("location-$EARTH").setAttribute('cy', startLocationCys[$EARTH]);
-        document.getElementById("label-$EARTH").setAttribute('x', startLabelXs[$EARTH]);
-        document.getElementById("label-$EARTH").setAttribute('y', startLabelYs[$EARTH]);
-
-        document.getElementById("location-$MARS").setAttribute('cx', startLocationCxs[$MARS]);
-        document.getElementById("location-$MARS").setAttribute('cy', startLocationCys[$MARS]);
-        document.getElementById("label-$MARS").setAttribute('x', startLabelXs[$MARS]);
-        document.getElementById("label-$MARS").setAttribute('y', startLabelYs[$MARS]);
-
-        document.getElementById("location-$MOM").setAttribute('cx', startLocationCxs[$MOM]);
-        document.getElementById("location-$MOM").setAttribute('cy', startLocationCys[$MOM]);
-        document.getElementById("label-$MOM").setAttribute('x', startLabelXs[$MOM]);
-        document.getElementById("label-$MOM").setAttribute('y', startLabelYs[$MOM]);
+    function slower() {
+    	timeout += 5;
     }
 
     var planet;
@@ -536,31 +567,38 @@ sub generate_html ($) {
 
 EOT
 
-# start of stuff
-    foreach my $planet (@planets) {
+    	foreach my $planet (@planets) {
 
-        print OUT "    var planet_${names{$planet}}_locations = new Array();\n";
-        print OUT "    var planet_${names{$planet}}_labels = new Array();\n";
+	        print OUT "    var planet_${names{$planet}}_locations = new Array();\n";
+	        print OUT "    var planet_${names{$planet}}_labels = new Array();\n";
+		}    
 
-        my %svg_params = %{$orbits{$planet}->{'svg_params'}};
+		print OUT <<"EOT";
 
-        foreach my $jdct (sort keys %svg_params) {
+		function initData() {
 
-            my $rec = $svg_params{$jdct};
+EOT
+    	foreach my $planet (@planets) {
 
-            print OUT ("    planet = new Object(); planet.cx = $rec->{'x'}; planet.cy = $rec->{'y'}; planet_${names{$planet}}_locations.push(planet);\n");
-            my ($lx, $ly) = rotate($planet, $rec->{'x'}, $rec->{'y'}, $earth_rotation);
-            my ($ex, $ey) = ($planet == $MOM) ? (-20, 15) : (5, 5);
-            print OUT ("    label = new Object(); label.x = " . ($lx+$ex) . "; label.y = " . ($ly+$ey) . "; planet_${names{$planet}}_labels.push(label);\n");
-        }
-    }
+	        my %svg_params = %{$orbits{$planet}->{'svg_params'}};
 
-    print OUT "\n\n";
+	        foreach my $jdct (sort keys %svg_params) {
 
+	            my $rec = $svg_params{$jdct};
 
-# end of stuff
+	            print OUT ("        planet = new Object(); planet.cx = $rec->{'x'}; planet.cy = $rec->{'y'}; planet_${names{$planet}}_locations.push(planet);\n");
+	            my ($lx, $ly) = rotate($planet, $rec->{'x'}, $rec->{'y'}, -1 * $earth_rotation);
+	            my ($ex, $ey) = is_craft($planet) ? ($mars_label_offset_x, $mars_label_offset_y) : ($planet_label_offset_x, $planet_label_offset_y);
+	            print OUT ("        label = new Object(); label.x = " . ($lx+$ex) . "; label.y = " . ($ly+$ey) . "; planet_${names{$planet}}_labels.push(label);\n");
+	        }
+    	}
+
+    	print OUT "\n\n";
 
         print OUT <<"EOT";
+
+		} // end of initData()
+
 </script>
 
 <div class="background">
@@ -568,7 +606,8 @@ EOT
 <div class="blurb">
 <p>
 <a href="http://www.isro.org/mars/home.aspx">Mars Orbiter Mission, Indian Space Research Organization</a><br/>
-Inner solar system and MOM orbit diagram generated using NASA JPL HORIZONS Ephemerides.<br/>
+Inner solar system and MOM / MAVEN orbit diagram generated using NASA JPL HORIZONS Ephemerides.<br/>
+This animation works best with the Google Chrome browser. Firefox works; but produces jittery animation. I won't talk about IE. <br/>
 Copyright (c) 2013 Sankaranarayan K V; this file is published under the Creative Commons CC-BY-SA 2.0 license.<br/>
 </p>
 </div>
@@ -579,17 +618,25 @@ Orbit data epoch: JD = $jd | UTC = $gmtime <br/>
 </p>
 </div>
 
+<button type="button" onclick="missionStart()">| &lt;</button>
+<button type="button" onclick="missionNow()">Now</button>
+<button type="button" onclick="missionEnd()">&gt; |</button>
+
 <button type="button" onclick="animate()">Animate!</button>
+
+<button type="button" onclick="backward()"> -5d </button>
 <button type="button" onclick="stopAnimation()">Stop</button>
-<button type="button" onclick="reset()">Reset</button>
+<button type="button" onclick="forward()"> +5d </button>
+
+<button type="button" onclick="slower()"> Slower </button>
+<button type="button" onclick="faster()"> Faster </button>
+
 
 <div class="date">
-<br>
-Animation Time: <label id="date"></label>
-<br>
+<table><tr><td>Animation Time</td><td><pre><label id="date"></label></pre></td></tr></table>
 </div>
 
-<svg xmlns="http://www.w3.org/2000/svg" version="1.1">
+<svg id="svg" xmlns="http://www.w3.org/2000/svg" version="1.1">
 <g transform="translate($offset, $offset)">
 EOT
 
@@ -609,42 +656,60 @@ EOT
         
         foreach my $jdct (sort keys %svg_params) {
 
-            next if (abs($jd - $jdct) > 0.1); # TODO improve this crude calculation
+        	# print_debug "planet = $planet, jd = $jd, jdct = $jdct";
+
+            next if (abs($jd - $jdct) > 0.0001); # TODO improve this crude calculation
 
             my $rec = $svg_params{$jdct};
 
+        	print_debug "Generating ellipse and location data for planet = $planet, jd = $jd, jdct = $jdct";
+
             print OUT "<!-- " . $rec->{'name'} . ", JDCT = $jd -->\n";
 
-            if ($planet != $MOM) {
+            unless (is_craft($planet)) {
                 # draw the elliptical orbit of the planet
                 print OUT "<ellipse id=\"orbit-$planet\" cx=\"$rec->{'cx'}\" cy=\"0\" rx=\"$rec->{'rx'}\" ry=\"$rec->{'ry'}\" " . 
-                    "stroke=\"$rec->{'fill'}\" stroke-width=\"1\" fill=\"none\" transform=\"rotate(" . $rec->{'orbit_rotation'} . " 0 0)\" />\n";                
+                    "stroke=\"$rec->{'fill'}\" stroke-width=\"1\" fill=\"none\" transform=\"rotate(" . $rec->{'orbit_rotation'} . " 0 0)\" />\n"; 
+
+                print OUT "<line id=\"periapsis-$planet\" " . 
+                	"x1=\"@{[$rec->{'cx'} + $rec->{'a'}-2]}\" y1=\"0\"" . 
+                	"x2=\"@{[$rec->{'cx'} + $rec->{'a'}+2]}\" y2=\"0\" style=\"stroke:rgb(63,63,63);stroke-width:2\"" .
+                	"transform=\"rotate(" . $rec->{'orbit_rotation'} . " 0 0)\" />\n";               
+
+                print OUT "<line id=\"apoapsis-$planet\" " . 
+                	"x1=\"@{[$rec->{'cx'} + -1*$rec->{'a'}-4]}\" y1=\"0\"" . 
+                	"x2=\"@{[$rec->{'cx'} + -1*$rec->{'a'}+4]}\" y2=\"0\" style=\"stroke:rgb(63,63,63);stroke-width:2\"" .
+                	"transform=\"rotate(" . $rec->{'orbit_rotation'} . " 0 0)\" />\n";               
             }
 
             # mark the current location
             print OUT "<circle id=\"location-$planet\" cx=\"$rec->{'x'}\" cy=\"$rec->{'y'}\" r=\"$fill_radii{$planet}\" " . 
-                "stroke=\"black\" stroke-width=\"0\" fill=\"$rec->{'fill'}\" transform=\"rotate(" . $earth_rotation . " 0 0)\" />\n";
+                "stroke=\"black\" stroke-width=\"0\" fill=\"$rec->{'fill'}\" transform=\"rotate(" . -1 * $earth_rotation . " 0 0)\" />\n";
 
             # draw the label for the current location
-            my ($ex, $ey) = ($planet == $MOM) ? (-20, 15) : (5, 5);
-            my ($lx, $ly) = rotate($planet, $rec->{'x'}, $rec->{'y'}, $earth_rotation);
+            my ($ex, $ey) = is_craft($planet) ? ($mars_label_offset_x, $mars_label_offset_y) : ($planet_label_offset_x, $planet_label_offset_y);
+            my ($lx, $ly) = rotate($planet, $rec->{'x'}, $rec->{'y'}, -1 * $earth_rotation);
             print OUT "<text id=\"label-$planet\" x=\"" . ($lx+$ex) . "\" y=\"" . ($ly+$ey) . 
                 " font-size=\"10\" fill=\"DarkGrey\" transform=\"rotate(0 0 0)\">$rec->{'name'}</text>\n";              
 
             # print OUT "<text x=\"" . ($rec->{'x'}) . "\" y=\"" . ($rec->{'y'}) . 
-                # " font-size=\"10\" fill=\"white\" transform=\"rotate(" . $earth_rotation . " 0 0)\"   >$rec->{'name'}</text>\n";              
+                # " font-size=\"10\" fill=\"white\" transform=\"rotate(" . -1 * $earth_rotation . " 0 0)\"   >$rec->{'name'}</text>\n";              
 
             print OUT "\n";
         }
     }
     
-    # Draw MOM orbit
-    my %svg_params = %{$orbits{$MOM}->{'svg_params'}};
-    foreach my $jdct (sort keys %svg_params) {
-        next if ($jdct == $jd);
-        my $rec = $svg_params{$jdct};
-        print OUT "<circle id=\"orbitpoint-$MOM\" cx=\"$rec->{'x'}\" cy=\"$rec->{'y'}\" r=\"1\" " . 
-            "stroke=\"black\" stroke-width=\"0\" fill=\"$rec->{'fill'}\" transform=\"rotate(" . $earth_rotation . " 0 0)\" />\n";
+    # Draw MOM / MAVEN orbits
+
+    foreach my $planet (@planets) {
+    	next unless(is_craft($planet));
+	    my %svg_params = %{$orbits{$planet}->{'svg_params'}};
+	    foreach my $jdct (sort keys %svg_params) {
+	        next if ($jdct == $jd);
+	        my $rec = $svg_params{$jdct};
+	        print OUT "<circle id=\"orbitpoint-$planet\" cx=\"$rec->{'x'}\" cy=\"$rec->{'y'}\" r=\"1\" " . 
+	            "stroke=\"black\" stroke-width=\"0\" fill=\"$rec->{'fill'}\" transform=\"rotate(" . -1 * $earth_rotation . " 0 0)\" />\n";
+	    }
     }
    
     print OUT <<"EOT";
@@ -687,7 +752,7 @@ EOT
 
 sub main {
 
-    $start_time_gm = timegm(0, 0, 0, 06, 10, 2013);
+	set_start_and_stop_times();
 
     GetOptions("use-cache" => \$use_cached_data);
 
@@ -700,21 +765,24 @@ sub main {
     foreach my $planet (@planets) {
         
         unless ($use_cached_data) {
+
             fetch_elements($planet);
             fetch_vectors($planet);
         
-            # if ($planet == $MOM) {
-                fetch_horizons_data($planet, {
-                    'table_type' => 'vectors',
-                    'range' => 1,
-                    'start_time' => $start_time,
-                    'stop_time' => $stop_time,
-                    'step_size' => $step_size});        
-            # }
-            save_data();
+            fetch_horizons_data($planet, {
+                'table_type' => 'vectors',
+                'range' => 1,
+                'start_time' => $start_time,
+                'stop_time' => $stop_time,
+                'step_size' => $step_size});        
+            
         }
     }
 
+    unless ($use_cached_data) {
+    	save_fetched_data();
+    }
+    
     foreach my $planet (@planets) {
 
         parse_horizons_elements('elements', $planet);
@@ -723,7 +791,9 @@ sub main {
         $orbits{$planet}->{'svg_params'} = $svg_params;
     }
 
-    generate_html("orbits.html");
+    save_orbit_data();
+
+    generate_html("mom.html");
 }
 
 main;
