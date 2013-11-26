@@ -11,7 +11,9 @@ use Getopt::Long;
 # constants
 my $start_time = '2013-11-06';
 my $stop_time = '2014-09-24';
+my $step_size = '1%20d';
 my $km_per_au = 149597870.691;
+my $degrees_in_radian = 57.2957795;
 my $pixels_per_au = 150; 
 my $offset = 300;
 
@@ -369,6 +371,25 @@ sub generate_svg_params ($) {
 	return \%svg_params;
 }
 
+sub rotate($$$$) {
+	my $planet = shift;
+	my $x = shift;
+	my $y = shift;
+	my $phi_degrees = shift;
+
+	my ($retx, $rety) = ($x, $y);
+	my $phi = $phi_degrees / $degrees_in_radian;
+
+	if ($x != 0) {
+		$retx = $x * cos($phi) - $y * sin($phi);
+		$rety = $y * cos($phi) + $x * sin($phi);
+	}
+
+	print_debug("Rotating planet $names{$planet}: x = $x, y = $y, phi (degrees) = $phi_degrees, retx = $retx, rety = $rety");
+
+	return ($retx, $rety);
+}
+
 sub generate_html ($) {
 	my $filename = shift;
 
@@ -418,18 +439,22 @@ EOT
 			if ($planet != $MOM) {
 				print OUT "<!-- " . $rec->{'name'} . ", JDCT = $jdct -->\n";
 	
-				print OUT "<ellipse cx=\"$rec->{'cx'}\" cy=\"0\" rx=\"$rec->{'rx'}\" ry=\"$rec->{'ry'}\" " . 
+				print OUT "<ellipse id=\"orbit-$planet\" cx=\"$rec->{'cx'}\" cy=\"0\" rx=\"$rec->{'rx'}\" ry=\"$rec->{'ry'}\" " . 
 				    "stroke=\"$rec->{'fill'}\" stroke-width=\"1\" fill=\"none\" transform=\"rotate(" . $rec->{'orbit_rotation'} . " 0 0)\" />\n";
 
-				print OUT "<circle cx=\"$rec->{'x'}\" cy=\"$rec->{'y'}\" r=\"$fill_radii{$planet}\" " . 
+				print OUT "<circle id=\"location-$planet\" cx=\"$rec->{'x'}\" cy=\"$rec->{'y'}\" r=\"$fill_radii{$planet}\" " . 
 				    "stroke=\"black\" stroke-width=\"0\" fill=\"$rec->{'fill'}\" transform=\"rotate(" . $earth_rotation . " 0 0)\" />\n";
 
-				# print OUT "<text x=\"" . ($rec->{'x'} + 10) . "\" y=\"" . ($rec->{'y'} + 10) . 
-				    # " font-size=\"10\" fill=\"black\" transform=\"rotate(" . $earth_rotation . " 0 0)\"	>$rec->{'name'}</text>\n";				
+				my ($lx, $ly) = rotate($planet, $rec->{'x'}, $rec->{'y'}, $earth_rotation);
+				print OUT "<text id=\"label-$planet\" x=\"" . ($lx+5) . "\" y=\"" . ($ly+5) . 
+				    " font-size=\"10\" fill=\"DarkGrey\" transform=\"rotate(0 0 0)\">$rec->{'name'}</text>\n";				
+
+				# print OUT "<text x=\"" . ($rec->{'x'}) . "\" y=\"" . ($rec->{'y'}) . 
+				    # " font-size=\"10\" fill=\"white\" transform=\"rotate(" . $earth_rotation . " 0 0)\"	>$rec->{'name'}</text>\n";				
 
 				print OUT "\n";
 			} else {
-				print OUT "<circle cx=\"$rec->{'x'}\" cy=\"$rec->{'y'}\" r=\"$fill_radii{$planet}\" " . 
+				print OUT "<circle id=\"orbitpoint-$planet\" cx=\"$rec->{'x'}\" cy=\"$rec->{'y'}\" r=\"$fill_radii{$planet}\" " . 
 				    "stroke=\"black\" stroke-width=\"0\" fill=\"$rec->{'fill'}\" transform=\"rotate(" . $earth_rotation . " 0 0)\" />\n";
 			}
 		}
@@ -490,7 +515,8 @@ sub main {
 					'table_type' => 'vectors',
 					'range' => 1,
 					'start_time' => $start_time,
-					'stop_time' => $stop_time});		
+					'stop_time' => $stop_time,
+					'step_size' => $step_size});		
 			}
 			save_data();
 		}
