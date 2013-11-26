@@ -7,8 +7,10 @@ use strict;
 use FileHandle;
 use LWP;
 use Getopt::Long;
+use Time::Local;
 
 # constants
+my $start_time_gm = 0;
 my $start_time = '2013-11-06';
 my $stop_time = '2014-09-24';
 my $step_size = '1%20d';
@@ -397,35 +399,79 @@ sub generate_html ($) {
 
         print OUT <<"EOT";
 <!DOCTYPE html>
+
+<!-- Copyright (c) 2013 Sankaranarayan K V; this file is published under the Creative Commons CC-BY-SA 2.0 license. -->
+
 <html>
-<body>
+<body onload="init()">
 
 <script>
 
     var count = 0;
     var stopAnimationFlag = false;
+    var startLocationCxs = {};
+    var startLocationCys = {};
+    var startLabelXs = {};
+    var startLabelYs = {};
+
+    function init() {
+
+        var t = ($start_time_gm + count * 86400) * 1000;
+        var d = new Date(t);
+        document.getElementById("date").innerHTML = d;
+
+        startLocationCxs[$MOM] = document.getElementById("location-$MOM").getAttribute('cx');
+        startLocationCys[$MOM] = document.getElementById("location-$MOM").getAttribute('cy');
+        startLabelXs[$MOM] = document.getElementById("label-$MOM").getAttribute('x');
+        startLabelYs[$MOM] = document.getElementById("label-$MOM").getAttribute('y');
+    }
 
     function changeLocation() {
 
-        document.getElementById("location-$MOM").setAttribute('cx', planet_MOM_locations[count].cx);
-        document.getElementById("location-$MOM").setAttribute('cy', planet_MOM_locations[count].cy);
-        ++count;
         if (!stopAnimationFlag) {
-            setTimeout(function() { changeLocation(); }, 100);
+            document.getElementById("location-$MOM").setAttribute('cx', planet_MOM_locations[count].cx);
+            document.getElementById("location-$MOM").setAttribute('cy', planet_MOM_locations[count].cy);
+
+            document.getElementById("label-$MOM").setAttribute('x', planet_MOM_labels[count].x);
+            document.getElementById("label-$MOM").setAttribute('y', planet_MOM_labels[count].y);
+
+            var d = new Date(($start_time_gm + count * 86400) * 1000);
+            document.getElementById("date").innerHTML = d;
+
+            ++count;
+            if (count < planet_MOM_locations.length) {
+                setTimeout(function() { changeLocation(); }, 100);
+            }            
         }
     }
 
     function animate() {
         stopAnimationFlag = false;
-        count = 0;
+        if (count >= planet_MOM_locations.length) count = 0;
         changeLocation();
     }
 
     function stopAnimation() {
         stopAnimationFlag = true;
+        clearTimeout();
+    }
+
+    function reset() {
+        stopAnimation();
+        count = 0;
+
+        var t = ($start_time_gm + count * 86400) * 1000;
+        var d = new Date(t);
+        document.getElementById("date").innerHTML = d;
+
+        document.getElementById("location-$MOM").setAttribute('cx', startLocationCxs[$MOM]);
+        document.getElementById("location-$MOM").setAttribute('cy', startLocationCys[$MOM]);
+        document.getElementById("label-$MOM").setAttribute('x', startLabelXs[$MOM]);
+        document.getElementById("label-$MOM").setAttribute('y', startLabelYs[$MOM]);
     }
 
     var planet;
+    var label;
 
 EOT
 
@@ -433,6 +479,7 @@ EOT
     foreach my $planet (@planets) {
 
         print OUT "    var planet_${names{$planet}}_locations = new Array();\n";
+        print OUT "    var planet_${names{$planet}}_labels = new Array();\n";
 
         my %svg_params = %{$orbits{$planet}->{'svg_params'}};
 
@@ -458,7 +505,9 @@ EOT
 
                 # print OUT "\n";
             } else {
-                print OUT "    planet = new Object(); planet.cx = $rec->{'x'}; planet.cy = $rec->{'y'}; planet_${names{$planet}}_locations.push(planet);\n";
+                print OUT ("    planet = new Object(); planet.cx = $rec->{'x'}; planet.cy = $rec->{'y'}; planet_${names{$planet}}_locations.push(planet);\n");
+                my ($lx, $ly) = rotate($planet, $rec->{'x'}, $rec->{'y'}, $earth_rotation);
+                print OUT ("    label = new Object(); label.x = " . ($lx+5) . "; label.y = " . ($ly+5) . "; planet_${names{$planet}}_labels.push(label);\n");
             }
         }
     }
@@ -483,13 +532,19 @@ Copyright (c) 2013 Sankaranarayan K V; this file is published under the Creative
 
 <div class="info">
 <p>
-JD = $jd <br/>
-UTC = $gmtime <br/>
+Orbit data epoch: JD = $jd | UTC = $gmtime <br/>
 </p>
 </div>
 
 <button type="button" onclick="animate()">Animate!</button>
 <button type="button" onclick="stopAnimation()">Stop</button>
+<button type="button" onclick="reset()">Reset</button>
+
+<div class="date">
+<br>
+Animation Time: <label id="date"></label>
+<br>
+</div>
 
 <svg xmlns="http://www.w3.org/2000/svg" version="1.1">
 <g transform="translate($offset, $offset)">
@@ -565,6 +620,11 @@ EOT
   font-size: x-small;
   font-family: sans-serif;  
 }
+.date {
+  color: DarkGrey;
+  font-size: x-small;
+  font-family: sans-serif;      
+}
 .background {
   background-color: black; 
   /*background-image: */
@@ -583,6 +643,8 @@ EOT
 }
 
 sub main {
+
+    $start_time_gm = timegm(0, 0, 0, 06, 10, 2013);
 
     GetOptions("use-cache" => \$use_cached_data);
 
