@@ -9,19 +9,21 @@
         <meta name="author" content="Sankaranarayanan K V" />
         <meta name="keywords" content="mom, isro, mars, india, space, astronomy, animation" />
 
-        <script src="d3.v3.js" type="text/javascript" charset="utf-8"></script>
+        <script src="d3.v3.min.js" type="text/javascript" charset="utf-8"></script>
         <script src="mom.js" type="text/javascript" charset="utf-8"></script>
 
         <link rel="stylesheet" type="text/css" href="mom.css" />
         
-        <title>ISRO's Mars Orbiter Mission - Orbit Animation</title>
+        <title>ISRO's Mars Orbiter Mission &amp; NASA JPL MAVEN - An Orbit Animation</title>
     </head>
     <body onload="onload()">
         <div class="body">
             <div class="blurb">
                 <p>
-                <a href="http://www.isro.org/mars/home.aspx">Mars Orbiter Mission, Indian Space Research Organization</a><br/>
-                Inner solar system and MOM / MAVEN orbit diagram generated using NASA JPL HORIZONS Ephemerides.<br/>
+                <a href="http://www.isro.org/mars/home.aspx">MOM</a> and 
+                <a href="http://www.nasa.gov/mission_pages/maven/main/">MAVEN</a> orbit animation.<br/>
+                Inner solar system and MOM / MAVEN orbit animation generated using 
+                NASA JPL <a href="http://ssd.jpl.nasa.gov/?horizons">HORIZONS</a> Ephemerides.<br/>
                 Works best with Google Chrome. Firefox animation may be jittery. On IE, some buttons don't seem to work.</br>
                 </p>
             </div>
@@ -47,6 +49,8 @@
             <button type="button" class="button" onclick="missionEnd()">End</button> | 
             <button type="button" class="button" onclick="backward()"> -5d </button>
             <button type="button" class="button" onclick="forward()"> +5d </button>
+
+            <label><input type="checkbox" id="checkbox-maven" onclick="toggleMaven()">Show MAVEN</input></label>
             
             <div class="date">
                 <table summary="Animation Date"><tr><td>Animation Time</td><td><pre><label id="date"></label></pre></td></tr></table>

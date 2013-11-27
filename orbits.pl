@@ -12,8 +12,11 @@ use JSON;
 
 # constants - ephemerides related
 
-my ($start_year, $start_month, $start_day) = ("2013", "11", "06"); # MOM launch date
-my ($stop_year, $stop_month, $stop_day) =    ("2015", "06", "24"); # MOM last orbit data date at HORIZONS
+my ($start_year, $start_month, $start_day)                      = ("2013", "11", "06"); # MOM launch date
+my ($stop_year, $stop_month, $stop_day)                         = ("2015", "06", "24"); # MOM last orbit data date at HORIZONS
+my ($start_year_maven, $start_month_maven, $start_day_maven)    = ("2013", "11", "19"); # MAVEN launch date
+my ($stop_year_maven, $stop_month_maven, $stop_day_maven)       = ("2015", "09", "22"); # MAVEN last orbit data date at HORIZONS
+
 my $step_size_in_hours = 6;
 
 my $MAVEN   = -202;
@@ -61,6 +64,26 @@ my $gmtime = gmtime($now);
 my %orbits_raw;
 my %orbits; 
 my $earth_rotation = 0;
+
+sub get_horizons_start_time($) {
+    my $planet = shift;
+
+    if ($planet == $MAVEN) {
+        return "$start_year_maven\-$start_month_maven\-$start_day_maven";
+    } else {
+        return "$start_year\-$start_month\-$start_day";
+    }
+}
+
+sub get_horizons_stop_time($) {
+    my $planet = shift;
+
+    if ($planet == $MAVEN) {
+        return "$stop_year_maven\-$stop_month_maven\-$stop_day_maven";
+    } else {
+        return "$stop_year\-$stop_month\-$stop_day";
+    }
+}
 
 sub set_start_and_stop_times () {
 
@@ -801,8 +824,8 @@ sub main {
             fetch_horizons_data($planet, {
                 'table_type' => 'vectors',
                 'range' => 1,
-                'start_time' => $start_time,
-                'stop_time' => $stop_time,
+                'start_time' => get_horizons_start_time($planet),
+                'stop_time' => get_horizons_stop_time($planet),
                 'step_size' => $step_size});        
             
         }
