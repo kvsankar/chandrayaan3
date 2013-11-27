@@ -65,7 +65,7 @@ var showMaven = true;
 
 var dataLoaded = false;
 var progress = 0;
-var total = 1841981; // must be hard-coded if server doesn't report Content-Length
+var total = 2023480; // must be hard-coded if server doesn't report Content-Length
 var formatPercent = d3.format(".0%");
 
 function toggleMaven() {
