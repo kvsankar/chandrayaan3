@@ -55,7 +55,7 @@ var offset = 260;
 var now;
 var animDate;
 
-var nSteps;
+var nSteps = (mavenEndTime.getTime() - startTime.getTime()) / countDurationMilliSeconds;
 var timeout = 25;
 var count = 0;
 var stopAnimationFlag = false;
@@ -190,8 +190,10 @@ function onload() {
 
     d3.json("orbits.json")
         .on("progress", function() {
+
             var progress = d3.event.loaded / total;
             var msg = dataLoaded ? "" : ("Loading " + formatPercent(progress) + "...");
+            console.log(msg);
             d3.select("#message").html(msg);
         })
         .get(function(error, data) {
@@ -310,10 +312,6 @@ function processOrbitData() {
         var planet = orbits[planetId];
         var vectors = planet["vectors"];
 
-        nSteps = vectors.length; 
-        // though this is set within the planet loop,
-        // it would be the same for all planets
-
         var planetIndexOffset = (planetStartTime(planetKey).getTime() - startTime.getTime()) / countDurationMilliSeconds;
         planetProperties[planetKey]["offset"] = planetIndexOffset;
 
@@ -337,10 +335,6 @@ function processOrbitData() {
         var planetId = planetProps.id;
         var planet = orbits[planetId];
         var vectors = planet["vectors"];
-
-        nSteps = vectors.length; 
-        // though this is set within the planet loop,
-        // it would be the same for all planets
 
         svgContainer.append("text")
             .attr("id", "label-" + planetKey)
