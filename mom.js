@@ -59,7 +59,7 @@ var nSteps;
 var timeout = 25;
 var count = 0;
 var stopAnimationFlag = false;
-var timeout;
+var timeoutHandle;
 
 var showMaven = true;
 
@@ -360,7 +360,7 @@ function changeLocation() {
 
         ++count;
         if (count < nSteps) {
-            timeout = setTimeout(function() { changeLocation(); }, timeout);
+            timeoutHandle = setTimeout(function() { changeLocation(); }, timeout);
         }            
     }
 }
@@ -379,7 +379,7 @@ function backward() {
 
 function stopAnimation() {
     stopAnimationFlag = true;
-    clearTimeout(timeout);
+    clearTimeout(timeoutHandle);
 }
 
 function forward() {
