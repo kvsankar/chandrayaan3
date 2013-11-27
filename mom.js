@@ -59,8 +59,14 @@ var nSteps;
 var timeout = 25;
 var count = 0;
 var stopAnimationFlag = false;
+var timeout;
 
 var showMaven = true;
+
+var dataLoaded = false;
+var progress = 0;
+var total = 1841981; // must be hard-coded if server doesn't report Content-Length
+var formatPercent = d3.format(".0%");
 
 function toggleMaven() {
     showMaven = ! showMaven;
@@ -166,6 +172,9 @@ function setLocation() {
 }
 
 function onload() {
+
+    d3.selectAll("button").attr("disabled", true);
+
     animDate = d3.select("#date");
     animDate.html(new Date());
 
@@ -177,13 +186,24 @@ function onload() {
 
     d3.select("#message").html("Loading orbit data ...");
 
-    d3.json("orbits.json", function(error, jsonData) {
-            d3.select("#message").html("");
-        if (error) console.warn(error);
-        orbits = jsonData;
-        processOrbitData();
-        missionNow();
-    });
+    d3.json("orbits.json")
+        .on("progress", function() {
+            var progress = d3.event.loaded / total;
+            var msg = dataLoaded ? "" : ("Loading " + formatPercent(progress) + "...");
+            d3.select("#message").html(msg);
+        })
+        .get(function(error, data) {
+            if (error) {
+                d3.select("#message").html("Error: failed to load orbit data.");                
+            } else {
+                dataLoaded = true;
+                d3.select("#message").html("");
+                orbits = data;
+                processOrbitData();
+                missionNow();
+                d3.selectAll("button").attr("disabled", null);
+            }
+        });
 
     d3.select("#checkbox-maven").attr("checked", true);
 }
@@ -222,7 +242,7 @@ function processOrbitData() {
                 .attr("rx", rx)
                 .attr("ry", ry)
                 .attr("stroke", planetProps.color)
-                .attr("stroke-width", 0.5)
+                .attr("stroke-width", 1)
                 .attr("fill", "none")
                 .attr("transform", "rotate(" + angle + " 0 0)");
         }
@@ -256,7 +276,7 @@ function processOrbitData() {
                     .append("circle")
                     .attr("cx", newx)
                     .attr("cy", newy)
-                    .attr("r", 0.5)
+                    .attr("r", 1)
                     .attr("stroke", "none")
                     .attr("stroke-width", 0)
                     .attr("fill", planetProps.color)
@@ -340,7 +360,7 @@ function changeLocation() {
 
         ++count;
         if (count < nSteps) {
-            setTimeout(function() { changeLocation(); }, timeout);
+            timeout = setTimeout(function() { changeLocation(); }, timeout);
         }            
     }
 }
@@ -359,7 +379,7 @@ function backward() {
 
 function stopAnimation() {
     stopAnimationFlag = true;
-    clearTimeout();
+    clearTimeout(timeout);
 }
 
 function forward() {
