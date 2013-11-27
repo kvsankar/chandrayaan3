@@ -22,8 +22,8 @@ var MILLI_SECONDS_PER_HOUR = 3600000;
 var planetProperties = {
     "MAVEN":    { "id": MAVEN,      "name": "MAVEN",    "color": "purple",  "r": 2, "labelOffsetX": +10, "labelOffsetY": -10 },
     "MOM":      { "id": MOM,        "name": "MOM",      "color": "orange",  "r": 3, "labelOffsetX": -30, "labelOffsetY": -10 },
-    "SUN":      { "id": SUN,        "name": "Sun",      "color": "yellow",   "r": 5, "labelOffsetX": +10, "labelOffsetY": +10 },
-    "MERCURY":  { "id": MERCURY,    "name": "Mercury",  "color": "green",  "r": 5, "labelOffsetX": +10, "labelOffsetY": +10 },
+    "SUN":      { "id": SUN,        "name": "Sun",      "color": "yellow",  "r": 5, "labelOffsetX": +10, "labelOffsetY": +10 },
+    "MERCURY":  { "id": MERCURY,    "name": "Mercury",  "color": "green",   "r": 5, "labelOffsetX": +10, "labelOffsetY": +10 },
     "VENUS":    { "id": VENUS,      "name": "Venus",    "color": "grey",    "r": 5, "labelOffsetX": +10, "labelOffsetY": +10 },
     "EARTH":    { "id": EARTH,      "name": "Earth",    "color": "blue",    "r": 5, "labelOffsetX": +10, "labelOffsetY": +10 },
     "MARS":     { "id": MARS,       "name": "Mars",     "color": "red",     "r": 5, "labelOffsetX": +10, "labelOffsetY": +10 }
@@ -97,10 +97,12 @@ function planetStartTime(planet) {
 }
 
 function isLocationAvaialable(planet, date) {
-    if (planet == "MAVEN") {
+    if (planet == "MOM") {
+        return ((date >= startTime) && (date <= endTime));
+    } else if (planet == "MAVEN") {
         return ((date >= mavenStartTime) && (date <= mavenEndTime));
     } else {
-        return ((date >= startTime) && (date <= endTime));
+        return ((date >= startTime) && (date <= mavenEndTime));
     }
 }
 
@@ -144,7 +146,7 @@ function setLocation() {
 
         if (isLocationAvaialable(planetKey, now)) {
 
-            var index = count - (planetStartTime(planetKey).getTime() - startTime.getTime()) / countDurationMilliSeconds;
+            var index = count - planetProperties[planetKey]["offset"];
 
             var x = vectors[index]["x"];
             var y = vectors[index]["y"];
@@ -311,6 +313,9 @@ function processOrbitData() {
         nSteps = vectors.length; 
         // though this is set within the planet loop,
         // it would be the same for all planets
+
+        var planetIndexOffset = (planetStartTime(planetKey).getTime() - startTime.getTime()) / countDurationMilliSeconds;
+        planetProperties[planetKey]["offset"] = planetIndexOffset;
 
         svgContainer.append("circle")
             .attr("id", planetKey)
