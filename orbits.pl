@@ -12,26 +12,64 @@ use JSON;
 
 # constants - ephemerides related
 
-my ($start_year, $start_month, $start_day)                      = ("2013", "11", "06"); # MOM launch date
-my ($stop_year, $stop_month, $stop_day)                         = ("2015", "06", "24"); # MOM last orbit data date at HORIZONS
-my ($start_year_maven, $start_month_maven, $start_day_maven)    = ("2013", "11", "19"); # MAVEN launch date
-my ($stop_year_maven, $stop_month_maven, $stop_day_maven)       = ("2015", "09", "22"); # MAVEN last orbit data date at HORIZONS
+my $MAVEN      = -202;
+my $MOM        = -3;
+my $EMB        = 3;
+my $SUN        = 10;
+my $MERCURY    = 199;
+my $VENUS      = 299;
+my $MOON       = 301;
+my $EARTH      = 399;
+my $MARS       = 499;
 
-my $step_size_in_hours = 6;
+my $EARTH_CENTER = '@399';
+my $SUN_CENTER = '500@10';
 
-my $MAVEN   = -202;
-my $MOM     = -3;
-my $SUN     = 10;
-my $MERCURY = 199;
-my $VENUS   = 299;
-my $EARTH   = 399;
-my $MARS    = 499;
-
-my @planets = ($MERCURY, $VENUS, $EARTH, $MARS, $MOM, $MAVEN);
-
-my $data_dir = ".";
+my $phase;
 my $use_cached_data = 0;
+my $data_dir = ".";
 my $debugging = 1;
+
+my $config = {
+    "helio" => {
+        'start_year'       => '2013', 'start_month'       => '11', 'start_day'       => '06',
+        'stop_year'        => '2015', 'stop_month'        => '06', 'stop_day'       => '24',
+        'start_year_maven' => '2013', 'start_month_maven' => '11', 'start_day_maven' => '19',
+        'stop_year_maven'  => '2015', 'stop_month_maven'  => '09', 'stop_day_maven'  => '22',
+
+        'step_size_in_minutes' => 240,
+
+        'planets' => [$MERCURY, $VENUS, $EARTH, $MARS, $MOM, $MAVEN],
+
+        'center' => $SUN_CENTER,
+
+        'orbits_file' => "$data_dir/orbits.json"
+    },
+    "geo" => {
+        'start_year'       => '2013', 'start_month'       => '11', 'start_day'       => '06',
+        'stop_year'        => '2013', 'stop_month'        => '12', 'stop_day'       => '01',
+        'start_year_maven' => '2013', 'start_month_maven' => '11', 'start_day_maven' => '19',
+        'stop_year_maven'  => '2013', 'stop_month_maven'  => '12', 'stop_day_maven'  => '01', # TODO
+
+        'step_size_in_minutes' => 30,
+
+        'planets' => [$MOON, $MOM, $MAVEN],
+
+        'center' => $EARTH_CENTER,
+
+        'orbits_file' => "$data_dir/geo.json"
+    },
+    
+};
+
+my ($start_year, $start_month, $start_day);
+my ($stop_year, $stop_month, $stop_day);
+my ($start_year_maven, $start_month_maven, $start_day_maven);
+my ($stop_year_maven, $stop_month_maven, $stop_day_maven);
+my $step_size_in_minutes;
+my @planets;
+my $center;
+my $orbits_file;
 
 # global data structures
 
@@ -42,10 +80,47 @@ my $stop_time = '';     # set later in code
 my $step_size = '';     # set later in code
 
 my $now = time();
+sub my_jd($);
 my $jd = my_jd($now);
 my $gmtime = gmtime($now);
 my %orbits_raw;
 my %orbits; 
+
+sub init_config ($) {
+    my $option = shift;
+
+    $start_year = $config->{$option}->{'start_year'};
+    $start_month = $config->{$option}->{'start_month'};
+    $start_day = $config->{$option}->{'start_day'};
+    $stop_year = $config->{$option}->{'stop_year'};
+    $stop_month = $config->{$option}->{'stop_month'};
+    $stop_day = $config->{$option}->{'stop_day'};
+
+    $start_year_maven = $config->{$option}->{'start_year_maven'};
+    $start_month_maven = $config->{$option}->{'start_month_maven'};
+    $start_day_maven = $config->{$option}->{'start_day_maven'};
+    $stop_year_maven = $config->{$option}->{'stop_year_maven'};
+    $stop_month_maven = $config->{$option}->{'stop_month_maven'};
+    $stop_day_maven = $config->{$option}->{'stop_day_maven'};
+
+    $step_size_in_minutes = $config->{$option}->{'step_size_in_minutes'};
+
+    @planets = @{$config->{$option}->{'planets'}};
+
+    $center = $config->{$option}->{'center'};
+
+    $orbits_file = $config->{$option}->{'orbits_file'};
+}
+
+sub print_config() {
+    print "(start_year, start_month, start_day) = ($start_year, $start_month, $start_day)\n";
+    print "(stop_year, stop_month, stop_day) = ($stop_year, $stop_month, $stop_day)\n";
+    print "(start_year_maven, start_month_maven, start_day_maven) = ($start_year_maven, $start_month_maven, $start_day_maven)\n";    
+    print "(stop_year_maven, stop_month_maven, stop_day_maven) = ($stop_year_maven, $stop_month_maven, $stop_day_maven)\n";
+    print "step_size_in_minutes = $step_size_in_minutes\n";
+    print "planets = ", join(", ", @planets), "\n";
+    print "orbits_file = $orbits_file\n";
+} 
 
 sub get_horizons_start_time($) {
     my $planet = shift;
@@ -60,7 +135,7 @@ sub get_horizons_start_time($) {
 sub get_horizons_stop_time($) {
     my $planet = shift;
 
-    if (($planet == $MAVEN) || ($planet > 0)) {
+    if (($planet == $MAVEN) || (($planet > 0) && ($phase eq "helio"))) {
         return "$stop_year_maven\-$stop_month_maven\-$stop_day_maven";
     } else {
         return "$stop_year\-$stop_month\-$stop_day";
@@ -75,7 +150,7 @@ sub set_start_and_stop_times () {
 	$stop_time ="$stop_year\-$stop_month\-$stop_day";
 	$stop_time_gm = timegm(0, 0, 0, $stop_day, $stop_month-1, $stop_year);
 
-	$step_size = "${step_size_in_hours}%20h";
+	$step_size = "${step_size_in_minutes}%20m";
 }
 
 sub print_debug ($) {
@@ -94,6 +169,11 @@ sub my_jd ($) {
     my $t = shift;
     my $jd = 2440587.5 + ($t / 86400);
     return $jd;
+}
+
+sub is_craft($) {
+	my $planet = shift;
+	return ($planet < 0) || (($planet == $MOON) && ($phase eq "geo"));
 }
 
 sub save_fetched_data () {
@@ -133,7 +213,7 @@ sub save_orbit_data_json() {
     
     my $utf8_encoded_json_text = $json->canonical->encode(\%orbits);
 
-    my $json_file_name = "$data_dir/orbits.json";
+    my $json_file_name = $orbits_file;
     my $fh = FileHandle->new;
     unless ($fh->open(">$json_file_name")) {
         print_err("Can't write to $json_file_name: $!");
@@ -173,7 +253,6 @@ sub fetch_horizons_data ($$) {
 
     my $table_type;
     my $content_key;
-    my $center;
 
     if ($options->{'table_type'} eq 'elements') {
         $table_type = 'ELEMENTS';
@@ -182,8 +261,6 @@ sub fetch_horizons_data ($$) {
         $table_type = 'VECTORS';
         $content_key = 'vectors_content';
     }
-
-    $center = '500@10';
 
     my $url = "http://ssd.jpl.nasa.gov/horizons_batch.cgi?batch=1";
     $url = $url . "&COMMAND='" . $planet . "'";
@@ -394,15 +471,25 @@ sub print_elements ($$) {
     print $fh "A = ", $rec->{'a'}, "\n";
     print $fh "AD = ", $rec->{'ad'}, "\n";
     print $fh "PR = ", $rec->{'pr'}, "\n";
-    print $fh "X = ", $rec->{'x'}, "\n";
-    print $fh "Y = ", $rec->{'y'}, "\n";
+    # print $fh "X = ", $rec->{'x'}, "\n";
+    # print $fh "Y = ", $rec->{'y'}, "\n";
 }
 
 sub main {
 
-	set_start_and_stop_times();
+    GetOptions("phase=s" => \$phase, "use-cache" => \$use_cached_data);
 
-    GetOptions("use-cache" => \$use_cached_data);
+    $phase = 'geo' unless $phase;
+
+    unless (($phase eq "geo") || ($phase eq "helio")) {
+        print_error("Argument 'phase' must be either 'geo' or 'helio' (without quotes).");
+        exit(1);
+    }
+
+    init_config($phase);
+    print_config();
+
+	set_start_and_stop_times();
 
     if ($use_cached_data) {
         load_cached_data();

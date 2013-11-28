@@ -47,10 +47,12 @@
             <button type="button" class="button" onclick="missionTMI()">TMI</button>
             <button type="button" class="button" onclick="missionMartian()">MOI</button>
             <button type="button" class="button" onclick="missionEnd()">End</button> | 
-            <button type="button" class="button" onclick="backward()"> -5d </button>
-            <button type="button" class="button" onclick="forward()"> +5d </button>
+            <button type="button" class="button" onclick="backward()"> &lt;&lt; </button>
+            <button type="button" class="button" onclick="forward()"> &gt;&gt; </button> |
 
-            <label><input type="checkbox" id="checkbox-maven" onclick="toggleMaven()">Show MAVEN</input></label>
+            <label><input type="checkbox" id="checkbox-maven" onclick="toggleMaven()">Show MAVEN</input></label> | 
+
+            <button id="mode" type="button" class="button" onclick="toggleMode()"></button>
             
             <div class="date">
                 <table summary="Animation Date"><tr><td>Animation Time</td><td><pre><label id="date"></label></pre></td></tr></table>

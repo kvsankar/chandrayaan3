@@ -11,12 +11,12 @@ var SUN     = 10;
 var MERCURY = 199;
 var VENUS   = 299;
 var EARTH   = 399;
-var MARS    = 499
+var MARS    = 499;
+var MOON    = 301;
 
 var KM_PER_AU = 149597870.691;
 var DEGREES_PER_RADIAN = 57.2957795;
 var DEGREES_PER_CIRCLE = 360.0;
-var PIXELS_PER_AU = 150;
 var MILLI_SECONDS_PER_HOUR = 3600000;
 
 var planetProperties = {
@@ -26,37 +26,48 @@ var planetProperties = {
     "MERCURY":  { "id": MERCURY,    "name": "Mercury",  "color": "green",   "r": 5, "labelOffsetX": +10, "labelOffsetY": +10 },
     "VENUS":    { "id": VENUS,      "name": "Venus",    "color": "grey",    "r": 5, "labelOffsetX": +10, "labelOffsetY": +10 },
     "EARTH":    { "id": EARTH,      "name": "Earth",    "color": "blue",    "r": 5, "labelOffsetX": +10, "labelOffsetY": +10 },
-    "MARS":     { "id": MARS,       "name": "Mars",     "color": "red",     "r": 5, "labelOffsetX": +10, "labelOffsetY": +10 }
+    "MARS":     { "id": MARS,       "name": "Mars",     "color": "red",     "r": 5, "labelOffsetX": +10, "labelOffsetY": +10 },
+    "MOON":     { "id": MOON,       "name": "Moon",     "color": "grey",     "r": 5, "labelOffsetX": +10, "labelOffsetY": +10 },
 };
 
-var planetsForOrbits = ["MERCURY", "VENUS", "EARTH", "MARS"];
-var planetsForLocations = ["MERCURY", "VENUS", "EARTH", "MARS", "MOM", "MAVEN"];
+// begin - data structures which change based on configuration
 
+var config = "geo";
+var offsetx;
+var offsety;
+var PIXELS_PER_AU;
+var trackWidth;
+var centerPlanet;
+var centerRadius;
+var planetsForOrbits;
+var planetsForLocations;
+var countDurationMilliSeconds;
+var orbitsJson;
+var startTime;
+var helioCentricPhaseStartTime;
+var martianPhaseStartTime;
+var endTime;
+var mavenStartTime;
+var mavenEndTime;
+var latestEndTime;
 var orbits = {};
+var nSteps;
+var leapSize;
+var timeout;
+var total;
 
-var countDurationMilliSeconds = 6 * MILLI_SECONDS_PER_HOUR; // TODO add to and read from JSON
+// end - data structures which change based on configuration
+
+// rendering related data
 
 var epochJD;
 var epochDate;
 
-var startTime                  = new Date(2013, 11-1, 06, 0, 0, 0, 0);
-var helioCentricPhaseStartTime = new Date(2013, 12-1, 01, 0, 0, 0, 0);
-var martianPhaseStartTime      = new Date(2014, 09-1, 24, 0, 0, 0, 0);
-var endTime                    = new Date(2015, 06-1, 24, 0, 0, 0, 0);
-
-var mavenStartTime             = new Date(2013, 11-1, 19, 0, 0, 0, 0);
-var mavenEndTime               = new Date(2015, 09-1, 22, 0, 0, 0, 0);
-
-// rendering related data
-
 var svgContainer;
-var offset = 260;
 
 var now;
 var animDate;
 
-var nSteps = (mavenEndTime.getTime() - startTime.getTime()) / countDurationMilliSeconds;
-var timeout = 25;
 var count = 0;
 var stopAnimationFlag = false;
 var timeoutHandle;
@@ -65,8 +76,79 @@ var showMaven = true;
 
 var dataLoaded = false;
 var progress = 0;
-var total = 2023480; // must be hard-coded if server doesn't report Content-Length
 var formatPercent = d3.format(".0%");
+
+function initConfig() {
+    if (config == "geo") {
+
+        offsetx = 600;
+        offsety = 50;
+        PIXELS_PER_AU = 500000;
+        trackWidth = 0.6;
+        centerPlanet = "EARTH";
+        centerRadius = 3;
+        planetsForOrbits = [];
+        planetsForLocations = ["MOON", "MOM", "MAVEN"];
+        countDurationMilliSeconds = 0.5 * MILLI_SECONDS_PER_HOUR; // TODO add to and read from JSON
+        orbitsJson = "geo.json";
+        total = 378236; // TODO
+        leapSize = 8; // 4 hours
+
+        startTime                  = Date.UTC(2013, 11-1, 06, 0, 0, 0, 0);
+        helioCentricPhaseStartTime = Date.UTC(2013, 12-1, 01, 0, 0, 0, 0);
+        martianPhaseStartTime      = Date.UTC(2014, 09-1, 24, 0, 0, 0, 0);
+        endTime                    = Date.UTC(2013, 12-1, 01, 0, 0, 0, 0);
+        mavenStartTime             = Date.UTC(2013, 11-1, 19, 0, 0, 0, 0);
+        mavenEndTime               = Date.UTC(2015, 09-1, 22, 0, 0, 0, 0);
+
+        latestEndTime = helioCentricPhaseStartTime;
+        nSteps = (latestEndTime - startTime) / countDurationMilliSeconds;
+        timeout = 100;
+
+        epochJD = "N/A";
+        epochDate = "N/A";
+
+        count = 0;
+
+        d3.select("#mode").html("Switch to Helio Mode");
+
+    } else if (config == "helio") {
+
+        offsetx = 500;
+        offsety = 300;
+        PIXELS_PER_AU = 150;
+        trackWidth = 1;
+        centerPlanet = "SUN";
+        centerRadius = 6;
+        planetsForOrbits = ["MERCURY", "VENUS", "EARTH", "MARS"];
+        planetsForLocations = ["MERCURY", "VENUS", "EARTH", "MARS", "MOM", "MAVEN"];
+        countDurationMilliSeconds = 6.0 * MILLI_SECONDS_PER_HOUR; // TODO add to and read from JSON
+        orbitsJson = "orbits.json";
+        total = 2023480; // TODO
+        leapSize = 20; // 5 days
+
+        startTime                  = Date.UTC(2013, 11-1, 06, 0, 0, 0, 0);
+        helioCentricPhaseStartTime = Date.UTC(2013, 12-1, 01, 0, 0, 0, 0);
+        martianPhaseStartTime      = Date.UTC(2014, 09-1, 24, 0, 0, 0, 0);
+        endTime                    = Date.UTC(2015, 06-1, 24, 0, 0, 0, 0);
+        mavenStartTime             = Date.UTC(2013, 11-1, 19, 0, 0, 0, 0);
+        mavenEndTime               = Date.UTC(2015, 09-1, 22, 0, 0, 0, 0);
+
+        latestEndTime = mavenEndTime;
+        nSteps = (latestEndTime - startTime) / countDurationMilliSeconds;
+        timeout = 25;
+
+        count = 0;
+
+        d3.select("#mode").html("Switch to Geo Mode");
+    }
+}
+
+function toggleMode() {
+    stopAnimation();
+    config = (config == "geo") ? "helio" : "geo";
+    onload();
+}
 
 function toggleMaven() {
     showMaven = ! showMaven;
@@ -119,8 +201,15 @@ function rotate(x, y, phi) { // unused function for now
 
 function setLocation() {
 
-    var now = new Date(startTime.getTime() + count * countDurationMilliSeconds);
-    animDate.html(now);
+    // console.log("setLocation(): count = " + count);
+
+    now = startTime + count * countDurationMilliSeconds;
+    var nowDate = new Date(now);
+    animDate.html(nowDate);
+
+    // console.log("now = " + now);
+    // console.log("helioCentricPhaseStartTime = " + helioCentricPhaseStartTime);
+    // console.log("martianPhaseStartTime = " + martianPhaseStartTime);
 
     d3.select("#phase-1").html("Geocentric Phase");
     d3.select("#phase-2").html("Heliocentric Phase");
@@ -175,24 +264,27 @@ function setLocation() {
 
 function onload() {
 
+    initConfig();
+
     d3.selectAll("button").attr("disabled", true);
 
     animDate = d3.select("#date");
-    animDate.html(new Date());
+
+    d3.select("svg").remove();
 
     svgContainer = d3.select("#svg").append("svg")
                                  .attr("width", window.innerWidth)
                                  .attr("height", window.innerHeight)
                                  .append("g")
-                                 .attr("transform", "translate(" + offset + ", " + offset + ")");
+                                 .attr("transform", "translate(" + offsetx + ", " + offsety + ")");
 
     d3.select("#message").html("Loading orbit data ...");
 
-    d3.json("orbits.json")
+    d3.json(orbitsJson)
         .on("progress", function() {
 
             var progress = d3.event.loaded / total;
-            var msg = dataLoaded ? "" : ("Loading " + formatPercent(progress) + "...");
+            var msg = dataLoaded ? "" : ("Loading " + orbitsJson + "  ... " + formatPercent(progress) + ".");
             console.log(msg);
             d3.select("#message").html(msg);
         })
@@ -203,8 +295,9 @@ function onload() {
                 dataLoaded = true;
                 d3.select("#message").html("");
                 orbits = data;
-                processOrbitData();
-                missionNow();
+                if (config == "helio") processOrbitElementsData();
+                processOrbitVectorsData();
+                missionStart();
                 d3.selectAll("button").attr("disabled", null);
             }
         });
@@ -212,7 +305,7 @@ function onload() {
     d3.select("#checkbox-maven").attr("checked", true);
 }
 
-function processOrbitData() {
+function processOrbitElementsData() {
     
     // Add elliptical orbits
 
@@ -251,6 +344,9 @@ function processOrbitData() {
                 .attr("transform", "rotate(" + angle + " 0 0)");
         }
     }
+}
+
+function processOrbitVectorsData() {
 
 
     // Add spacecraft orbits
@@ -280,7 +376,7 @@ function processOrbitData() {
                     .append("circle")
                     .attr("cx", newx)
                     .attr("cy", newy)
-                    .attr("r", 1)
+                    .attr("r", trackWidth)
                     .attr("stroke", "none")
                     .attr("stroke-width", 0)
                     .attr("fill", planetProps.color)
@@ -293,10 +389,10 @@ function processOrbitData() {
     // Add Sun
 
     svgContainer.append("circle")
-        .attr("id", "SUN")
+        .attr("id", centerPlanet)
         .attr("cx", 0)
         .attr("cy", 0)
-        .attr("r", 6)
+        .attr("r", centerRadius)
         .attr("stroke", "none")
         .attr("stroke-width", 0)
         .attr("fill", planetProperties["SUN"].color)
@@ -312,7 +408,7 @@ function processOrbitData() {
         var planet = orbits[planetId];
         var vectors = planet["vectors"];
 
-        var planetIndexOffset = (planetStartTime(planetKey).getTime() - startTime.getTime()) / countDurationMilliSeconds;
+        var planetIndexOffset = (planetStartTime(planetKey) - startTime) / countDurationMilliSeconds;
         planetProperties[planetKey]["offset"] = planetIndexOffset;
 
         svgContainer.append("circle")
@@ -345,6 +441,26 @@ function processOrbitData() {
             .attr("transform", "rotate(0 0 0)");
 
         d3.select("#label-"+planetKey).text(planetProps.name);
+
+        // if ((planetKey == "MOM") || (planetKey == "MOON")) {
+        //     for (var j = 0; j < vectors.length; ++j) {
+                
+        //         var x = vectors[j]["x"];
+        //         var y = vectors[j]["y"];
+        //         var newx = +1 * (x / KM_PER_AU) * PIXELS_PER_AU;
+        //         var newy = -1 * (y / KM_PER_AU) * PIXELS_PER_AU;
+
+        //         svgContainer.append("circle")
+        //             .attr("id", planetKey)
+        //             .attr("cx", newx)
+        //             .attr("cy", newy)
+        //             .attr("r", 1)
+        //             .attr("stroke", "none")
+        //             .attr("stroke-width", 0)
+        //             .attr("fill", planetProps.color)
+        //             .attr("transform", "rotate(0 0 0)");
+        //     }
+        // }
     }
 
     d3.select("#epochjd").html(epochJD);
@@ -371,7 +487,7 @@ function animate() {
 }
 
 function backward() {
-    count -= 20; 
+    count -= leapSize; 
     if (count < 0) count = 0;
     setLocation();
 }
@@ -382,7 +498,7 @@ function stopAnimation() {
 }
 
 function forward() {
-    count += 20; 
+    count += leapSize; 
     if (count >= nSteps) {
         count = nSteps - 1;
     }
@@ -397,13 +513,16 @@ function missionStart() {
 
 function missionSetTime() {
     stopAnimation();
-    var x = (now.getTime() - startTime.getTime()) / countDurationMilliSeconds;
+    var x = (now - startTime) / countDurationMilliSeconds;
     count = Math.max(0, Math.floor(x));
+    if (count >= nSteps) {
+        count = nSteps - 1;
+    }
     setLocation();
 }
 
 function missionNow() {
-    now = new Date();
+    now = new Date().getTime();
     missionSetTime();
 }
 
