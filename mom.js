@@ -69,6 +69,7 @@ var now;
 var animDate;
 
 var count = 0;
+var animationRunning = false;
 var stopAnimationFlag = false;
 var timeoutHandle;
 
@@ -77,6 +78,20 @@ var showMaven = true;
 var dataLoaded = false;
 var progress = 0;
 var formatPercent = d3.format(".0%");
+var formatMetric = d3.format(" >10,.2f");
+
+// adapted from - http://stackoverflow.com/questions/9318674/javascript-number-currency-formatting
+
+formatFloat = function formatFloat(rdecPlaces, thouSeparator, decSeparator) {
+    var n = this,
+    decPlaces = isNaN(decPlaces = Math.abs(decPlaces)) ? 2 : decPlaces,
+    decSeparator = decSeparator == undefined ? "." : decSeparator,
+    thouSeparator = thouSeparator == undefined ? "," : thouSeparator,
+    sign = n < 0 ? "-" : "",
+    i = parseInt(n = Math.abs(+n || 0).toFixed(decPlaces)) + "",
+    j = (j = i.length) > 3 ? j % 3 : 0;
+    return sign + (j ? i.substr(0, j) + thouSeparator : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + thouSeparator) + (decPlaces ? decSeparator + Math.abs(n - i).toFixed(decPlaces).slice(2) : "");
+};
 
 function initConfig() {
     if (config == "geo") {
@@ -89,10 +104,10 @@ function initConfig() {
         centerRadius = 3;
         planetsForOrbits = [];
         planetsForLocations = ["MOON", "MOM", "MAVEN"];
-        countDurationMilliSeconds = 0.5 * MILLI_SECONDS_PER_HOUR; // TODO add to and read from JSON
+        countDurationMilliSeconds = (1/6) * MILLI_SECONDS_PER_HOUR; // TODO add to and read from JSON
         orbitsJson = "geo.json";
-        total = 378236; // TODO
-        leapSize = 8; // 4 hours
+        total = 2174764; // TODO
+        leapSize = 24; // 4 hours
 
         startTime                  = Date.UTC(2013, 11-1, 06, 0, 0, 0, 0);
         helioCentricPhaseStartTime = Date.UTC(2013, 12-1, 01, 0, 0, 0, 0);
@@ -103,7 +118,7 @@ function initConfig() {
 
         latestEndTime = helioCentricPhaseStartTime;
         nSteps = (latestEndTime - startTime) / countDurationMilliSeconds;
-        timeout = 100;
+        timeout = 25;
 
         epochJD = "N/A";
         epochDate = "N/A";
@@ -111,6 +126,7 @@ function initConfig() {
         count = 0;
 
         d3.select("#mode").html("Switch to Helio Mode");
+        d3.selectAll(".geo").style("visibility", "visible");
 
     } else if (config == "helio") {
 
@@ -141,6 +157,7 @@ function initConfig() {
         count = 0;
 
         d3.select("#mode").html("Switch to Geo Mode");
+        d3.selectAll(".geo").style("visibility", "hidden");
     }
 }
 
@@ -239,6 +256,7 @@ function setLocation() {
 
             var x = vectors[index]["x"];
             var y = vectors[index]["y"];
+
             var newx = +1 * (x / KM_PER_AU) * PIXELS_PER_AU;
             var newy = -1 * (y / KM_PER_AU) * PIXELS_PER_AU;
 
@@ -251,6 +269,20 @@ function setLocation() {
                 .attr("visibility", showPlanet(planetKey) ? "visible" : "hidden")                
                 .attr("x", newx + planetProps.labelOffsetX)
                 .attr("y", newy +  + planetProps.labelOffsetY);
+
+            if (planetKey == "MOM") {
+
+
+                var z = vectors[index]["z"];
+                var r = Math.sqrt(x*x + y*y + z*z);
+                d3.select("#distance").text(formatMetric(r));
+
+                var vx = vectors[index]["vx"];
+                var vy = vectors[index]["vy"];
+                var vz = vectors[index]["vz"];
+                var v = Math.sqrt(vx*vx + vy*vy + vz*vz);
+                d3.select("#velocity").text(formatMetric(v));
+            }
 
         } else {
             d3.select("#" + planetKey)
@@ -303,6 +335,7 @@ function onload() {
         });
 
     d3.select("#checkbox-maven").attr("checked", true);
+    d3.select("#animate").text("Start");
 }
 
 function processOrbitElementsData() {
@@ -365,28 +398,42 @@ function processOrbitVectorsData() {
                 .attr("id", "orbit-" + planetKey)
                 .attr("visibility", "visible");
 
-            for (var j = 0; j < vectors.length; ++j) {
+            for (var j = 0; j < vectors.length-1; ++j) {
                 
-                var x = vectors[j]["x"];
-                var y = vectors[j]["y"];
-                var newx = +1 * (x / KM_PER_AU) * PIXELS_PER_AU;
-                var newy = -1 * (y / KM_PER_AU) * PIXELS_PER_AU;
+                var x1 = vectors[j]["x"];
+                var y1 = vectors[j]["y"];
+                var newx1 = +1 * (x1 / KM_PER_AU) * PIXELS_PER_AU;
+                var newy1 = -1 * (y1 / KM_PER_AU) * PIXELS_PER_AU;
+
+                var x2 = vectors[j+1]["x"];
+                var y2 = vectors[j+1]["y"];
+                var newx2 = +1 * (x2 / KM_PER_AU) * PIXELS_PER_AU;
+                var newy2 = -1 * (y2 / KM_PER_AU) * PIXELS_PER_AU;
 
                 svgContainer.select("#" + "orbit-" + planetKey)
-                    .append("circle")
-                    .attr("cx", newx)
-                    .attr("cy", newy)
-                    .attr("r", trackWidth)
-                    .attr("stroke", "none")
-                    .attr("stroke-width", 0)
-                    .attr("fill", planetProps.color)
-                    .attr("transform", "rotate(0 0 0)")
+                    .append("line")
+                    .attr("x1", newx1)
+                    .attr("y1", newy1)
+                    .attr("x2", newx2)
+                    .attr("y2", newy2)
+                    .attr("style", "stroke: " + planetProps.color + "; stroke-width: " + 0.5)
                     .attr("visibility", "inherit");
+
+                // svgContainer.select("#" + "orbit-" + planetKey)
+                //     .append("circle")
+                //     .attr("cx", newx)
+                //     .attr("cy", newy)
+                //     .attr("r", trackWidth)
+                //     .attr("stroke", "none")
+                //     .attr("stroke-width", 0)
+                //     .attr("fill", planetProps.color)
+                //     .attr("transform", "rotate(0 0 0)")
+                //     .attr("visibility", "inherit");
             }
         }
     }
 
-    // Add Sun
+    // Add center planet - Sun/Earth
 
     svgContainer.append("circle")
         .attr("id", centerPlanet)
@@ -395,8 +442,15 @@ function processOrbitVectorsData() {
         .attr("r", centerRadius)
         .attr("stroke", "none")
         .attr("stroke-width", 0)
+        .attr("fill", planetProperties[centerPlanet].color);
+
+    svgContainer.append("text")
+        .attr("id", "label-" + centerPlanet)
+        .attr("x", -10)
+        .attr("y", 15)
+        .attr("font-size", 10)
         .attr("fill", planetProperties[centerPlanet].color)
-        .attr("transform", "rotate(0 0 0)");
+        .text(planetProperties[centerPlanet].name);
 
     // Add planetary positions
 
@@ -470,34 +524,55 @@ function processOrbitVectorsData() {
 function changeLocation() {
 
     if (!stopAnimationFlag) {
-
         setLocation();
-
         ++count;
         if (count < nSteps) {
             timeoutHandle = setTimeout(function() { changeLocation(); }, timeout);
-        }            
+        }
     }
 }
 
 function animate() {
-    stopAnimationFlag = false;
-    if (count >= nSteps) count = 0;
-    changeLocation();
+
+    if (animationRunning) {
+        stopAnimation();
+    } else {
+        animationRunning = true;
+        stopAnimationFlag = false;
+        if (count >= nSteps) count = 0;
+        changeLocation();
+        d3.select("#animate").text("Stop");
+    }
 }
 
-function backward() {
+function fastBackward() {
     count -= leapSize; 
     if (count < 0) count = 0;
     setLocation();
 }
 
+function backward() {
+    count -= 1; 
+    if (count < 0) count = 0;
+    setLocation();
+}
+
 function stopAnimation() {
+    animationRunning = false;
     stopAnimationFlag = true;
     clearTimeout(timeoutHandle);
+    d3.select("#animate").text("Start");
 }
 
 function forward() {
+    count += 1; 
+    if (count >= nSteps) {
+        count = nSteps - 1;
+    }
+    setLocation();
+}
+
+function fastForward() {
     count += leapSize; 
     if (count >= nSteps) {
         count = nSteps - 1;
@@ -542,12 +617,14 @@ function missionEnd() {
 }
 
 function faster() {
-    timeout -= 5;
+    timeout /= 1.10;
     if (timeout < 0) timeout = 0;
+    console.log("timeout = " + timeout);
 }
 
 function slower() {
-    timeout += 5;
+    timeout *= 1.10;
+    console.log("timeout = " + timeout);
 }
 
 // end of file

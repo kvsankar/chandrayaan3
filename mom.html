@@ -37,18 +37,19 @@
             </div>
 
 
-            <button type="button" class="button" onclick="animate()"><b>Animate!</b></button>
+            <button id="animate" type="button" class="button" onclick="animate()"><b></b></button>
             <button type="button" class="button" onclick="slower()"> Slower </button>
-            <button type="button" class="button" onclick="faster()"> Faster </button>
-            <button type="button" class="button" onclick="stopAnimation()">Stop</button> |
+            <button type="button" class="button" onclick="faster()"> Faster </button> |
 
             <button type="button" class="button" onclick="missionStart()">Launch</button>
             <button type="button" class="button" onclick="missionNow()">Now</button>
             <button type="button" class="button" onclick="missionTMI()">TMI</button>
             <button type="button" class="button" onclick="missionMartian()">MOI</button>
             <button type="button" class="button" onclick="missionEnd()">End</button> | 
-            <button type="button" class="button" onclick="backward()"> &lt;&lt; </button>
-            <button type="button" class="button" onclick="forward()"> &gt;&gt; </button> |
+            <button type="button" class="button" onclick="fastBackward()"> &lt;&lt; </button>
+            <button type="button" class="button" onclick="backward()"> &lt; </button>
+            <button type="button" class="button" onclick="forward()"> &gt; </button> 
+            <button type="button" class="button" onclick="fastForward()"> &gt;&gt; </button> |
 
             <label><input type="checkbox" id="checkbox-maven" onclick="toggleMaven()">Show MAVEN</input></label> | 
 
@@ -58,10 +59,13 @@
                 <table summary="Animation Date"><tr><td>Animation Time</td><td><pre><label id="date"></label></pre></td></tr></table>
             </div>
             <div class="phase">
-            Mission phase: 
+            MOM phase: 
                 <label id="phase-1"></label> | 
                 <label id="phase-2"></label> | 
                 <label id="phase-3"></label><br/>
+            </div>
+            <div class="geo">
+                MOM Distance (km): <label id="distance"></label> | Velocity (km/s): <label id="velocity"></label>
             </div>
 
             <div class="message">

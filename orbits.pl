@@ -51,7 +51,7 @@ my $config = {
         'start_year_maven' => '2013', 'start_month_maven' => '11', 'start_day_maven' => '19',
         'stop_year_maven'  => '2013', 'stop_month_maven'  => '12', 'stop_day_maven'  => '01', # TODO
 
-        'step_size_in_minutes' => 30,
+        'step_size_in_minutes' => 10,
 
         'planets' => [$MOON, $MOM, $MAVEN],
 
@@ -424,10 +424,10 @@ sub parse_horizons_elements ($$) {
                 $rec->{'date'} = $date;
                 $rec->{'x'} = $x;
                 $rec->{'y'} = $y;
-                # $rec->{'z'} = $z;
-                # $rec->{'vx'} = $vy;
-                # $rec->{'vy'} = $vx;
-                # $rec->{'vz'} = $vz;
+                $rec->{'z'} = $z;
+                $rec->{'vx'} = $vy;
+                $rec->{'vy'} = $vx;
+                $rec->{'vz'} = $vz;
                 # $rec->{'lt'} = $lt;
                 # $rec->{'rg'} = $rg;
                 # $rec->{'rr'} = $rr;
