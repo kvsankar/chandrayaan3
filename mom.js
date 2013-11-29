@@ -395,7 +395,7 @@ function processOrbitVectorsData() {
         .attr("r", centerRadius)
         .attr("stroke", "none")
         .attr("stroke-width", 0)
-        .attr("fill", planetProperties["SUN"].color)
+        .attr("fill", planetProperties[centerPlanet].color)
         .attr("transform", "rotate(0 0 0)");
 
     // Add planetary positions
