@@ -24,7 +24,7 @@
                 <a href="http://www.nasa.gov/mission_pages/maven/main/">MAVEN</a> orbit animation.
                 Inner solar system and MOM / MAVEN orbit animation generated using 
                 NASA JPL <a href="http://ssd.jpl.nasa.gov/?horizons">HORIZONS</a> Ephemerides.<br/>
-                Works best with Google Chrome. Firefox animation may be jittery. The animation is painfully slow in IE.</br>
+                Works best with Google Chrome. Firefox animation may be jittery. The animation is painfully slow in IE.<br/>
                 </p>
             </div>
 
@@ -40,6 +40,14 @@
             <button id="animate" type="button" class="button" onclick="animate()"><b></b></button>
             <button type="button" class="button" onclick="slower()"> Slower </button>
             <button type="button" class="button" onclick="faster()"> Faster </button> |
+            <button type="button" class="button" onclick="zoomOut()"> Zoom Out </button>
+            <button type="button" class="button" onclick="zoomIn()"> Zoom In </button> | 
+            <button type="button" class="button" onclick="panLeft()"> Pan Left </button>
+            <button type="button" class="button" onclick="panRight()"> Pan Right </button> 
+            <button type="button" class="button" onclick="panUp()"> Pan Up </button>
+            <button type="button" class="button" onclick="panDown()"> Pan Down </button> 
+            <button type="button" class="button" onclick="reset()"> Reset </button> | 
+            <label><input type="checkbox" id="checkbox-lock-mom" onclick="toggleLockMOM()">Lock on to MOM</input></label> | <br/> 
 
             <button type="button" class="button" onclick="missionStart()">Launch</button>
             <button type="button" class="button" onclick="missionNow()">Now</button>
@@ -49,11 +57,10 @@
             <button type="button" class="button" onclick="fastBackward()"> &lt;&lt; </button>
             <button type="button" class="button" onclick="backward()"> &lt; </button>
             <button type="button" class="button" onclick="forward()"> &gt; </button> 
-            <button type="button" class="button" onclick="fastForward()"> &gt;&gt; </button> |
+            <button type="button" class="button" onclick="fastForward()"> &gt;&gt; </button> | 
+            <label><input type="checkbox" id="checkbox-maven" onclick="toggleMaven()">Show MAVEN</input></label> |
+            <button id="mode" type="button" class="button" onclick="toggleMode()"></button> | <br/>
 
-            <label><input type="checkbox" id="checkbox-maven" onclick="toggleMaven()">Show MAVEN</input></label> | 
-
-            <button id="mode" type="button" class="button" onclick="toggleMode()"></button>
             
             <div class="date">
                 <table summary="Animation Date"><tr><td>Animation Time</td><td><pre><label id="date"></label></pre></td></tr></table>

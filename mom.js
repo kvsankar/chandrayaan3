@@ -64,7 +64,12 @@ var epochJD;
 var epochDate;
 
 var svgContainer;
-
+var viewBoxWidth;
+var viewBoxHeight;
+var zoomFactor = 1;
+var panx = 0;
+var pany = 0;
+var lockOnMOM = false;
 var now;
 var animDate;
 
@@ -131,7 +136,7 @@ function initConfig() {
     } else if (config == "helio") {
 
         offsetx = 500;
-        offsety = 300;
+        offsety = 150;
         PIXELS_PER_AU = 150;
         trackWidth = 1;
         centerPlanet = "SUN";
@@ -292,6 +297,8 @@ function setLocation() {
                 .attr("visibility", "hidden");
         }
     }
+    
+    zoomChange();
 }
 
 function onload() {
@@ -304,9 +311,12 @@ function onload() {
 
     d3.select("svg").remove();
 
+    viewBoxWidth = window.innerWidth;
+    viewBoxHeight = window.innerHeight;
     svgContainer = d3.select("#svg").append("svg")
                                  .attr("width", window.innerWidth)
                                  .attr("height", window.innerHeight)
+                                 // .attr("viewbox", "0 0 " + viewBoxWidth + " " + viewBoxHeight)
                                  .append("g")
                                  .attr("transform", "translate(" + offsetx + ", " + offsety + ")");
 
@@ -418,17 +428,6 @@ function processOrbitVectorsData() {
                     .attr("y2", newy2)
                     .attr("style", "stroke: " + planetProps.color + "; stroke-width: " + 0.5)
                     .attr("visibility", "inherit");
-
-                // svgContainer.select("#" + "orbit-" + planetKey)
-                //     .append("circle")
-                //     .attr("cx", newx)
-                //     .attr("cy", newy)
-                //     .attr("r", trackWidth)
-                //     .attr("stroke", "none")
-                //     .attr("stroke-width", 0)
-                //     .attr("fill", planetProps.color)
-                //     .attr("transform", "rotate(0 0 0)")
-                //     .attr("visibility", "inherit");
             }
         }
     }
@@ -444,13 +443,16 @@ function processOrbitVectorsData() {
         .attr("stroke-width", 0)
         .attr("fill", planetProperties[centerPlanet].color);
 
-    svgContainer.append("text")
-        .attr("id", "label-" + centerPlanet)
-        .attr("x", -10)
-        .attr("y", 15)
-        .attr("font-size", 10)
-        .attr("fill", planetProperties[centerPlanet].color)
-        .text(planetProperties[centerPlanet].name);
+    svgContainer
+        .append("g")
+            .attr("class", "label")
+        .append("text")
+            .attr("id", "label-" + centerPlanet)
+            .attr("x", -10)
+            .attr("y", 15)
+            .attr("font-size", 10)
+            .attr("fill", planetProperties[centerPlanet].color)
+            .text(planetProperties[centerPlanet].name);
 
     // Add planetary positions
 
@@ -472,11 +474,14 @@ function processOrbitVectorsData() {
             .attr("r", planetProps.r)
             .attr("stroke", "none")
             .attr("stroke-width", 0)
-            .attr("fill", planetProps.color)
-            .attr("transform", "rotate(0 0 0)");
+            .attr("fill", planetProps.color);
     }
 
     // Add labels
+
+    svgContainer.append("g")
+        .attr("id", "labels")
+        .attr("class", "label");
 
     for (var i = 0; i < planetsForLocations.length; ++i) {
 
@@ -486,35 +491,15 @@ function processOrbitVectorsData() {
         var planet = orbits[planetId];
         var vectors = planet["vectors"];
 
-        svgContainer.append("text")
-            .attr("id", "label-" + planetKey)
-            .attr("x", 0)
-            .attr("y", 0)
-            .attr("font-size", 10)
-            .attr("fill", planetProps.color)
-            .attr("transform", "rotate(0 0 0)");
+        d3.select("#labels")
+            .append("text")
+                .attr("id", "label-" + planetKey)
+                .attr("x", 0)
+                .attr("y", 0)
+                .attr("font-size", 10)
+                .attr("fill", planetProps.color);
 
         d3.select("#label-"+planetKey).text(planetProps.name);
-
-        // if ((planetKey == "MOM") || (planetKey == "MOON")) {
-        //     for (var j = 0; j < vectors.length; ++j) {
-                
-        //         var x = vectors[j]["x"];
-        //         var y = vectors[j]["y"];
-        //         var newx = +1 * (x / KM_PER_AU) * PIXELS_PER_AU;
-        //         var newy = -1 * (y / KM_PER_AU) * PIXELS_PER_AU;
-
-        //         svgContainer.append("circle")
-        //             .attr("id", planetKey)
-        //             .attr("cx", newx)
-        //             .attr("cy", newy)
-        //             .attr("r", 1)
-        //             .attr("stroke", "none")
-        //             .attr("stroke-width", 0)
-        //             .attr("fill", planetProps.color)
-        //             .attr("transform", "rotate(0 0 0)");
-        //     }
-        // }
     }
 
     d3.select("#epochjd").html(epochJD);
@@ -619,12 +604,77 @@ function missionEnd() {
 function faster() {
     timeout /= 1.10;
     if (timeout < 0) timeout = 0;
-    console.log("timeout = " + timeout);
+    // console.log("timeout = " + timeout);
 }
 
 function slower() {
     timeout *= 1.10;
-    console.log("timeout = " + timeout);
+    // console.log("timeout = " + timeout);
+}
+
+function zoomChange(factor) {
+
+    var momx = 0;
+    var momy = 0;
+
+    if (lockOnMOM) {
+        var momx = parseFloat(d3.select("#MOM").attr("cx"));
+        var momy = parseFloat(d3.select("#MOM").attr("cy"));
+    }
+
+    svgContainer.attr("transform",
+        "matrix(" 
+        + zoomFactor
+        + ", 0"
+        + ", 0"
+        + ", " + zoomFactor
+        + ", " + (offsetx+panx+momx-zoomFactor*(momx)-momx)
+        + ", " + (offsety+pany+momy-zoomFactor*(momy)-momy)
+        + ")"
+        );
+}
+
+function zoomOut() {
+    zoomFactor /= 1.10;
+    var factor = 1/1.10;
+    zoomChange();
+}
+
+function zoomIn() {
+    zoomFactor *= 1.10;
+    var factor = 1.10;
+    zoomChange();
+}
+
+function panLeft() {
+    panx += +10;
+    zoomChange(1);
+}
+
+function panRight() {
+    panx += -10;
+    zoomChange(1);
+}
+
+function panUp() {
+    pany += +10;
+    zoomChange(1);
+}
+
+function panDown() {
+    pany += -10;
+    zoomChange(1);
+}
+
+function reset() {
+    panx = 0;
+    pany = 0;
+    zoomFactor = 1;
+    zoomChange(1);
+}
+
+function toggleLockMOM() {
+    lockOnMOM = !lockOnMOM;
 }
 
 // end of file
