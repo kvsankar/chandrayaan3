@@ -37,28 +37,30 @@
             </div>
 
 
-            <button id="animate" type="button" class="button" onclick="animate()"><b></b></button>
-            <button type="button" class="button" onclick="slower()"> Slower </button>
-            <button type="button" class="button" onclick="faster()"> Faster </button> |
-            <button type="button" class="button" onclick="zoomOut()"> Zoom Out </button>
-            <button type="button" class="button" onclick="zoomIn()"> Zoom In </button> | 
-            <button type="button" class="button" onclick="panLeft()"> Pan Left </button>
-            <button type="button" class="button" onclick="panRight()"> Pan Right </button> 
-            <button type="button" class="button" onclick="panUp()"> Pan Up </button>
-            <button type="button" class="button" onclick="panDown()"> Pan Down </button> 
-            <button type="button" class="button" onclick="reset()"> Reset </button> | 
-            <label><input type="checkbox" id="checkbox-lock-mom" onclick="toggleLockMOM()">Lock on to MOM</input></label> | <br/> 
+            <button id="animate"    type="button" class="button" onclick="animate()"><b></b></button>
+            <button id="slower"     type="button" class="button" onclick="slower()"> Slower </button>
+            <button id="faster"     type="button" class="button" onclick="faster()"> Faster </button> |
+            <button id="zoomout"    type="button" class="button" onclick="zoomOut()"> Zoom Out </button>
+            <button id="zoomin"     type="button" class="button" onclick="zoomIn()"> Zoom In </button> | 
+            <button id="panleft"    type="button" class="button" onclick="panLeft()"> Pan Left </button>
+            <button id="panright"   type="button" class="button" onclick="panRight()"> Pan Right </button> 
+            <button id="panup"      type="button" class="button" onclick="panUp()"> Pan Up </button>
+            <button id="pandown"    type="button" class="button" onclick="panDown()"> Pan Down </button> 
+            <button id-"reset"      type="button" class="button" onclick="reset()"> Reset </button> | 
+            <input type="checkbox" id="checkbox-lock-mom" onclick="toggleLockMOM()"></input>
+            <label>Lock on to MOM</label> | <br/> 
 
-            <button type="button" class="button" onclick="missionStart()">Launch</button>
-            <button type="button" class="button" onclick="missionNow()">Now</button>
-            <button type="button" class="button" onclick="missionTMI()">TMI</button>
-            <button type="button" class="button" onclick="missionMartian()">MOI</button>
-            <button type="button" class="button" onclick="missionEnd()">End</button> | 
-            <button type="button" class="button" onclick="fastBackward()"> &lt;&lt; </button>
-            <button type="button" class="button" onclick="backward()"> &lt; </button>
-            <button type="button" class="button" onclick="forward()"> &gt; </button> 
-            <button type="button" class="button" onclick="fastForward()"> &gt;&gt; </button> | 
-            <label><input type="checkbox" id="checkbox-maven" onclick="toggleMaven()">Show MAVEN</input></label> |
+            <button id="missionstart"       type="button" class="button" onclick="missionStart()">Launch</button>
+            <button id="missionnow"         type="button" class="button" onclick="missionNow()">Now</button>
+            <button id="missiontmi"         type="button" class="button" onclick="missionTMI()">TMI</button>
+            <button id="missionmartian"     type="button" class="button" onclick="missionMartian()">MOI</button>
+            <button id="missionend"         type="button" class="button" onclick="missionEnd()">End</button> | 
+            <button id="fastbackward"       type="button" class="button" onclick="fastBackward()"> &lt;&lt; </button>
+            <button id="backward"           type="button" class="button" onclick="backward()"> &lt; </button>
+            <button id="forward"            type="button" class="button" onclick="forward()"> &gt; </button> 
+            <button id="fastforward"        type="button" class="button" onclick="fastForward()"> &gt;&gt; </button> | 
+            <input type="checkbox" id="checkbox-maven" onclick="toggleMaven()"></input>
+            <label>Show MAVEN</label> |
             <button id="mode" type="button" class="button" onclick="toggleMode()"></button> | <br/>
 
             
@@ -79,7 +81,7 @@
                 <p id="message"></p>
             </div>
 
-            <div id="svg">
+            <div id="svg" class="svg">
             </div>
 
             <div class="footer">

@@ -67,9 +67,13 @@ var svgContainer;
 var viewBoxWidth;
 var viewBoxHeight;
 var zoomFactor = 1;
+var zoomScale = 1.05;
+var zoomTimeout = 100;
+var stopZoom = false;
 var panx = 0;
 var pany = 0;
 var lockOnMOM = false;
+var previousLockOnMOM = false;
 var now;
 var animDate;
 
@@ -77,6 +81,7 @@ var count = 0;
 var animationRunning = false;
 var stopAnimationFlag = false;
 var timeoutHandle;
+var timeoutHandleZoom;
 
 var showMaven = true;
 
@@ -299,7 +304,7 @@ function setLocation() {
         }
     }
     
-    zoomChange();
+    zoomChange(0);
 }
 
 function onload() {
@@ -312,6 +317,72 @@ function onload() {
     lockOnMOM = false;
     d3.select("#checkbox-lock-mom").property("checked", false);
     d3.selectAll("button").attr("disabled", true);
+
+    // zoom in
+    d3.select("#zoomin").on("mousedown", function() { 
+        timeoutHandleZoom = setInterval(function() { zoomIn(); }, zoomTimeout); 
+    });
+    d3.select("#zoomin").on("mouseup", function() { 
+        clearInterval(timeoutHandleZoom);
+    });
+    d3.select("#zoomin").on("mouseout", function() { 
+        clearInterval(timeoutHandleZoom);
+    });
+
+    // zoom out
+    d3.select("#zoomout").on("mousedown", function() { 
+        timeoutHandleZoom = setInterval(function() { zoomOut(); }, zoomTimeout); 
+    });
+    d3.select("#zoomout").on("mouseup", function() { 
+        clearInterval(timeoutHandleZoom);
+    });
+    d3.select("#zoomout").on("mouseout", function() { 
+        stopZoom = true; 
+    });
+
+    // pan left
+    d3.select("#panleft").on("mousedown", function() { 
+        timeoutHandleZoom = setInterval(function() { panLeft(); }, zoomTimeout); 
+    });
+    d3.select("#panleft").on("mouseup", function() { 
+        clearInterval(timeoutHandleZoom);
+    });
+    d3.select("#panleft").on("mouseout", function() { 
+        clearInterval(timeoutHandleZoom);
+    });
+
+    // pan right
+    d3.select("#panright").on("mousedown", function() { 
+        timeoutHandleZoom = setInterval(function() { panRight(); }, zoomTimeout); 
+    });
+    d3.select("#panright").on("mouseup", function() { 
+        clearInterval(timeoutHandleZoom);
+    });
+    d3.select("#panright").on("mouseout", function() { 
+        clearInterval(timeoutHandleZoom);
+    });
+
+    // pan up
+    d3.select("#panup").on("mousedown", function() { 
+        timeoutHandleZoom = setInterval(function() { panUp(); }, zoomTimeout); 
+    });
+    d3.select("#panup").on("mouseup", function() { 
+        clearInterval(timeoutHandleZoom);
+    });
+    d3.select("#panup").on("mouseout", function() { 
+        clearInterval(timeoutHandleZoom);
+    });
+
+    // pan down
+    d3.select("#pandown").on("mousedown", function() { 
+        timeoutHandleZoom = setInterval(function() { panDown(); }, zoomTimeout); 
+    });
+    d3.select("#pandown").on("mouseup", function() { 
+        clearInterval(timeoutHandleZoom);
+    });
+    d3.select("#pandown").on("mouseout", function() { 
+        clearInterval(timeoutHandleZoom);
+    });
 
     animDate = d3.select("#date");
 
@@ -608,17 +679,17 @@ function missionEnd() {
 }
 
 function faster() {
-    timeout /= 1.10;
+    timeout /= zoomScale;
     if (timeout < 0) timeout = 0;
     // console.log("timeout = " + timeout);
 }
 
 function slower() {
-    timeout *= 1.10;
+    timeout *= zoomScale;
     // console.log("timeout = " + timeout);
 }
 
-function zoomChange(factor) {
+function zoomChange(t) {
 
     var momx = 0;
     var momy = 0;
@@ -628,59 +699,67 @@ function zoomChange(factor) {
         momy = parseFloat(d3.select("#MOM").attr("cy"));
     }
 
-    svgContainer.attr("transform",
-        "matrix(" 
-        + zoomFactor
-        + ", 0"
-        + ", 0"
-        + ", " + zoomFactor
-        + ", " + (offsetx+panx+momx-zoomFactor*(momx)-momx)
-        + ", " + (offsety+pany+momy-zoomFactor*(momy)-momy)
-        + ")"
+    var container = svgContainer;
+    if (t != 0) {
+        container = svgContainer.transition().delay(t);
+        
+    }
+    container
+        .attr("transform",
+            "matrix(" 
+            + zoomFactor
+            + ", 0"
+            + ", 0"
+            + ", " + zoomFactor
+            + ", " + (offsetx+panx+momx-zoomFactor*(momx)-momx)
+            + ", " + (offsety+pany+momy-zoomFactor*(momy)-momy)
+            + ")"
         );
 }
 
 function zoomOut() {
-    zoomFactor /= 1.10;
-    var factor = 1/1.10;
-    zoomChange();
+    zoomFactor /= zoomScale;
+    var factor = 1/zoomScale;
+    zoomChange(zoomTimeout);
 }
 
 function zoomIn() {
-    zoomFactor *= 1.10;
-    var factor = 1.10;
-    zoomChange();
+    zoomFactor *= zoomScale;
+    var factor = zoomScale;
+    zoomChange(zoomTimeout);
 }
 
 function panLeft() {
     panx += +10;
-    zoomChange(1);
+    zoomChange(zoomTimeout);
 }
 
 function panRight() {
     panx += -10;
-    zoomChange(1);
+    zoomChange(zoomTimeout);
 }
 
 function panUp() {
     pany += +10;
-    zoomChange(1);
+    zoomChange(zoomTimeout);
 }
 
 function panDown() {
     pany += -10;
-    zoomChange(1);
+    zoomChange(zoomTimeout);
 }
 
 function reset() {
     panx = 0;
     pany = 0;
     zoomFactor = 1;
-    zoomChange(1);
+    zoomChange(zoomTimeout);
 }
 
 function toggleLockMOM() {
+    previousLockOnMOM = lockOnMOM;
     lockOnMOM = !lockOnMOM;
+    reset();
 }
 
 // end of file
