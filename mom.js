@@ -99,6 +99,7 @@ formatFloat = function formatFloat(rdecPlaces, thouSeparator, decSeparator) {
 };
 
 function initConfig() {
+
     if (config == "geo") {
 
         offsetx = 600;
@@ -135,8 +136,8 @@ function initConfig() {
 
     } else if (config == "helio") {
 
-        offsetx = 500;
-        offsety = 150;
+        offsetx = 300;
+        offsety = 250;
         PIXELS_PER_AU = 150;
         trackWidth = 1;
         centerPlanet = "SUN";
@@ -305,6 +306,11 @@ function onload() {
 
     initConfig();
 
+    zoomFactor = 1;
+    panx = 0;
+    pany = 0;
+    lockOnMOM = false;
+    d3.select("#checkbox-lock-mom").property("checked", false);
     d3.selectAll("button").attr("disabled", true);
 
     animDate = d3.select("#date");
@@ -618,8 +624,8 @@ function zoomChange(factor) {
     var momy = 0;
 
     if (lockOnMOM) {
-        var momx = parseFloat(d3.select("#MOM").attr("cx"));
-        var momy = parseFloat(d3.select("#MOM").attr("cy"));
+        momx = parseFloat(d3.select("#MOM").attr("cx"));
+        momy = parseFloat(d3.select("#MOM").attr("cy"));
     }
 
     svgContainer.attr("transform",
