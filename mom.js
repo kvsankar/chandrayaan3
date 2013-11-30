@@ -32,7 +32,7 @@ var planetProperties = {
 
 // begin - data structures which change based on configuration
 
-var config = "geo";
+var config = "helio";
 var offsetx;
 var offsety;
 var PIXELS_PER_AU;
