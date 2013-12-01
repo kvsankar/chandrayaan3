@@ -276,13 +276,7 @@ function setLocation() {
                 .attr("cx", newx)
                 .attr("cy", newy);
 
-            d3.select("#label-" + planetKey)
-                .attr("visibility", showPlanet(planetKey) ? "visible" : "hidden")                
-                .attr("x", newx + planetProps.labelOffsetX)
-                .attr("y", newy +  + planetProps.labelOffsetY);
-
             if (planetKey == "MOM") {
-
 
                 var z = vectors[index]["z"];
                 var r = Math.sqrt(x*x + y*y + z*z);
@@ -298,13 +292,95 @@ function setLocation() {
         } else {
             d3.select("#" + planetKey)
                 .attr("visibility", "hidden");
+        }
+    }
+    
+    for (var i = 0; i < planetsForLocations.length; ++i) {
 
+        var planetKey = planetsForLocations[i];
+        var planetProps = planetProperties[planetKey];
+        var planetId = planetProps.id;
+        var planet = orbits[planetId];
+        var vectors = planet["vectors"];
+
+        if (isLocationAvaialable(planetKey, now)) {
+
+            var index = count - planetProperties[planetKey]["offset"];
+
+            var x = vectors[index]["x"];
+            var y = vectors[index]["y"];
+
+            var newx = +1 * (x / KM_PER_AU) * PIXELS_PER_AU;
+            var newy = -1 * (y / KM_PER_AU) * PIXELS_PER_AU;
+
+            var labelx = newx + planetProps.labelOffsetX;
+            var labely = newy + planetProps.labelOffsetY;
+
+            d3.select("#label-" + planetKey)
+                .attr("visibility", showPlanet(planetKey) ? "visible" : "hidden")                
+                .attr("x", labelx)
+                .attr("y", labely);
+
+        } else {
             d3.select("#label-" + planetKey)
                 .attr("visibility", "hidden");
         }
     }
-    
+
     zoomChange(0);
+}
+
+function adjustLabelLocations() {
+    var momx = 0;
+    var momy = 0;
+
+    if (lockOnMOM) {
+        momx = parseFloat(d3.select("#MOM").attr("cx"));
+        momy = parseFloat(d3.select("#MOM").attr("cy"));
+    }
+
+    for (var i = 0; i < planetsForLocations.length; ++i) {
+
+        var planetKey = planetsForLocations[i];
+        var planetProps = planetProperties[planetKey];
+        var planetId = planetProps.id;
+        var planet = orbits[planetId];
+        var vectors = planet["vectors"];
+
+        if (isLocationAvaialable(planetKey, now)) {
+
+            var index = count - planetProperties[planetKey]["offset"];
+
+            var x = vectors[index]["x"];
+            var y = vectors[index]["y"];
+
+            var newx = +1 * (x / KM_PER_AU) * PIXELS_PER_AU;
+            var newy = -1 * (y / KM_PER_AU) * PIXELS_PER_AU;
+
+            var labelx = newx + planetProps.labelOffsetX;
+            var labely = newy + planetProps.labelOffsetY;
+
+            d3.select("#label-" + planetKey)
+                .attr("visibility", showPlanet(planetKey) ? "visible" : "hidden")                
+                .attr("x", labelx)
+                .attr("y", labely)
+                .attr("transform",
+                    "matrix(" 
+                    + (1/zoomFactor)
+                    + ", 0"
+                    + ", 0"
+                    + ", " + (1/zoomFactor)
+                    + ", " + (-1*((offsetx+panx+momx)-zoomFactor*(momx)-momx))
+                    + ", " + (-1*((offsety+pany+momy)-zoomFactor*(momy)-momy))
+                    + ") "
+                );
+
+        } else {
+            d3.select("#label-" + planetKey)
+                .attr("visibility", "hidden");
+        }
+    }
+
 }
 
 function onload() {
@@ -714,7 +790,9 @@ function zoomChange(t) {
             + ", " + (offsetx+panx+momx-zoomFactor*(momx)-momx)
             + ", " + (offsety+pany+momy-zoomFactor*(momy)-momy)
             + ")"
-        );
+        );    
+
+    // adjustLabelLocations();
 }
 
 function zoomOut() {
