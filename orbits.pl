@@ -51,7 +51,7 @@ my $config = {
         'start_year_maven' => '2013', 'start_month_maven' => '11', 'start_day_maven' => '19',
         'stop_year_maven'  => '2013', 'stop_month_maven'  => '12', 'stop_day_maven'  => '11', # TODO
 
-        'step_size_in_minutes' => 10,
+        'step_size_in_minutes' => 20,
 
         'planets' => [$MOON, $MOM, $MAVEN],
 
@@ -421,7 +421,7 @@ sub parse_horizons_elements ($$) {
 
                 my $rec;
                 $rec->{'jdct'} = $jdct;
-                $rec->{'date'} = $date;
+                # $rec->{'date'} = $date;
                 $rec->{'x'} = $x;
                 $rec->{'y'} = $y;
                 $rec->{'z'} = $z;

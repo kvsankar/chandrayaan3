@@ -118,10 +118,10 @@ function initConfig() {
         centerRadius = 3;
         planetsForOrbits = ["MOON"];
         planetsForLocations = ["MOON", "MOM", "MAVEN"];
-        countDurationMilliSeconds = (1/6) * MILLI_SECONDS_PER_HOUR; // TODO add to and read from JSON
+        countDurationMilliSeconds = (1/3) * MILLI_SECONDS_PER_HOUR; // TODO add to and read from JSON
         orbitsJson = "geo.json";
-        total = 2174764; // TODO
-        leapSize = 24; // 4 hours
+        total = 1348990; // TODO
+        leapSize = 12; // 4 hours
 
         startTime                  = Date.UTC(2013, 11-1, 06,  0,  0, 0, 0);
         helioCentricPhaseStartTime = Date.UTC(2013, 11-1, 30, 19, 20, 0, 0);
@@ -279,17 +279,17 @@ function setLocation() {
                 .attr("cx", newx)
                 .attr("cy", newy);
 
-            if (planetKey == "MOM") {
+            if ((planetKey == "MOM") || (planetKey == "MAVEN")) {
 
                 var z = vectors[index]["z"];
                 var r = Math.sqrt(x*x + y*y + z*z);
-                d3.select("#distance").text(formatMetric(r));
+                d3.select("#distance-" + planetKey).text(formatMetric(r));
 
                 var vx = vectors[index]["vx"];
                 var vy = vectors[index]["vy"];
                 var vz = vectors[index]["vz"];
                 var v = Math.sqrt(vx*vx + vy*vy + vz*vz);
-                d3.select("#velocity").text(formatMetric(v));
+                d3.select("#velocity-" + planetKey).text(formatMetric(v));
             }
 
         } else {
@@ -458,6 +458,8 @@ function onload() {
                                  .attr("transform", "translate(" + offsetx + ", " + offsety + ")");
 
     d3.select("#message").html("Loading orbit data ...");
+
+    dataLoaded = false;
 
     d3.json(orbitsJson)
         .on("progress", function() {
