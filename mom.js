@@ -113,21 +113,21 @@ function initConfig() {
         trackWidth = 0.6;
         centerPlanet = "EARTH";
         centerRadius = 3;
-        planetsForOrbits = [];
+        planetsForOrbits = ["MOON"];
         planetsForLocations = ["MOON", "MOM", "MAVEN"];
         countDurationMilliSeconds = (1/6) * MILLI_SECONDS_PER_HOUR; // TODO add to and read from JSON
         orbitsJson = "geo.json";
         total = 2174764; // TODO
         leapSize = 24; // 4 hours
 
-        startTime                  = Date.UTC(2013, 11-1, 06, 0, 0, 0, 0);
-        helioCentricPhaseStartTime = Date.UTC(2013, 12-1, 01, 0, 0, 0, 0);
-        martianPhaseStartTime      = Date.UTC(2014, 09-1, 24, 0, 0, 0, 0);
-        endTime                    = Date.UTC(2013, 12-1, 01, 0, 0, 0, 0);
-        mavenStartTime             = Date.UTC(2013, 11-1, 19, 0, 0, 0, 0);
-        mavenEndTime               = Date.UTC(2015, 09-1, 22, 0, 0, 0, 0);
+        startTime                  = Date.UTC(2013, 11-1, 06,  0,  0, 0, 0);
+        helioCentricPhaseStartTime = Date.UTC(2013, 11-1, 30, 19, 20, 0, 0);
+        martianPhaseStartTime      = Date.UTC(2014, 09-1, 24,  0,  0, 0, 0);
+        endTime                    = Date.UTC(2013, 12-1, 11,  0,  0, 0, 0);
+        mavenStartTime             = Date.UTC(2013, 11-1, 19,  0,  0, 0, 0);
+        mavenEndTime               = Date.UTC(2015, 09-1, 22,  0,  0, 0, 0);
 
-        latestEndTime = helioCentricPhaseStartTime;
+        latestEndTime = endTime;
         nSteps = (latestEndTime - startTime) / countDurationMilliSeconds;
         timeout = 25;
 
@@ -195,7 +195,7 @@ function showPlanet(planet) {
 }
 
 function shouldDrawOrbit(planet) {
-    return ((planet == "MOM") || (planet == "MAVEN"))
+    return ((planet == "MOM") || (planet == "MAVEN") || (planet == "MOON"))
 }
 
 function planetStartTime(planet) {
@@ -579,7 +579,7 @@ function processOrbitVectorsData() {
                     .attr("y1", newy1)
                     .attr("x2", newx2)
                     .attr("y2", newy2)
-                    .attr("style", "stroke: " + planetProps.color + "; stroke-width: " + 0.5)
+                    .attr("style", "stroke: " + planetProps.color + "; stroke-width: " + "0.1%")
                     .attr("visibility", "inherit");
             }
         }
@@ -736,6 +736,7 @@ function missionSetTime() {
 
 function missionNow() {
     now = new Date().getTime();
+    console.log(now);
     missionSetTime();
 }
 

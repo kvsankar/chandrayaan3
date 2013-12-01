@@ -47,9 +47,9 @@ my $config = {
     },
     "geo" => {
         'start_year'       => '2013', 'start_month'       => '11', 'start_day'       => '06',
-        'stop_year'        => '2013', 'stop_month'        => '12', 'stop_day'       => '01',
+        'stop_year'        => '2013', 'stop_month'        => '12', 'stop_day'       => '11',
         'start_year_maven' => '2013', 'start_month_maven' => '11', 'start_day_maven' => '19',
-        'stop_year_maven'  => '2013', 'stop_month_maven'  => '12', 'stop_day_maven'  => '01', # TODO
+        'stop_year_maven'  => '2013', 'stop_month_maven'  => '12', 'stop_day_maven'  => '11', # TODO
 
         'step_size_in_minutes' => 10,
 
