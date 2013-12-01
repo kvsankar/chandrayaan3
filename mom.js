@@ -20,15 +20,18 @@ var DEGREES_PER_CIRCLE = 360.0;
 var MILLI_SECONDS_PER_HOUR = 3600000;
 
 var planetProperties = {
-    "MAVEN":    { "id": MAVEN,      "name": "MAVEN",    "color": "purple",  "r": 2, "labelOffsetX": +10, "labelOffsetY": -10 },
-    "MOM":      { "id": MOM,        "name": "MOM",      "color": "orange",  "r": 3, "labelOffsetX": -30, "labelOffsetY": -10 },
-    "SUN":      { "id": SUN,        "name": "Sun",      "color": "yellow",  "r": 5, "labelOffsetX": +10, "labelOffsetY": +10 },
-    "MERCURY":  { "id": MERCURY,    "name": "Mercury",  "color": "green",   "r": 5, "labelOffsetX": +10, "labelOffsetY": +10 },
-    "VENUS":    { "id": VENUS,      "name": "Venus",    "color": "grey",    "r": 5, "labelOffsetX": +10, "labelOffsetY": +10 },
-    "EARTH":    { "id": EARTH,      "name": "Earth",    "color": "blue",    "r": 5, "labelOffsetX": +10, "labelOffsetY": +10 },
-    "MARS":     { "id": MARS,       "name": "Mars",     "color": "red",     "r": 5, "labelOffsetX": +10, "labelOffsetY": +10 },
-    "MOON":     { "id": MOON,       "name": "Moon",     "color": "grey",     "r": 5, "labelOffsetX": +10, "labelOffsetY": +10 },
+    "MAVEN":    { "id": MAVEN,      "name": "MAVEN",    "color": "purple",  "r": 2.4, "labelOffsetX": +10, "labelOffsetY": -10 },
+    "MOM":      { "id": MOM,        "name": "MOM",      "color": "orange",  "r": 3.2, "labelOffsetX": -30, "labelOffsetY": -10 },
+    "SUN":      { "id": SUN,        "name": "Sun",      "color": "yellow",  "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
+    "MERCURY":  { "id": MERCURY,    "name": "Mercury",  "color": "green",   "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
+    "VENUS":    { "id": VENUS,      "name": "Venus",    "color": "grey",    "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
+    "EARTH":    { "id": EARTH,      "name": "Earth",    "color": "blue",    "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
+    "MARS":     { "id": MARS,       "name": "Mars",     "color": "red",     "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
+    "MOON":     { "id": MOON,       "name": "Moon",     "color": "grey",    "r": 3,   "labelOffsetX": +10, "labelOffsetY": +10 },
 };
+
+var centerLabelOffsetX = -5;
+var centerLabelOffsetY = -15;
 
 // begin - data structures which change based on configuration
 
@@ -108,8 +111,8 @@ function initConfig() {
     if (config == "geo") {
 
         offsetx = 600;
-        offsety = 50;
-        PIXELS_PER_AU = 500000;
+        offsety = 170;
+        PIXELS_PER_AU = 60000;
         trackWidth = 0.6;
         centerPlanet = "EARTH";
         centerRadius = 3;
@@ -129,7 +132,7 @@ function initConfig() {
 
         latestEndTime = endTime;
         nSteps = (latestEndTime - startTime) / countDurationMilliSeconds;
-        timeout = 25;
+        timeout = 5;
 
         epochJD = "N/A";
         epochDate = "N/A";
@@ -313,8 +316,8 @@ function setLocation() {
             var newx = +1 * (x / KM_PER_AU) * PIXELS_PER_AU;
             var newy = -1 * (y / KM_PER_AU) * PIXELS_PER_AU;
 
-            var labelx = newx + planetProps.labelOffsetX;
-            var labely = newy + planetProps.labelOffsetY;
+            var labelx = newx + planetProps.labelOffsetX/zoomFactor;
+            var labely = newy + planetProps.labelOffsetY/zoomFactor;
 
             d3.select("#label-" + planetKey)
                 .attr("visibility", showPlanet(planetKey) ? "visible" : "hidden")                
@@ -327,60 +330,41 @@ function setLocation() {
         }
     }
 
-    zoomChange(0);
+    zoomChangeTransform(0);
 }
 
 function adjustLabelLocations() {
-    var momx = 0;
-    var momy = 0;
 
-    if (lockOnMOM) {
-        momx = parseFloat(d3.select("#MOM").attr("cx"));
-        momy = parseFloat(d3.select("#MOM").attr("cy"));
+    d3.selectAll("ellipse").attr("stroke-width", (1/zoomFactor));
+    for (var i = 0; i < planetsForOrbits.length; ++i) {
+        var planetKey = planetsForLocations[i];
+        d3.selectAll("#orbit-" + planetKey).attr("r", (0.5/zoomFactor));    
     }
+
+    d3.select("#" + centerPlanet).attr("r", (centerRadius/zoomFactor));
 
     for (var i = 0; i < planetsForLocations.length; ++i) {
-
+    
+        var planetKey = planetsForLocations[i];
+        var planetProps =planetProperties[planetKey];
+        d3.selectAll("#" + planetKey).attr("r", (planetProps.r/zoomFactor));
         var planetKey = planetsForLocations[i];
         var planetProps = planetProperties[planetKey];
-        var planetId = planetProps.id;
-        var planet = orbits[planetId];
-        var vectors = planet["vectors"];
 
-        if (isLocationAvaialable(planetKey, now)) {
+        // var x = d3.select("#label-" + planetKey).attr("x");
+        // var y = d3.select("#label-" + planetKey).attr("y");
+        // d3.select("#label-" + planetKey).attr("x", x - planetProps.labelOffsetX + planetProps.labelOffsetX*zoomFactor);
+        // d3.select("#label-" + planetKey).attr("y", y - planetProps.labelOffsetY + planetProps.labelOffsetY*zoomFactor);
 
-            var index = count - planetProperties[planetKey]["offset"];
-
-            var x = vectors[index]["x"];
-            var y = vectors[index]["y"];
-
-            var newx = +1 * (x / KM_PER_AU) * PIXELS_PER_AU;
-            var newy = -1 * (y / KM_PER_AU) * PIXELS_PER_AU;
-
-            var labelx = newx + planetProps.labelOffsetX;
-            var labely = newy + planetProps.labelOffsetY;
-
-            d3.select("#label-" + planetKey)
-                .attr("visibility", showPlanet(planetKey) ? "visible" : "hidden")                
-                .attr("x", labelx)
-                .attr("y", labely)
-                .attr("transform",
-                    "matrix(" 
-                    + (1/zoomFactor)
-                    + ", 0"
-                    + ", 0"
-                    + ", " + (1/zoomFactor)
-                    + ", " + (-1*((offsetx+panx+momx)-zoomFactor*(momx)-momx))
-                    + ", " + (-1*((offsety+pany+momy)-zoomFactor*(momy)-momy))
-                    + ") "
-                );
-
-        } else {
-            d3.select("#label-" + planetKey)
-                .attr("visibility", "hidden");
-        }
+        d3.select("#orbit-" + planetKey)
+            .selectAll("line")
+            .attr("style", "stroke: " + planetProps.color + "; stroke-width: " + (0.5/zoomFactor));
+        d3.select("#label-" + planetKey).attr("font-size", (10/zoomFactor));
     }
 
+    d3.select("#label-" + centerPlanet).attr("x", (centerLabelOffsetX/zoomFactor));
+    d3.select("#label-" + centerPlanet).attr("y", (centerLabelOffsetY/zoomFactor));
+    d3.select("#label-" + centerPlanet).attr("font-size", (10/zoomFactor));
 }
 
 function onload() {
@@ -535,7 +519,7 @@ function processOrbitElementsData() {
                 .attr("rx", rx)
                 .attr("ry", ry)
                 .attr("stroke", planetProps.color)
-                .attr("stroke-width", 1)
+                .attr("stroke-width", (1.0/zoomFactor))
                 .attr("fill", "none")
                 .attr("transform", "rotate(" + angle + " 0 0)");
         }
@@ -579,7 +563,7 @@ function processOrbitVectorsData() {
                     .attr("y1", newy1)
                     .attr("x2", newx2)
                     .attr("y2", newy2)
-                    .attr("style", "stroke: " + planetProps.color + "; stroke-width: " + "0.1%")
+                    .attr("style", "stroke: " + planetProps.color + "; stroke-width: " + (0.5/zoomFactor))
                     .attr("visibility", "inherit");
             }
         }
@@ -601,8 +585,8 @@ function processOrbitVectorsData() {
             .attr("class", "label")
         .append("text")
             .attr("id", "label-" + centerPlanet)
-            .attr("x", -10)
-            .attr("y", 15)
+            .attr("x", centerLabelOffsetX)
+            .attr("y", centerLabelOffsetY)
             .attr("font-size", 10)
             .attr("fill", planetProperties[centerPlanet].color)
             .text(planetProperties[centerPlanet].name);
@@ -766,7 +750,7 @@ function slower() {
     // console.log("timeout = " + timeout);
 }
 
-function zoomChange(t) {
+function zoomChangeTransform(t) {
 
     var momx = 0;
     var momy = 0;
@@ -792,8 +776,11 @@ function zoomChange(t) {
             + ", " + (offsety+pany+momy-zoomFactor*(momy)-momy)
             + ")"
         );    
+}
 
-    // adjustLabelLocations();
+function zoomChange(t) {
+    zoomChangeTransform(t);
+    adjustLabelLocations();
 }
 
 function zoomOut() {
