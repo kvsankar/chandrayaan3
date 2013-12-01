@@ -35,7 +35,7 @@ var centerLabelOffsetY = -15;
 
 // begin - data structures which change based on configuration
 
-var config = "helio";
+var config = "geo";
 var offsetx;
 var offsety;
 var PIXELS_PER_AU;
