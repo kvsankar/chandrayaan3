@@ -36,7 +36,7 @@
             </div>
 
 
-            <button id="animate"    type="button" class="button" onclick="animate()"><b></b></button>
+            <button id="animate"    type="button" class="button" onclick="animate()"></button>
             <button id="slower"     type="button" class="button" onclick="slower()"> Slower </button>
             <button id="faster"     type="button" class="button" onclick="faster()"> Faster </button> |
             <button id="zoomout"    type="button" class="button" onclick="zoomOut()"> Zoom Out </button>
@@ -45,7 +45,7 @@
             <button id="panright"   type="button" class="button" onclick="panRight()"> Pan Right </button> 
             <button id="panup"      type="button" class="button" onclick="panUp()"> Pan Up </button>
             <button id="pandown"    type="button" class="button" onclick="panDown()"> Pan Down </button> 
-            <button id-"reset"      type="button" class="button" onclick="reset()"> Reset </button> | 
+            <button id="reset"      type="button" class="button" onclick="reset()"> Reset </button> | 
             <input type="checkbox" id="checkbox-lock-mom" onclick="toggleLockMOM()"></input>
             <label>Lock on to MOM</label> | <br/> 
 
@@ -73,13 +73,13 @@
                 <label id="phase-3"></label><br/>
             </div>
             <div class="geo">
-                <table>
+                <table summary="MOM and MAVEN distance and velocity data">
                     <tr>
-                        <td>MOM Distance from Earth (km):</td> <td><label id="distance-MOM"></label> | </td>
+                        <td>MOM Distance from Earth (km):</td> <td><label id="distance-MOM"></label></td>
                         <td>Velocity around Earth (km/s): </td><td><label id="velocity-MOM"></label> </td>
                     </tr>
                     <tr>
-                        <td>MAVEN Distance from Earth (km):</td> <td><label id="distance-MAVEN"></label> | </td>
+                        <td>MAVEN Distance from Earth (km):</td> <td><label id="distance-MAVEN"></label></td>
                         <td>Velocity around Earth (km/s): </td><td><label id="velocity-MAVEN"></label> </td>
                     </tr>
                 </table>
