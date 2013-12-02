@@ -72,8 +72,8 @@ var svgContainer;
 var viewBoxWidth;
 var viewBoxHeight;
 var zoomFactor = 1;
-var zoomScale = 1.05;
-var zoomTimeout = 100;
+var zoomScale = 1.10;
+var zoomTimeout = 50;
 var stopZoom = false;
 var panx = 0;
 var pany = 0;
@@ -841,10 +841,10 @@ function zoomChangeTransform(t) {
     }
 
     var container = svgContainer;
-    if (t != 0) {
-        container = svgContainer.transition().delay(t);
-        
-    }
+    // if (t != 0) {
+    //     container = svgContainer.transition().delay(t);
+    // }
+
     container
         .attr("transform",
             "matrix(" 
