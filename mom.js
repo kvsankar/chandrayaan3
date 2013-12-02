@@ -32,6 +32,8 @@ var planetProperties = {
 
 var centerLabelOffsetX = -5;
 var centerLabelOffsetY = -15;
+var bangaloreLongitude = 77.5667;
+var bangaloreRadius = 20;
 
 // begin - data structures which change based on configuration
 
@@ -330,7 +332,26 @@ function setLocation() {
         }
     }
 
+    showBangaloreLongitude();
+
     zoomChangeTransform(0);
+}
+
+function showBangaloreLongitude() {
+    if (config == "helio") return;
+    
+    var mst = getMST(new Date(now), bangaloreLongitude);
+
+    var x1 = 0;
+    var y1 = 0;
+    var x2 = +1 * bangaloreRadius * Math.cos(mst/DEGREES_PER_RADIAN) / zoomFactor;
+    var y2 = -1 * bangaloreRadius * Math.sin(mst/DEGREES_PER_RADIAN) / zoomFactor;
+
+    d3.select("#Bangalore")
+        .attr("x1", x1)
+        .attr("y1", y1)
+        .attr("x2", x2)
+        .attr("y2", y2);
 }
 
 function adjustLabelLocations() {
@@ -362,6 +383,7 @@ function adjustLabelLocations() {
         d3.select("#label-" + planetKey).attr("font-size", (10/zoomFactor));
     }
 
+    d3.select("#Bangalore").attr("style", "stroke: " + "DarkGray" + "; stroke-width: " + (0.5/zoomFactor));
     d3.select("#label-" + centerPlanet).attr("x", (centerLabelOffsetX/zoomFactor));
     d3.select("#label-" + centerPlanet).attr("y", (centerLabelOffsetY/zoomFactor));
     d3.select("#label-" + centerPlanet).attr("font-size", (10/zoomFactor));
@@ -441,6 +463,50 @@ function onload() {
         clearInterval(timeoutHandleZoom);
     });
     d3.select("#pandown").on("mouseout", function() { 
+        clearInterval(timeoutHandleZoom);
+    });
+
+    // move forward
+    d3.select("#forward").on("mousedown", function() { 
+        timeoutHandleZoom = setInterval(function() { forward(); }, zoomTimeout); 
+    });
+    d3.select("#forward").on("mouseup", function() { 
+        clearInterval(timeoutHandleZoom);
+    });
+    d3.select("#forward").on("mouseout", function() { 
+        clearInterval(timeoutHandleZoom);
+    });
+
+    // move backward
+    d3.select("#backward").on("mousedown", function() { 
+        timeoutHandleZoom = setInterval(function() { backward(); }, zoomTimeout); 
+    });
+    d3.select("#backward").on("mouseup", function() { 
+        clearInterval(timeoutHandleZoom);
+    });
+    d3.select("#backward").on("mouseout", function() { 
+        clearInterval(timeoutHandleZoom);
+    });
+
+    // move fast forward
+    d3.select("#fastforward").on("mousedown", function() { 
+        timeoutHandleZoom = setInterval(function() { fastForward(); }, zoomTimeout); 
+    });
+    d3.select("#fastforward").on("mouseup", function() { 
+        clearInterval(timeoutHandleZoom);
+    });
+    d3.select("#fastforward").on("mouseout", function() { 
+        clearInterval(timeoutHandleZoom);
+    });
+
+    // move fast backward
+    d3.select("#fastbackward").on("mousedown", function() { 
+        timeoutHandleZoom = setInterval(function() { fastBackward(); }, zoomTimeout); 
+    });
+    d3.select("#fastbackward").on("mouseup", function() { 
+        clearInterval(timeoutHandleZoom);
+    });
+    d3.select("#fastbackward").on("mouseout", function() { 
         clearInterval(timeoutHandleZoom);
     });
 
@@ -641,6 +707,18 @@ function processOrbitVectorsData() {
         d3.select("#label-"+planetKey).text(planetProps.name);
     }
 
+    // Add Bangalore longitude
+
+    svgContainer.append("line")
+        .attr("id", "Bangalore")
+        .attr("class", "geo")
+        .attr("x1", 0)
+        .attr("y1", 0)
+        .attr("x2", 0)
+        .attr("y2", 0)
+        .attr("style", "stroke: " + "DarkGray" + "; stroke-width: " + (0.5/zoomFactor))
+        .attr("visibility", "inherit");
+
     d3.select("#epochjd").html(epochJD);
     d3.select("#epochdate").html(epochDate);
 }
@@ -783,6 +861,7 @@ function zoomChangeTransform(t) {
 function zoomChange(t) {
     zoomChangeTransform(t);
     adjustLabelLocations();
+    showBangaloreLongitude();
 }
 
 function zoomOut() {
@@ -828,6 +907,68 @@ function toggleLockMOM() {
     previousLockOnMOM = lockOnMOM;
     lockOnMOM = !lockOnMOM;
     reset();
+}
+
+// The following function getMST() is from
+//
+// http://mysite.verizon.net/res148h4j/javascript/script_clock.html
+// 
+//
+/*
+** "getMST" computes Mean Sidereal Time in units of degrees. Use lon = 0 to
+** get the Greenwich MST.
+**
+** returns: time in degrees
+*/
+function getMST( now, lon )
+{
+    var year   = now.getUTCFullYear();
+    var month  = now.getUTCMonth() + 1;
+    var day    = now.getUTCDate();
+    var hour   = now.getUTCHours();
+    var minute = now.getUTCMinutes();
+    var second = now.getUTCSeconds();
+
+    // 1994 June 16th at 18h UT
+    // days since J2000: -2024.75
+    // GMST: 174.77111347427126
+    //       11h 39m 5.0672s 
+    // year   = 1994;
+    // month  = 6;
+    // day    = 16;
+    // hour   = 18;
+    // minute = 0; 
+    // second = 0; 
+
+    if( month == 1 || month == 2 )
+    {
+    year = year - 1;
+    month = month + 12;
+    }
+
+    var a = Math.floor( year/100 );
+    var b = 2 - a + Math.floor( a/4 );
+
+    var c = Math.floor(365.25 * year);
+    var d = Math.floor(30.6001 * (month + 1));
+
+    // days since J2000.0   
+    var jd = b + c + d - 730550.5 + day + (hour + minute/60.0 + second/3600.0)/24.0;
+    
+    var jt   = jd/36525.0;                   // julian centuries since J2000.0         
+    var GMST = 280.46061837 + 360.98564736629*jd + 0.000387933*jt*jt - jt*jt*jt/38710000 + lon;           
+    if( GMST > 0.0 )
+    {
+        while( GMST > 360.0 )
+            GMST -= 360.0;
+    }
+    else
+    {
+        while( GMST < 0.0 )
+            GMST += 360.0;
+    }
+        
+    return GMST;
 }
 
 // end of file
