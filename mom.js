@@ -372,7 +372,7 @@ function adjustLabelLocations() {
         d3.select("#label-" + planetKey).attr("font-size", (10/zoomFactor));
     }
 
-    d3.select("#Bangalore").attr("style", "stroke: " + "DarkGray" + "; stroke-width: " + (0.5/zoomFactor));
+    d3.select("#Bangalore").attr("style", "stroke: DarkGray; stroke-opacity: 0.5; " + "stroke-width: " + (0.5/zoomFactor));
     d3.select("#label-" + centerPlanet).attr("x", (CENTER_LABEL_OFFSET_X/zoomFactor));
     d3.select("#label-" + centerPlanet).attr("y", (CENTER_LABEL_OFFSET_Y/zoomFactor));
     d3.select("#label-" + centerPlanet).attr("font-size", (10/zoomFactor));
@@ -669,7 +669,7 @@ function processOrbitVectorsData() {
         .attr("y1", 0)
         .attr("x2", 0)
         .attr("y2", 0)
-        .attr("style", "stroke: " + "DarkGray" + "; stroke-width: " + (0.5/zoomFactor))
+        .attr("style", "stroke: DarkGray; stroke-opacity: 0.5; stroke-width: " + (0.5/zoomFactor))
         .attr("visibility", "inherit");
 
     d3.select("#epochjd").html(epochJD);
