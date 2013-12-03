@@ -3,6 +3,8 @@
 
 // orbit and location related data
 
+// constants
+
 // We use NASA JPL HORIZONS identifiers
 
 var MAVEN   = -202;
@@ -30,10 +32,16 @@ var planetProperties = {
     "MOON":     { "id": MOON,       "name": "Moon",     "color": "grey",    "r": 3,   "labelOffsetX": +10, "labelOffsetY": +10 },
 };
 
-var centerLabelOffsetX = -5;
-var centerLabelOffsetY = -15;
-var bangaloreLongitude = 77.5667;
-var bangaloreRadius = 20;
+var CENTER_LABEL_OFFSET_X = -5;
+var CENTER_LABEL_OFFSET_Y = -15;
+var BANGALORE_LONGITUDE = 77.5667;
+var BANGALORE_RADIUS = 20;
+var EARTH_SOI_RADIUS_IN_KM = 925000;
+var soiRadius;
+var ZOOM_SCALE = 1.10;
+var ZOOM_TIMEOUT = 100;
+var FORMAT_PERCENT = d3.format(".0%");
+var FORMAT_METRIC = d3.format(" >10,.2f");
 
 // begin - data structures which change based on configuration
 
@@ -67,46 +75,26 @@ var total;
 
 var epochJD;
 var epochDate;
-
+var animDate;
 var svgContainer;
 var viewBoxWidth;
 var viewBoxHeight;
 var zoomFactor = 1;
-var zoomScale = 1.10;
-var zoomTimeout = 50;
 var stopZoom = false;
 var panx = 0;
 var pany = 0;
 var lockOnMOM = false;
 var previousLockOnMOM = false;
 var now;
-var animDate;
-
 var count = 0;
 var animationRunning = false;
 var stopAnimationFlag = false;
 var timeoutHandle;
 var timeoutHandleZoom;
-
 var showMaven = true;
-
 var dataLoaded = false;
 var progress = 0;
-var formatPercent = d3.format(".0%");
-var formatMetric = d3.format(" >10,.2f");
-
-// adapted from - http://stackoverflow.com/questions/9318674/javascript-number-currency-formatting
-
-formatFloat = function formatFloat(rdecPlaces, thouSeparator, decSeparator) {
-    var n = this,
-    decPlaces = isNaN(decPlaces = Math.abs(decPlaces)) ? 2 : decPlaces,
-    decSeparator = decSeparator == undefined ? "." : decSeparator,
-    thouSeparator = thouSeparator == undefined ? "," : thouSeparator,
-    sign = n < 0 ? "-" : "",
-    i = parseInt(n = Math.abs(+n || 0).toFixed(decPlaces)) + "",
-    j = (j = i.length) > 3 ? j % 3 : 0;
-    return sign + (j ? i.substr(0, j) + thouSeparator : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + thouSeparator) + (decPlaces ? decSeparator + Math.abs(n - i).toFixed(decPlaces).slice(2) : "");
-};
+var mouseDown = false;
 
 function initConfig() {
 
@@ -118,6 +106,7 @@ function initConfig() {
         trackWidth = 0.6;
         centerPlanet = "EARTH";
         centerRadius = 3;
+        soiRadius = (EARTH_SOI_RADIUS_IN_KM / KM_PER_AU) * PIXELS_PER_AU;
         planetsForOrbits = ["MOON"];
         planetsForLocations = ["MOON", "MOM", "MAVEN"];
         countDurationMilliSeconds = (1/3) * MILLI_SECONDS_PER_HOUR; // TODO add to and read from JSON
@@ -200,7 +189,7 @@ function showPlanet(planet) {
 }
 
 function shouldDrawOrbit(planet) {
-    return ((planet == "MOM") || (planet == "MAVEN") || (planet == "MOON"))
+    return ((planet == "MOM") || (planet == "MAVEN") || (planet == "MOON"));
 }
 
 function planetStartTime(planet) {
@@ -285,13 +274,13 @@ function setLocation() {
 
                 var z = vectors[index]["z"];
                 var r = Math.sqrt(x*x + y*y + z*z);
-                d3.select("#distance-" + planetKey).text(formatMetric(r));
+                d3.select("#distance-" + planetKey).text(FORMAT_METRIC(r));
 
                 var vx = vectors[index]["vx"];
                 var vy = vectors[index]["vy"];
                 var vz = vectors[index]["vz"];
                 var v = Math.sqrt(vx*vx + vy*vy + vz*vz);
-                d3.select("#velocity-" + planetKey).text(formatMetric(v));
+                d3.select("#velocity-" + planetKey).text(FORMAT_METRIC(v));
             }
 
         } else {
@@ -332,20 +321,20 @@ function setLocation() {
         }
     }
 
-    showBangaloreLongitude();
+    showBANGALORE_LONGITUDE();
 
     zoomChangeTransform(0);
 }
 
-function showBangaloreLongitude() {
+function showBANGALORE_LONGITUDE() {
     if (config == "helio") return;
     
-    var mst = getMST(new Date(now), bangaloreLongitude);
+    var mst = getMST(new Date(now), BANGALORE_LONGITUDE);
 
     var x1 = 0;
     var y1 = 0;
-    var x2 = +1 * bangaloreRadius * Math.cos(mst/DEGREES_PER_RADIAN) / zoomFactor;
-    var y2 = -1 * bangaloreRadius * Math.sin(mst/DEGREES_PER_RADIAN) / zoomFactor;
+    var x2 = +1 * BANGALORE_RADIUS * Math.cos(mst/DEGREES_PER_RADIAN) / zoomFactor;
+    var y2 = -1 * BANGALORE_RADIUS * Math.sin(mst/DEGREES_PER_RADIAN) / zoomFactor;
 
     d3.select("#Bangalore")
         .attr("x1", x1)
@@ -384,9 +373,15 @@ function adjustLabelLocations() {
     }
 
     d3.select("#Bangalore").attr("style", "stroke: " + "DarkGray" + "; stroke-width: " + (0.5/zoomFactor));
-    d3.select("#label-" + centerPlanet).attr("x", (centerLabelOffsetX/zoomFactor));
-    d3.select("#label-" + centerPlanet).attr("y", (centerLabelOffsetY/zoomFactor));
+    d3.select("#label-" + centerPlanet).attr("x", (CENTER_LABEL_OFFSET_X/zoomFactor));
+    d3.select("#label-" + centerPlanet).attr("y", (CENTER_LABEL_OFFSET_Y/zoomFactor));
     d3.select("#label-" + centerPlanet).attr("font-size", (10/zoomFactor));
+
+    d3.select("#earth-soi")
+        .attr("stroke-width", (0.5/zoomFactor));
+
+    d3.select("#earth-soi-label")
+        .attr("font-size", (8/zoomFactor));
 }
 
 function onload() {
@@ -400,115 +395,51 @@ function onload() {
     d3.select("#checkbox-lock-mom").property("checked", false);
     d3.selectAll("button").attr("disabled", true);
 
-    // zoom in
-    d3.select("#zoomin").on("mousedown", function() { 
-        timeoutHandleZoom = setInterval(function() { zoomIn(); }, zoomTimeout); 
-    });
-    d3.select("#zoomin").on("mouseup", function() { 
-        clearInterval(timeoutHandleZoom);
-    });
-    d3.select("#zoomin").on("mouseout", function() { 
-        clearInterval(timeoutHandleZoom);
-    });
+    var handlers = {
+        "zoomin":       { "mousedown": function() { mouseDown = true; timeoutHandleZoom = setInterval(function() { zoomIn(); }, ZOOM_TIMEOUT); } },
+        "zoomout":      { "mousedown": function() { mouseDown = true; timeoutHandleZoom = setInterval(function() { zoomOut(); }, ZOOM_TIMEOUT); } },
+        "panleft":      { "mousedown": function() { mouseDown = true; timeoutHandleZoom = setInterval(function() { panLeft(); }, ZOOM_TIMEOUT); } },
+        "panright":     { "mousedown": function() { mouseDown = true; timeoutHandleZoom = setInterval(function() { panRight(); }, ZOOM_TIMEOUT); } },
+        "panup":        { "mousedown": function() { mouseDown = true; timeoutHandleZoom = setInterval(function() { panUp(); }, ZOOM_TIMEOUT); } },
+        "pandown":      { "mousedown": function() { mouseDown = true; timeoutHandleZoom = setInterval(function() { panDown(); }, ZOOM_TIMEOUT); } },
+        "forward":      { "mousedown": function() { mouseDown = true; timeoutHandleZoom = setInterval(function() { forward(); }, ZOOM_TIMEOUT); } },
+        "fastforward":  { "mousedown": function() { mouseDown = true; timeoutHandleZoom = setInterval(function() { fastForward(); }, ZOOM_TIMEOUT); } },
+        "backward":     { "mousedown": function() { mouseDown = true; timeoutHandleZoom = setInterval(function() { backward(); }, ZOOM_TIMEOUT); } },
+        "fastbackward": { "mousedown": function() { mouseDown = true; timeoutHandleZoom = setInterval(function() { fastBackward(); }, ZOOM_TIMEOUT); } }
+    };
 
-    // zoom out
-    d3.select("#zoomout").on("mousedown", function() { 
-        timeoutHandleZoom = setInterval(function() { zoomOut(); }, zoomTimeout); 
-    });
-    d3.select("#zoomout").on("mouseup", function() { 
-        clearInterval(timeoutHandleZoom);
-    });
-    d3.select("#zoomout").on("mouseout", function() { 
-        stopZoom = true; 
-    });
+    var buttons = [
+        "zoomin", "zoomout", 
+        "panleft", "panright", "panup", "pandown",
+        "forward", "fastforward", "backward", "fastbackward"
+    ];
 
-    // pan left
-    d3.select("#panleft").on("mousedown", function() { 
-        timeoutHandleZoom = setInterval(function() { panLeft(); }, zoomTimeout); 
-    });
-    d3.select("#panleft").on("mouseup", function() { 
-        clearInterval(timeoutHandleZoom);
-    });
-    d3.select("#panleft").on("mouseout", function() { 
-        clearInterval(timeoutHandleZoom);
-    });
+    for (var i = 0; i < buttons.length; ++i) {
 
-    // pan right
-    d3.select("#panright").on("mousedown", function() { 
-        timeoutHandleZoom = setInterval(function() { panRight(); }, zoomTimeout); 
-    });
-    d3.select("#panright").on("mouseup", function() { 
-        clearInterval(timeoutHandleZoom);
-    });
-    d3.select("#panright").on("mouseout", function() { 
-        clearInterval(timeoutHandleZoom);
-    });
+        var b = buttons[i];
 
-    // pan up
-    d3.select("#panup").on("mousedown", function() { 
-        timeoutHandleZoom = setInterval(function() { panUp(); }, zoomTimeout); 
-    });
-    d3.select("#panup").on("mouseup", function() { 
-        clearInterval(timeoutHandleZoom);
-    });
-    d3.select("#panup").on("mouseout", function() { 
-        clearInterval(timeoutHandleZoom);
-    });
+        d3.select("#" + b).on("mousedown", handlers[b]["mousedown"]);
 
-    // pan down
-    d3.select("#pandown").on("mousedown", function() { 
-        timeoutHandleZoom = setInterval(function() { panDown(); }, zoomTimeout); 
-    });
-    d3.select("#pandown").on("mouseup", function() { 
-        clearInterval(timeoutHandleZoom);
-    });
-    d3.select("#pandown").on("mouseout", function() { 
-        clearInterval(timeoutHandleZoom);
-    });
-
-    // move forward
-    d3.select("#forward").on("mousedown", function() { 
-        timeoutHandleZoom = setInterval(function() { forward(); }, zoomTimeout); 
-    });
-    d3.select("#forward").on("mouseup", function() { 
-        clearInterval(timeoutHandleZoom);
-    });
-    d3.select("#forward").on("mouseout", function() { 
-        clearInterval(timeoutHandleZoom);
-    });
-
-    // move backward
-    d3.select("#backward").on("mousedown", function() { 
-        timeoutHandleZoom = setInterval(function() { backward(); }, zoomTimeout); 
-    });
-    d3.select("#backward").on("mouseup", function() { 
-        clearInterval(timeoutHandleZoom);
-    });
-    d3.select("#backward").on("mouseout", function() { 
-        clearInterval(timeoutHandleZoom);
-    });
-
-    // move fast forward
-    d3.select("#fastforward").on("mousedown", function() { 
-        timeoutHandleZoom = setInterval(function() { fastForward(); }, zoomTimeout); 
-    });
-    d3.select("#fastforward").on("mouseup", function() { 
-        clearInterval(timeoutHandleZoom);
-    });
-    d3.select("#fastforward").on("mouseout", function() { 
-        clearInterval(timeoutHandleZoom);
-    });
-
-    // move fast backward
-    d3.select("#fastbackward").on("mousedown", function() { 
-        timeoutHandleZoom = setInterval(function() { fastBackward(); }, zoomTimeout); 
-    });
-    d3.select("#fastbackward").on("mouseup", function() { 
-        clearInterval(timeoutHandleZoom);
-    });
-    d3.select("#fastbackward").on("mouseout", function() { 
-        clearInterval(timeoutHandleZoom);
-    });
+        d3.select("#" + b).on("mouseup", function() { 
+            mouseDown = false;
+            adjustLabelLocations(); 
+            clearInterval(timeoutHandleZoom); 
+            timeoutHandleZoom = null;
+        });
+        d3.select("#" + b).on("mouseout", function() { 
+            mouseDown = false;
+            if (timeoutHandleZoom == null) return;
+            adjustLabelLocations(); 
+            clearInterval(timeoutHandleZoom); 
+        });
+        d3.select("#" + b).on("click", function() { 
+            if (mouseDown) return;
+            var f = handlers[b]["mousedown"];
+            f();
+            adjustLabelLocations(); 
+            clearInterval(timeoutHandleZoom); 
+        });        
+    }
 
     animDate = d3.select("#date");
 
@@ -531,7 +462,7 @@ function onload() {
         .on("progress", function() {
 
             var progress = d3.event.loaded / total;
-            var msg = dataLoaded ? "" : ("Loading " + orbitsJson + "  ... " + formatPercent(progress) + ".");
+            var msg = dataLoaded ? "" : ("Loading " + orbitsJson + "  ... " + FORMAT_PERCENT(progress) + ".");
             console.log(msg);
             d3.select("#message").html(msg);
         })
@@ -653,11 +584,33 @@ function processOrbitVectorsData() {
             .attr("class", "label")
         .append("text")
             .attr("id", "label-" + centerPlanet)
-            .attr("x", centerLabelOffsetX)
-            .attr("y", centerLabelOffsetY)
+            .attr("x", CENTER_LABEL_OFFSET_X)
+            .attr("y", CENTER_LABEL_OFFSET_Y)
             .attr("font-size", 10)
             .attr("fill", planetProperties[centerPlanet].color)
             .text(planetProperties[centerPlanet].name);
+
+    if (config == "geo") {
+        svgContainer.append("circle")
+            .attr("id", "earth-soi")
+            .attr("cx", 0)
+            .attr("cy", 0)
+            .attr("r", (soiRadius/zoomFactor))
+            .attr("stroke", "cyan")
+            .attr("stroke-opacity", 0.5)
+            .attr("stroke-dasharray", "5 2")
+            .attr("stroke-width", (0.5/zoomFactor))
+            .attr("fill", "none");
+
+        svgContainer.append("text")
+            .attr("id", "earth-soi-label")
+            .attr("x", -1 * (soiRadius / zoomFactor))
+            .attr("y", 0)
+            .attr("text-anchor", "end")
+            .attr("font-size", (8/zoomFactor))
+            .attr("fill", "grey")
+            .text("Earth's Sphere of Influence");
+    }
 
     // Add planetary positions
 
@@ -820,14 +773,14 @@ function missionEnd() {
 }
 
 function faster() {
-    timeout /= zoomScale;
+    timeout /= ZOOM_SCALE;
     if (timeout < 0) timeout = 0;
-    // console.log("timeout = " + timeout);
+    console.log("timeout = " + timeout);
 }
 
 function slower() {
-    timeout *= zoomScale;
-    // console.log("timeout = " + timeout);
+    timeout *= ZOOM_SCALE;
+    console.log("timeout = " + timeout);
 }
 
 function zoomChangeTransform(t) {
@@ -860,47 +813,48 @@ function zoomChangeTransform(t) {
 
 function zoomChange(t) {
     zoomChangeTransform(t);
-    adjustLabelLocations();
-    showBangaloreLongitude();
+    // adjustLabelLocations();
+    showBANGALORE_LONGITUDE();
 }
 
 function zoomOut() {
-    zoomFactor /= zoomScale;
-    var factor = 1/zoomScale;
-    zoomChange(zoomTimeout);
+    zoomFactor /= ZOOM_SCALE;
+    var factor = 1/ZOOM_SCALE;
+    zoomChange(ZOOM_TIMEOUT);
 }
 
 function zoomIn() {
-    zoomFactor *= zoomScale;
-    var factor = zoomScale;
-    zoomChange(zoomTimeout);
+    zoomFactor *= ZOOM_SCALE;
+    var factor = ZOOM_SCALE;
+    zoomChange(ZOOM_TIMEOUT);
 }
 
 function panLeft() {
     panx += +10;
-    zoomChange(zoomTimeout);
+    zoomChange(ZOOM_TIMEOUT);
 }
 
 function panRight() {
     panx += -10;
-    zoomChange(zoomTimeout);
+    zoomChange(ZOOM_TIMEOUT);
 }
 
 function panUp() {
     pany += +10;
-    zoomChange(zoomTimeout);
+    zoomChange(ZOOM_TIMEOUT);
 }
 
 function panDown() {
     pany += -10;
-    zoomChange(zoomTimeout);
+    zoomChange(ZOOM_TIMEOUT);
 }
 
 function reset() {
     panx = 0;
     pany = 0;
     zoomFactor = 1;
-    zoomChange(zoomTimeout);
+    zoomChange(ZOOM_TIMEOUT);
+    adjustLabelLocations();
 }
 
 function toggleLockMOM() {
@@ -908,6 +862,19 @@ function toggleLockMOM() {
     lockOnMOM = !lockOnMOM;
     reset();
 }
+
+// adapted from - http://stackoverflow.com/questions/9318674/javascript-number-currency-formatting
+
+formatFloat = function formatFloat(rdecPlaces, thouSeparator, decSeparator) {
+    var n = this,
+    decPlaces = isNaN(decPlaces = Math.abs(decPlaces)) ? 2 : decPlaces,
+    decSeparator = decSeparator == undefined ? "." : decSeparator,
+    thouSeparator = thouSeparator == undefined ? "," : thouSeparator,
+    sign = n < 0 ? "-" : "",
+    i = parseInt(n = Math.abs(+n || 0).toFixed(decPlaces)) + "",
+    j = (j = i.length) > 3 ? j % 3 : 0;
+    return sign + (j ? i.substr(0, j) + thouSeparator : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + thouSeparator) + (decPlaces ? decSeparator + Math.abs(n - i).toFixed(decPlaces).slice(2) : "");
+};
 
 // The following function getMST() is from
 //
