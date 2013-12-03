@@ -7,36 +7,38 @@
 
 .blurb {
   color: DarkGray;
-  font-size: x-small;
+  font-size: xx-small;
   font-family: sans-serif;  
 }
 
 .info {
   color: DarkGray;
-  font-size: x-small;
+  font-size: xx-small;
   font-family: sans-serif;  
 }
 
 .date {
   color: DarkGray;
-  font-size: x-small;
+  font-size: xx-small;
   font-family: sans-serif;      
 }
 
 .body {
   background-color: black; 
   color: DarkGray;
-  font-size: x-small;
+  font-size: xx-small;
   font-family: sans-serif;  
   /*background-image: */
 }
 
-.vpspace {
-  height: 1em;
+.geo {
+  color: DarkGray;
+  font-size: xx-small;
+  font-family: sans-serif; 
 }
 
 .button {
-  font-size: .9em !important;
+  font-size: .8em !important;
 }
 
 </style>
