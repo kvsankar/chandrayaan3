@@ -102,8 +102,11 @@ function initConfig() {
 
     if (config == "geo") {
 
-        offsetx = 600;
-        offsety = 170;
+        var svgWidth = window.innerWidth;
+        var svgHeight = window.innerHeight - 40;
+        offsetx = svgWidth / 2;
+        offsety = svgHeight / 3;
+
         PIXELS_PER_AU = 60000;
         trackWidth = 0.6;
         centerPlanet = "EARTH";
@@ -137,8 +140,11 @@ function initConfig() {
 
     } else if (config == "helio") {
 
-        offsetx = 300;
-        offsety = 250;
+        var svgWidth = window.innerWidth;
+        var svgHeight = window.innerHeight - 40;
+        offsetx = svgWidth / 2;
+        offsety = svgHeight / 2  + 50;
+
         PIXELS_PER_AU = 150;
         trackWidth = 1;
         centerPlanet = "SUN";
