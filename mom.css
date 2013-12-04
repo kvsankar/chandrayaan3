@@ -1,44 +1,75 @@
 
 /* Copyright (c) 2013 Sankaranarayanan K V. All rights reserved. */
 
-<style type="text/css">
-
 /* TODO requires further tuning */
 
-.blurb {
-  color: DarkGray;
-  font-size: xx-small;
-  font-family: sans-serif;  
+/* CSS adapted from cleanstickyfooter - https://code.google.com/p/cleanstickyfooter/ */
+
+html, body {
+    height: 100%;
 }
 
-.info {
-  color: DarkGray;
-  font-size: xx-small;
-  font-family: sans-serif;  
+body {
+    margin: 0px;
+    padding: 0px;
+    background-color: black; 
+    color: #B3B3B3;
+    font-size: xx-small;
+    font-family: sans-serif;  
 }
 
-.date {
-  color: DarkGray;
-  font-size: xx-small;
-  font-family: sans-serif;      
+div#wrapper {
+    width: 100%;
+    min-height: 100%;
+    height: auto !important;
+    height: 100%;
+    margin: 0px 0px -35px 0px;
 }
 
-.body {
-  background-color: black; 
-  color: DarkGray;
-  font-size: xx-small;
-  font-family: sans-serif;  
-  /*background-image: */
+div#footer_wrapper {
+    width: 100%;
+    height: 41px;
 }
 
-.geo {
-  color: DarkGray;
-  font-size: xx-small;
-  font-family: sans-serif; 
+div#content_wrapper {
+    width: 100%;
+    padding: 0px 0px 41px 0px;
+}
+ 
+
+div#footer_wrapper, div#content_wrapper {
+    /* min-width: 942px; */
+}
+ 
+
+div#footer_inner_wrapper, div#content_inner_wrapper {
+    /* width: 942px; */
+    margin: 0px auto;
 }
 
-.button {
-  font-size: .8em !important;
+
+div#footer_wrapper {
+    color: #7F7F7F;
+    height: 35px; /* '.push' must be the same height as 'footer' */
 }
 
-</style>
+.copyright {
+    font-size: 0.8em;
+}
+
+table {
+    border: none;
+    border-spacing: 0;
+    border-collapse:collapse;
+}
+
+svg {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    right: 100%;
+    bottom: 100%;
+    z-index: -1;
+}
+
+/* end of file */

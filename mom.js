@@ -95,6 +95,8 @@ var showMaven = true;
 var dataLoaded = false;
 var progress = 0;
 var mouseDown = false;
+var firefox = false;
+var chrome = false;
 
 function initConfig() {
 
@@ -114,12 +116,12 @@ function initConfig() {
         total = 1348990; // TODO
         leapSize = 12; // 4 hours
 
-        startTime                  = Date.UTC(2013, 11-1, 06,  0,  0, 0, 0);
+        startTime                  = Date.UTC(2013, 11-1,  6,  0,  0, 0, 0);
         helioCentricPhaseStartTime = Date.UTC(2013, 11-1, 30, 19, 20, 0, 0);
-        martianPhaseStartTime      = Date.UTC(2014, 09-1, 24,  0,  0, 0, 0);
+        martianPhaseStartTime      = Date.UTC(2014,  9-1, 24,  0,  0, 0, 0);
         endTime                    = Date.UTC(2013, 12-1, 11,  0,  0, 0, 0);
         mavenStartTime             = Date.UTC(2013, 11-1, 19,  0,  0, 0, 0);
-        mavenEndTime               = Date.UTC(2015, 09-1, 22,  0,  0, 0, 0);
+        mavenEndTime               = Date.UTC(2015,  9-1, 22,  0,  0, 0, 0);
 
         latestEndTime = endTime;
         nSteps = (latestEndTime - startTime) / countDurationMilliSeconds;
@@ -148,12 +150,12 @@ function initConfig() {
         total = 2023480; // TODO
         leapSize = 20; // 5 days
 
-        startTime                  = Date.UTC(2013, 11-1, 06, 0, 0, 0, 0);
-        helioCentricPhaseStartTime = Date.UTC(2013, 12-1, 01, 0, 0, 0, 0);
-        martianPhaseStartTime      = Date.UTC(2014, 09-1, 24, 0, 0, 0, 0);
-        endTime                    = Date.UTC(2015, 06-1, 24, 0, 0, 0, 0);
+        startTime                  = Date.UTC(2013, 11-1,  6, 0, 0, 0, 0);
+        helioCentricPhaseStartTime = Date.UTC(2013, 12-1,  1, 0, 0, 0, 0);
+        martianPhaseStartTime      = Date.UTC(2014,  9-1, 24, 0, 0, 0, 0);
+        endTime                    = Date.UTC(2015,  6-1, 24, 0, 0, 0, 0);
         mavenStartTime             = Date.UTC(2013, 11-1, 19, 0, 0, 0, 0);
-        mavenEndTime               = Date.UTC(2015, 09-1, 22, 0, 0, 0, 0);
+        mavenEndTime               = Date.UTC(2015,  9-1, 22, 0, 0, 0, 0);
 
         latestEndTime = mavenEndTime;
         nSteps = (latestEndTime - startTime) / countDurationMilliSeconds;
@@ -386,8 +388,17 @@ function adjustLabelLocations() {
 
 function onload() {
 
-    initConfig();
+    if (navigator.userAgent.indexOf('Firefox') != -1) {
+        firefox = true;
+    } else if (navigator.userAgent.indexOf('Chrome') != -1) {
+        chrome = true;
+    }
 
+    initConfig();
+    init();
+}
+
+function init() {
     zoomFactor = 1;
     panx = 0;
     pany = 0;
@@ -445,14 +456,19 @@ function onload() {
 
     d3.select("svg").remove();
 
-    viewBoxWidth = window.innerWidth;
-    viewBoxHeight = window.innerHeight;
     svgContainer = d3.select("#svg").append("svg")
-                                 .attr("width", window.innerWidth)
-                                 .attr("height", window.innerHeight)
-                                 // .attr("viewbox", "0 0 " + viewBoxWidth + " " + viewBoxHeight)
-                                 .append("g")
-                                 .attr("transform", "translate(" + offsetx + ", " + offsety + ")");
+        .append("g")
+        .attr("transform", "translate(" + offsetx + ", " + offsety + ")");
+
+    if (firefox) {
+        var svgWidth = window.innerWidth;
+        var svgHeight = window.innerHeight - 40;
+        console.log("svgWidth = " + svgWidth + ", svgHeight = " + svgHeight);
+        d3.select("svg")
+            .attr("width", svgWidth)
+            .attr("height", svgHeight);
+    }
+        
 
     d3.select("#message").html("Loading orbit data ...");
 
