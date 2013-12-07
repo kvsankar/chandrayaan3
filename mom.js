@@ -39,7 +39,7 @@ var BANGALORE_RADIUS = 20;
 var EARTH_SOI_RADIUS_IN_KM = 925000 * 0.90;
 var soiRadius;
 var ZOOM_SCALE = 1.10;
-var ZOOM_TIMEOUT = 100;
+var ZOOM_TIMEOUT = 150;
 var FORMAT_PERCENT = d3.format(".0%");
 var FORMAT_METRIC = d3.format(" >10,.2f");
 
@@ -237,6 +237,37 @@ function rotate(x, y, phi) { // unused function for now
     return {"x": retx, "y": rety};
 }
 
+function setLabelLocation(planetKey) {
+
+    var planetProps = planetProperties[planetKey];
+    var planetId = planetProps.id;
+    var planet = orbits[planetId];
+    var vectors = planet["vectors"];
+
+    if (isLocationAvaialable(planetKey, now)) {
+
+        var index = count - planetProperties[planetKey]["offset"];
+
+        var x = vectors[index]["x"];
+        var y = vectors[index]["y"];
+
+        var newx = +1 * (x / KM_PER_AU) * PIXELS_PER_AU;
+        var newy = -1 * (y / KM_PER_AU) * PIXELS_PER_AU;
+
+        var labelx = newx + planetProps.labelOffsetX/zoomFactor;
+        var labely = newy + planetProps.labelOffsetY/zoomFactor;
+
+        d3.select("#label-" + planetKey)
+            .attr("visibility", showPlanet(planetKey) ? "visible" : "hidden")                
+            .attr("x", labelx)
+            .attr("y", labely);
+
+    } else {
+        d3.select("#label-" + planetKey)
+            .attr("visibility", "hidden");
+    }
+}
+
 function setLocation() {
 
     // console.log("setLocation(): count = " + count);
@@ -345,41 +376,17 @@ function setLocation() {
     for (var i = 0; i < planetsForLocations.length; ++i) {
 
         var planetKey = planetsForLocations[i];
-        var planetProps = planetProperties[planetKey];
-        var planetId = planetProps.id;
-        var planet = orbits[planetId];
-        var vectors = planet["vectors"];
 
-        if (isLocationAvaialable(planetKey, now)) {
 
-            var index = count - planetProperties[planetKey]["offset"];
-
-            var x = vectors[index]["x"];
-            var y = vectors[index]["y"];
-
-            var newx = +1 * (x / KM_PER_AU) * PIXELS_PER_AU;
-            var newy = -1 * (y / KM_PER_AU) * PIXELS_PER_AU;
-
-            var labelx = newx + planetProps.labelOffsetX/zoomFactor;
-            var labely = newy + planetProps.labelOffsetY/zoomFactor;
-
-            d3.select("#label-" + planetKey)
-                .attr("visibility", showPlanet(planetKey) ? "visible" : "hidden")                
-                .attr("x", labelx)
-                .attr("y", labely);
-
-        } else {
-            d3.select("#label-" + planetKey)
-                .attr("visibility", "hidden");
-        }
+        setLabelLocation(planetKey);
     }
 
-    showBANGALORE_LONGITUDE();
+    showBangaloreLongitude();
 
     zoomChangeTransform(0);
 }
 
-function showBANGALORE_LONGITUDE() {
+function showBangaloreLongitude() {
     if (config == "helio") return;
     
     var mst = getMST(new Date(now), BANGALORE_LONGITUDE);
@@ -409,15 +416,10 @@ function adjustLabelLocations() {
     for (var i = 0; i < planetsForLocations.length; ++i) {
     
         var planetKey = planetsForLocations[i];
+        setLabelLocation(planetKey);
+
         var planetProps =planetProperties[planetKey];
         d3.selectAll("#" + planetKey).attr("r", (planetProps.r/zoomFactor));
-        var planetKey = planetsForLocations[i];
-        var planetProps = planetProperties[planetKey];
-
-        // var x = d3.select("#label-" + planetKey).attr("x");
-        // var y = d3.select("#label-" + planetKey).attr("y");
-        // d3.select("#label-" + planetKey).attr("x", x - planetProps.labelOffsetX + planetProps.labelOffsetX*zoomFactor);
-        // d3.select("#label-" + planetKey).attr("y", y - planetProps.labelOffsetY + planetProps.labelOffsetY*zoomFactor);
 
         d3.select("#orbit-" + planetKey)
             .selectAll("line")
@@ -449,6 +451,26 @@ function onload() {
     init();
 }
 
+
+// TODO - find a better way to handle the following
+
+function f1()  { zoomIn();          timeoutHandleZoom = setTimeout(f1,  ZOOM_TIMEOUT); }
+function f2()  { zoomOut();         timeoutHandleZoom = setTimeout(f2,  ZOOM_TIMEOUT); }
+function f3()  { panLeft();         timeoutHandleZoom = setTimeout(f3,  ZOOM_TIMEOUT); }
+function f4()  { panRight();        timeoutHandleZoom = setTimeout(f4,  ZOOM_TIMEOUT); }
+function f5()  { panUp();           timeoutHandleZoom = setTimeout(f5,  ZOOM_TIMEOUT); }
+function f6()  { panDown();         timeoutHandleZoom = setTimeout(f6,  ZOOM_TIMEOUT); }
+function f7()  { forward();         timeoutHandleZoom = setTimeout(f7,  ZOOM_TIMEOUT); }
+function f8()  { fastForward();     timeoutHandleZoom = setTimeout(f8,  ZOOM_TIMEOUT); }
+function f9()  { backward();        timeoutHandleZoom = setTimeout(f9,  ZOOM_TIMEOUT); }
+function f10() { fastBackward();    timeoutHandleZoom = setTimeout(f10, ZOOM_TIMEOUT); }
+
+function zoomFunction(f) {
+    mouseDown = true;
+    f();
+    timeoutHandleZoom = setTimeout(f, ZOOM_TIMEOUT);
+}
+
 function init() {
     zoomFactor = 1;
     panx = 0;
@@ -458,16 +480,16 @@ function init() {
     d3.selectAll("button").attr("disabled", true);
 
     var handlers = {
-        "zoomin":       { "mousedown": function() { mouseDown = true; timeoutHandleZoom = setInterval(function() { zoomIn(); }, ZOOM_TIMEOUT); } },
-        "zoomout":      { "mousedown": function() { mouseDown = true; timeoutHandleZoom = setInterval(function() { zoomOut(); }, ZOOM_TIMEOUT); } },
-        "panleft":      { "mousedown": function() { mouseDown = true; timeoutHandleZoom = setInterval(function() { panLeft(); }, ZOOM_TIMEOUT); } },
-        "panright":     { "mousedown": function() { mouseDown = true; timeoutHandleZoom = setInterval(function() { panRight(); }, ZOOM_TIMEOUT); } },
-        "panup":        { "mousedown": function() { mouseDown = true; timeoutHandleZoom = setInterval(function() { panUp(); }, ZOOM_TIMEOUT); } },
-        "pandown":      { "mousedown": function() { mouseDown = true; timeoutHandleZoom = setInterval(function() { panDown(); }, ZOOM_TIMEOUT); } },
-        "forward":      { "mousedown": function() { mouseDown = true; timeoutHandleZoom = setInterval(function() { forward(); }, ZOOM_TIMEOUT); } },
-        "fastforward":  { "mousedown": function() { mouseDown = true; timeoutHandleZoom = setInterval(function() { fastForward(); }, ZOOM_TIMEOUT); } },
-        "backward":     { "mousedown": function() { mouseDown = true; timeoutHandleZoom = setInterval(function() { backward(); }, ZOOM_TIMEOUT); } },
-        "fastbackward": { "mousedown": function() { mouseDown = true; timeoutHandleZoom = setInterval(function() { fastBackward(); }, ZOOM_TIMEOUT); } }
+        "zoomin":       { "mousedown":  f1 },
+        "zoomout":      { "mousedown":  f2  },
+        "panleft":      { "mousedown":  f3  },
+        "panright":     { "mousedown":  f4  },
+        "panup":        { "mousedown":  f5  },
+        "pandown":      { "mousedown":  f6  },
+        "forward":      { "mousedown":  f7  },
+        "fastforward":  { "mousedown":  f8  },
+        "backward":     { "mousedown":  f9  },
+        "fastbackward": { "mousedown":  f10 },
     };
 
     var buttons = [
@@ -485,21 +507,17 @@ function init() {
         d3.select("#" + b).on("mouseup", function() { 
             mouseDown = false;
             adjustLabelLocations(); 
-            clearInterval(timeoutHandleZoom); 
+            clearTimeout(timeoutHandleZoom); 
             timeoutHandleZoom = null;
         });
         d3.select("#" + b).on("mouseout", function() { 
             mouseDown = false;
             if (timeoutHandleZoom == null) return;
             adjustLabelLocations(); 
-            clearInterval(timeoutHandleZoom); 
+            clearTimeout(timeoutHandleZoom); 
         });
         d3.select("#" + b).on("click", function() { 
-            if (mouseDown) return;
-            var f = handlers[b]["mousedown"];
-            f();
-            adjustLabelLocations(); 
-            clearInterval(timeoutHandleZoom); 
+            // TODO - would there be a case where mousedown is not called?
         });        
     }
 
@@ -881,7 +899,7 @@ function zoomChangeTransform(t) {
 function zoomChange(t) {
     zoomChangeTransform(t);
     // adjustLabelLocations();
-    showBANGALORE_LONGITUDE();
+    showBangaloreLongitude();
 }
 
 function zoomOut() {
