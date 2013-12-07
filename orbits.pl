@@ -33,7 +33,7 @@ my $debugging = 1;
 my $config = {
     "helio" => {
         'start_year'       => '2013', 'start_month'       => '11', 'start_day'       => '06',
-        'stop_year'        => '2015', 'stop_month'        => '06', 'stop_day'       => '24',
+        'stop_year'        => '2014', 'stop_month'        => '09', 'stop_day'       => '26',
         'start_year_maven' => '2013', 'start_month_maven' => '11', 'start_day_maven' => '19',
         'stop_year_maven'  => '2015', 'stop_month_maven'  => '09', 'stop_day_maven'  => '22',
 

@@ -5,6 +5,11 @@
 
 /* CSS adapted from cleanstickyfooter - https://code.google.com/p/cleanstickyfooter/ */
 
+
+.vspace {
+  margin-bottom: 1em;
+}
+
 html, body {
     height: 100%;
 }
@@ -57,10 +62,34 @@ div#footer_wrapper {
     font-size: 0.8em;
 }
 
+.geo table {
+  border: 2px;
+  border-spacing: 2px;
+  border-collapse: separate;
+}
+
 table {
     border: none;
     border-spacing: 0;
-    border-collapse:collapse;
+    border-collapse: collapse;
+}
+
+.mom {
+  color: orange;
+}
+
+.maven {
+  color: lightpink;
+}
+
+.navbutton {
+  padding: 0px;
+  height: 2em;
+  width: 2em;
+}
+
+.stats td {
+  width: 70px;
 }
 
 svg {

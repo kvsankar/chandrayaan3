@@ -33,29 +33,24 @@
                 <button id="animate"    type="button" class="button" onclick="animate()"></button>
                 <button id="slower"     type="button" class="button" onclick="slower()"> Slower </button>
                 <button id="faster"     type="button" class="button" onclick="faster()"> Faster </button> |
-                <button id="zoomout"    type="button" class="button"> Zoom Out </button>
-                <button id="zoomin"     type="button" class="button"> Zoom In </button> | 
-                <button id="panleft"    type="button" class="button"> Pan Left </button>
-                <button id="panright"   type="button" class="button"> Pan Right </button> 
-                <button id="panup"      type="button" class="button"> Pan Up </button>
-                <button id="pandown"    type="button" class="button"> Pan Down </button> 
-                <button id="reset"      type="button" class="button" onclick="reset()"> Reset </button> | 
                 <input type="checkbox" id="checkbox-lock-mom" onclick="toggleLockMOM()"></input>
                 <label>Lock on to MOM</label> |
             </div> 
 
             <div>
-                <button id="missionstart"       type="button" class="button" onclick="missionStart()">Launch</button>
-                <button id="missiontmi"         type="button" class="button" onclick="missionTMI()">TMI</button>
-                <button id="missionnow"         type="button" class="button" onclick="missionNow()">Now</button>
-                <button id="missionmartian"     type="button" class="button" onclick="missionMartian()">MOI</button>
-                <button id="missionend"         type="button" class="button" onclick="missionEnd()">End</button> | 
-                <button id="fastbackward"       type="button" class="button"> &lt;&lt; </button>
-                <button id="backward"           type="button" class="button"> &lt; </button>
-                <button id="forward"            type="button" class="button"> &gt; </button> 
-                <button id="fastforward"        type="button" class="button"> &gt;&gt; </button> | 
+                <button id="missionstart"       type="button" class="button" title="6 Nov, 2013 (launch date)" onclick="missionStart()">Launch</button>
+                <button id="missiontmi"         type="button" class="button" title="1 Dec, 2013 (Trans Mars Injection)" onclick="missionTMI()">TMI</button>
+                <button id="missionnow"         type="button" class="button" title="Today" onclick="missionNow()">Now</button>
+                <button id="missionmartian"     type="button" class="button" title="24 Sep, 2014 (Mars Orbit Insertion)" onclick="missionMartian()">MOI</button>
+                <button id="missionend"         type="button" class="button" title="26 Sep, 2014 (no more orbit data for MOM)" onclick="missionEnd()">End</button> | 
+                <button id="fastbackward"       type="button" class="button" title="Fast rewind"> &lt;&lt; </button>
+                <button id="backward"           type="button" class="button" title="Rewind"> &lt; </button>
+                <button id="forward"            type="button" class="button" title="Forward"> &gt; </button> 
+                <button id="fastforward"        type="button" class="button" title="Fast forward"> &gt;&gt; </button> |
+                <!--
                 <input type="checkbox" id="checkbox-maven" onclick="toggleMaven()"></input>
                 <label>Show MAVEN</label> |
+                -->
                 <button id="mode" type="button" class="button" onclick="toggleMode()"></button> |
             </div>
             
@@ -63,21 +58,107 @@
                 <table summary="Animation Date"><tr><td>Animation Time</td><td><pre><label id="date"></label></pre></td></tr></table>
             </div>
 
-            <div class="geo">
-                <table summary="MOM and MAVEN distance and velocity data">
+            <div class="controls">
+                <table summary="Zoom and pan controls">
                     <tr>
-                        <td>MOM Distance from Earth (km):</td> <td><label id="distance-MOM"></label></td>
-                        <td>Velocity relative to Earth (km/s): </td><td><label id="velocity-MOM"></label> </td>
+                        <td/>
+                        <td><button id="panup"      type="button" class="navbutton">&#x25B2;</button></td>
+                        <td/>
                     </tr>
                     <tr>
-                        <td>MAVEN Distance from Earth (km):</td> <td><label id="distance-MAVEN"></label></td>
-                        <td>Velocity relative to Earth (km/s): </td><td><label id="velocity-MAVEN"></label> </td>
+                        <td><button id="panleft"    type="button" class="navbutton" title="Pan left">&#x25C0;</button></td>
+                        <td><button id="reset"      type="button" class="button"    title="Reset zoom/pan settings" onclick="reset()">&#x25C8;</button></td>
+                        <td><button id="panright"   type="button" class="navbutton" title="Pan right">&#x25B6;</button></td>
                     </tr>
-                    <!--
                     <tr>
-                        <td>MOM-MAVEN Distance (km):</td><td><label id="distance-MOM-MAVEN"></label></td>
+                        <td/>
+                        <td><button id="pandown"    type="button" class="navbutton" title="Pan down">&#x25BC;</button></td>
+                        <td/>
                     </tr>
-                    -->
+                    <tr/>
+                    <tr>
+                        <td/>
+                        <td><button id="zoomin"     type="button" class="navbutton" title="Zoom in"><b>+</b></button></td>
+                        <td/>                        
+                    </tr>
+                    <tr>
+                        <td/>
+                        <td><button id="zoomout"    type="button" class="navbutton" title="Zoom out"><b>-</b></button></td>
+                        <td/>                    
+                    </tr>
+                </table>
+            </div>
+
+            <div class="vspace">
+            </div>
+
+            <div>
+                <table summary="MOM and MAVEN distance and velocity data: relative to center" class="stats">
+                    <tr>
+                        <td><b>Relative to <label id="center"></label></b></td>
+                    </tr>
+                    <tr>
+                        <td>Vehicle</td>
+                        <td><label class="mom">MOM</label></td>
+                        <td><label class="maven">MAVEN</label></td>
+                    </tr>
+                    <tr>
+                        <td>Distance (km): </td>
+                        <td><label id="distance-MOM" class="mom"></label></td>
+                        <td><label id="distance-MAVEN" class="maven"></label></td>
+                    </tr>
+                    <tr>
+                        <td>Velocity (km/s): </td>
+                        <td><label id="velocity-MOM" class="mom"></label></td>
+                        <td><label id="velocity-MAVEN" class="maven"></label></td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="helio">
+                <table summary="MOM and MAVEN distance and velocity data: relative to Earth" class="stats">
+                    <tr>
+                        <td><b>Relative to Earth</b></td>
+                    </tr>
+                    <tr>
+                        <td>Vehicle</td>
+                        <td><label class="mom">MOM</label></td>
+                        <td><label class="maven">MAVEN</label></td>
+                    </tr>
+                    <tr>
+                        <td>Distance (km): </td>
+                        <td><label id="distance-MOM-Earth" class="mom"></label></td>
+                        <td><label id="distance-MAVEN-Earth" class="maven"></label></td>
+                    </tr>
+                    <tr>
+                        <td>Velocity (km/s): </td>
+                        <td><label id="velocity-MOM-Earth" class="mom"></label></td>
+                        <td><label id="velocity-MAVEN-Earth" class="maven"></label></td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="helio">
+                <table summary="MOM and MAVEN distance and velocity data: relative to Mars" class="stats">
+                    <tr>
+                        <td><b>Relative to Mars</b></td>
+                    </tr>
+                    <tr>
+                        <td>Vehicle</td>
+                        <td><label class="mom">MOM</label></td>
+                        <td><label class="maven">MAVEN</label></td>
+                    </tr>
+                    <tr>
+                        <td>Distance (km): </td>
+                        <td><label id="distance-MOM-Mars" class="mom"></label></td>
+                        <td><label id="distance-MAVEN-Mars" class="maven"></label></td>
+                    </tr>
+                    <tr>
+                        <td>Velocity (km/s): </td>
+                        <td><label id="velocity-MOM-Mars" class="mom"></label></td>
+                        <td><label id="velocity-MAVEN-Mars" class="maven"></label></td>
+                    </tr>
+
                 </table>
             </div>
 

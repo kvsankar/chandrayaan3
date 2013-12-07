@@ -22,7 +22,7 @@ var DEGREES_PER_CIRCLE = 360.0;
 var MILLI_SECONDS_PER_HOUR = 3600000;
 
 var planetProperties = {
-    "MAVEN":    { "id": MAVEN,      "name": "MAVEN",    "color": "purple",  "r": 2.4, "labelOffsetX": +10, "labelOffsetY": -10 },
+    "MAVEN":    { "id": MAVEN,      "name": "MAVEN",    "color": "lightpink",  "r": 2.4, "labelOffsetX": +10, "labelOffsetY": -10 },
     "MOM":      { "id": MOM,        "name": "MOM",      "color": "orange",  "r": 3.2, "labelOffsetX": -30, "labelOffsetY": -10 },
     "SUN":      { "id": SUN,        "name": "Sun",      "color": "yellow",  "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
     "MERCURY":  { "id": MERCURY,    "name": "Mercury",  "color": "green",   "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
@@ -45,7 +45,7 @@ var FORMAT_METRIC = d3.format(" >10,.2f");
 
 // begin - data structures which change based on configuration
 
-var config = "geo";
+var config = "helio";
 var offsetx;
 var offsety;
 var PIXELS_PER_AU;
@@ -137,6 +137,8 @@ function initConfig() {
 
         d3.select("#mode").html("Switch to Helio Mode");
         d3.selectAll(".geo").style("visibility", "visible");
+        d3.selectAll(".helio").style("visibility", "hidden");
+        d3.select("#center").text("Earth");
 
     } else if (config == "helio") {
 
@@ -145,13 +147,13 @@ function initConfig() {
         offsetx = svgWidth / 2;
         offsety = svgHeight / 2  + 50;
 
-        PIXELS_PER_AU = 150;
+        PIXELS_PER_AU = 200;
         trackWidth = 1;
         centerPlanet = "SUN";
         centerRadius = 6;
         planetsForOrbits = ["MERCURY", "VENUS", "EARTH", "MARS"];
         planetsForLocations = ["MERCURY", "VENUS", "EARTH", "MARS", "MOM", "MAVEN"];
-        countDurationMilliSeconds = 6.0 * MILLI_SECONDS_PER_HOUR; // TODO add to and read from JSON
+        countDurationMilliSeconds = 4.0 * MILLI_SECONDS_PER_HOUR; // TODO add to and read from JSON
         orbitsJson = "orbits.json";
         total = 2023480; // TODO
         leapSize = 20; // 5 days
@@ -159,18 +161,20 @@ function initConfig() {
         startTime                  = Date.UTC(2013, 11-1,  6, 0, 0, 0, 0);
         helioCentricPhaseStartTime = Date.UTC(2013, 12-1,  1, 0, 0, 0, 0);
         martianPhaseStartTime      = Date.UTC(2014,  9-1, 24, 0, 0, 0, 0);
-        endTime                    = Date.UTC(2015,  6-1, 24, 0, 0, 0, 0);
+        endTime                    = Date.UTC(2014,  9-1, 26, 0, 0, 0, 0);
         mavenStartTime             = Date.UTC(2013, 11-1, 19, 0, 0, 0, 0);
         mavenEndTime               = Date.UTC(2015,  9-1, 22, 0, 0, 0, 0);
 
         latestEndTime = mavenEndTime;
         nSteps = (latestEndTime - startTime) / countDurationMilliSeconds;
-        timeout = 25;
+        timeout = 5;
 
         count = 0;
 
         d3.select("#mode").html("Switch to Geo Mode");
         d3.selectAll(".geo").style("visibility", "hidden");
+        d3.selectAll(".helio").style("visibility", "visible");
+        d3.select("#center").text("Sun");
     }
 }
 
@@ -182,10 +186,14 @@ function toggleMode() {
 
 function toggleMaven() {
     showMaven = ! showMaven;
-    var visibility = showMaven ? "visible" : "hidden";
-    d3.select("#orbit-MAVEN").attr("visibility", visibility);
+
+    var orbitVisibility = showMaven ? "visible" : "hidden";
+    d3.select("#orbit-MAVEN").attr("visibility", orbitVisibility);
+
+    var visibility = (showMaven && (isLocationAvaialable("MAVEN", now))) ? "visible" : "hidden";    
     d3.select("#MAVEN").attr("visibility", visibility);
     d3.select("#label-MAVEN").attr("visibility", visibility);
+    d3.selectAll(".maven").attr("visibility", visibility);
 }
 
 function showPlanet(planet) {
@@ -280,6 +288,8 @@ function setLocation() {
 
             if ((planetKey == "MOM") || (planetKey == "MAVEN")) {
 
+                // relative to center
+
                 var z = vectors[index]["z"];
                 var r = Math.sqrt(x*x + y*y + z*z);
                 d3.select("#distance-" + planetKey).text(FORMAT_METRIC(r));
@@ -289,11 +299,46 @@ function setLocation() {
                 var vz = vectors[index]["vz"];
                 var v = Math.sqrt(vx*vx + vy*vy + vz*vz);
                 d3.select("#velocity-" + planetKey).text(FORMAT_METRIC(v));
+
+                if (config == "helio") {
+                    // relative to Earth
+                    x = vectors[index]["x"] - orbits[EARTH]["vectors"][count]["x"];
+                    y = vectors[index]["y"] - orbits[EARTH]["vectors"][count]["y"];
+                    z = vectors[index]["z"] - orbits[EARTH]["vectors"][count]["z"];
+                    r = Math.sqrt(x*x + y*y + z*z);
+                    d3.select("#distance-" + planetKey +"-Earth").text(FORMAT_METRIC(r));
+
+                    vx = vectors[index]["vx"] - orbits[EARTH]["vectors"][count]["vx"];
+                    vy = vectors[index]["vy"] - orbits[EARTH]["vectors"][count]["vy"];
+                    vz = vectors[index]["vz"] - orbits[EARTH]["vectors"][count]["vz"];
+                    v = Math.sqrt(vx*vx + vy*vy + vz*vz);
+                    d3.select("#velocity-" + planetKey +"-Earth").text(FORMAT_METRIC(v));    
+
+                    // relative to Mars
+                    x = vectors[index]["x"] - orbits[MARS]["vectors"][count]["x"];
+                    y = vectors[index]["y"] - orbits[MARS]["vectors"][count]["y"];
+                    z = vectors[index]["z"] - orbits[MARS]["vectors"][count]["z"];
+                    r = Math.sqrt(x*x + y*y + z*z);
+                    d3.select("#distance-" + planetKey +"-Mars").text(FORMAT_METRIC(r));
+
+                    vx = vectors[index]["vx"] - orbits[MARS]["vectors"][count]["vx"];
+                    vy = vectors[index]["vy"] - orbits[MARS]["vectors"][count]["vy"];
+                    vz = vectors[index]["vz"] - orbits[MARS]["vectors"][count]["vz"];
+                    v = Math.sqrt(vx*vx + vy*vy + vz*vz);
+                    d3.select("#velocity-" + planetKey +"-Mars").text(FORMAT_METRIC(v));    
+                }
             }
 
         } else {
             d3.select("#" + planetKey)
                 .attr("visibility", "hidden");
+
+            d3.select("#distance-" + planetKey).text("");
+            d3.select("#velocity-" + planetKey).text("");
+            d3.select("#distance-" + planetKey + "-Earth").text("");
+            d3.select("#velocity-" + planetKey + "-Earth").text("");
+            d3.select("#distance-" + planetKey + "-Mars").text("");
+            d3.select("#velocity-" + planetKey + "-Mars").text("");
         }
     }
     
@@ -469,7 +514,7 @@ function init() {
     if (firefox) {
         var svgWidth = window.innerWidth;
         var svgHeight = window.innerHeight - 40;
-        console.log("svgWidth = " + svgWidth + ", svgHeight = " + svgHeight);
+        // console.log("svgWidth = " + svgWidth + ", svgHeight = " + svgHeight);
         d3.select("svg")
             .attr("width", svgWidth)
             .attr("height", svgHeight);
@@ -485,7 +530,7 @@ function init() {
 
             var progress = d3.event.loaded / total;
             var msg = dataLoaded ? "" : ("Loading " + orbitsJson + "  ... " + FORMAT_PERCENT(progress) + ".");
-            console.log(msg);
+            // console.log(msg);
             d3.select("#message").html(msg);
         })
         .get(function(error, data) {
@@ -775,7 +820,7 @@ function missionSetTime() {
 
 function missionNow() {
     now = new Date().getTime();
-    console.log(now);
+    // console.log(now);
     missionSetTime();
 }
 
@@ -797,12 +842,12 @@ function missionEnd() {
 function faster() {
     timeout /= ZOOM_SCALE;
     if (timeout < 0) timeout = 0;
-    console.log("timeout = " + timeout);
+    // console.log("timeout = " + timeout);
 }
 
 function slower() {
     timeout *= ZOOM_SCALE;
-    console.log("timeout = " + timeout);
+    // console.log("timeout = " + timeout);
 }
 
 function zoomChangeTransform(t) {
