@@ -155,7 +155,7 @@ function initConfig() {
         planetsForLocations = ["MERCURY", "VENUS", "EARTH", "MARS", "MOM", "MAVEN"];
         countDurationMilliSeconds = 4.0 * MILLI_SECONDS_PER_HOUR; // TODO add to and read from JSON
         orbitsJson = "orbits.json";
-        total = 2023480; // TODO
+        total = 4555792; // TODO
         leapSize = 20; // 5 days
 
         startTime                  = Date.UTC(2013, 11-1,  6, 0, 0, 0, 0);
