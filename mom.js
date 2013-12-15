@@ -39,15 +39,15 @@ var BANGALORE_RADIUS = 20;
 var EARTH_SOI_RADIUS_IN_KM = 925000 * 0.90;
 var soiRadius;
 var ZOOM_SCALE = 1.10;
-var ZOOM_TIMEOUT = 150;
+var ZOOM_TIMEOUT = 0;
 var FORMAT_PERCENT = d3.format(".0%");
 var FORMAT_METRIC = d3.format(" >10,.2f");
 
 // begin - data structures which change based on configuration
 
 var config = "helio";
-var offsetx;
-var offsety;
+var offsetx = 0;
+var offsety = 0;
 var PIXELS_PER_AU;
 var trackWidth;
 var centerPlanet;
@@ -77,6 +77,7 @@ var epochJD;
 var epochDate;
 var animDate;
 var svgContainer;
+var svgRect;
 var viewBoxWidth;
 var viewBoxHeight;
 var zoomFactor = 1;
@@ -97,6 +98,7 @@ var progress = 0;
 var mouseDown = false;
 var firefox = false;
 var chrome = false;
+var zoomUsed = false;
 
 function initConfig() {
 
@@ -381,9 +383,8 @@ function setLocation() {
         setLabelLocation(planetKey);
     }
 
-    showBangaloreLongitude();
-
     zoomChangeTransform(0);
+    showBangaloreLongitude();
 }
 
 function showBangaloreLongitude() {
@@ -525,20 +526,22 @@ function init() {
 
     d3.select("svg").remove();
 
-    svgContainer = d3.select("#svg").append("svg")
-        .append("g")
-        .attr("transform", "translate(" + offsetx + ", " + offsety + ")");
+    var svgWidth = window.innerWidth;
+    var svgHeight = window.innerHeight - 40;
 
+    svgContainer = d3.select("#svg-wrapper")
+        .append("svg")
+            .attr("id", "svg")
+        .append("g")
+            .attr("transform", "translate(" + offsetx + ", " + offsety + ")");
+            
     if (firefox) {
-        var svgWidth = window.innerWidth;
-        var svgHeight = window.innerHeight - 40;
         // console.log("svgWidth = " + svgWidth + ", svgHeight = " + svgHeight);
         d3.select("svg")
             .attr("width", svgWidth)
             .attr("height", svgHeight);
     }
         
-
     d3.select("#message").html("Loading orbit data ...");
 
     dataLoaded = false;
@@ -560,6 +563,24 @@ function init() {
                 orbits = data;
                 if (config == "helio") processOrbitElementsData();
                 processOrbitVectorsData();
+
+                svgRect = d3.select("#svg")
+                    .append("rect")
+                        .attr("id", "svg-rect")
+                        .attr("class", "overlay")
+                        .attr("x", 0)
+                        .attr("y", 0)
+                        .attr("width", svgWidth)
+                        .attr("height", svgHeight)
+                        .attr("style", "fill:none;stroke:black;stroke-width:0;fill-opacity:0;stroke-opacity:0")
+                        // .attr("class", "background")
+                        .call(d3.behavior.zoom()
+                            .translate([offsetx, offsety])
+                            .scale(zoomFactor)
+                            .on("zoom", zoom)
+                            .on("zoomend", adjustLabelLocations));
+
+
                 missionStart();
                 d3.selectAll("button").attr("disabled", null);
             }
@@ -567,6 +588,14 @@ function init() {
 
     d3.select("#checkbox-maven").attr("checked", true);
     d3.select("#animate").text("Start");
+}
+
+function zoom() {
+    // console.log("zoom called: " + d3.event.translate[0] + ", " + d3.event.translate[1] + ", " + d3.event.scale);
+    zoomFactor = d3.event.scale;
+    panx = d3.event.translate[0] - offsetx;
+    pany = d3.event.translate[1] - offsety;
+    zoomChangeTransform();
 }
 
 function processOrbitElementsData() {
@@ -897,6 +926,11 @@ function zoomChangeTransform(t) {
 }
 
 function zoomChange(t) {
+    if (!zoomUsed) {
+        zoomUsed = true;
+        alert("Now you can drag, zoom in, or zoom out with your mouse just as in Google Maps! Please try it out.")
+    }
+
     zoomChangeTransform(t);
     // adjustLabelLocations();
     showBangaloreLongitude();
@@ -938,6 +972,14 @@ function reset() {
     panx = 0;
     pany = 0;
     zoomFactor = 1;
+
+    svgRect
+        .call(d3.behavior.zoom()
+        .translate([offsetx, offsety])
+        .scale(zoomFactor)
+        .on("zoom", zoom)
+        .on("zoomend", adjustLabelLocations));
+
     zoomChange(ZOOM_TIMEOUT);
     adjustLabelLocations();
 }

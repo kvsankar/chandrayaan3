@@ -5,6 +5,10 @@
 
 /* CSS adapted from cleanstickyfooter - https://code.google.com/p/cleanstickyfooter/ */
 
+.overlay {
+  fill: none;
+  pointer-events: all;
+}
 
 .vspace {
   margin-bottom: 1em;
@@ -15,6 +19,9 @@ html, body {
 }
 
 body {
+    z-index: 2;
+    pointer-events: all;
+
     margin: 0px;
     padding: 0px;
     background-color: black; 
@@ -94,11 +101,11 @@ table {
 
 svg {
     position: absolute;
-    left: 0px;
-    top: 0px;
+    left: 100px;
+    top: 100px;
     right: 100%;
     bottom: 100%;
-    z-index: -1;
+    z-index: 1; 
 }
 
 /* end of file */

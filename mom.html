@@ -31,7 +31,7 @@
                 Works best with Google Chrome.
             </div>
 
-            <div>
+            <div> <!-- First row buttons -->
                 <button id="animate"    type="button" class="button" onclick="animate()"></button>
                 <button id="slower"     type="button" class="button" onclick="slower()"> Slower </button>
                 <button id="faster"     type="button" class="button" onclick="faster()"> Faster </button> |
@@ -39,7 +39,7 @@
                 <label>Lock on to MOM</label> |
             </div> 
 
-            <div>
+            <div> <!-- Second row buttons -->
                 <button id="missionstart"       type="button" class="button" title="6 Nov, 2013 (launch date)" onclick="missionStart()">Launch</button>
                 <button id="missiontmi"         type="button" class="button" title="1 Dec, 2013 (Trans Mars Injection)" onclick="missionTMI()">TMI</button>
                 <button id="missionnow"         type="button" class="button" title="Today" onclick="missionNow()">Now</button>
@@ -94,7 +94,7 @@
             <div class="vspace">
             </div>
 
-            <div>
+            <div> <!-- basic statistics -->
                 <table summary="MOM and MAVEN distance and velocity data: relative to center" class="stats">
                     <tr>
                         <td><b>Relative to <label id="center"></label></b></td>
@@ -117,7 +117,7 @@
                 </table>
             </div>
 
-            <div class="helio">
+            <div class="helio"> <!-- extended statistics / Relative to Earth -->
                 <table summary="MOM and MAVEN distance and velocity data: relative to Earth" class="stats">
                     <tr>
                         <td><b>Relative to Earth</b></td>
@@ -140,7 +140,7 @@
                 </table>
             </div>
 
-            <div class="helio">
+            <div class="helio"> <!-- extended statistics / Relative to Mars -->
                 <table summary="MOM and MAVEN distance and velocity data: relative to Mars" class="stats">
                     <tr>
                         <td><b>Relative to Mars</b></td>
@@ -167,14 +167,13 @@
             <div class="message">
                 <p id="message"></p>
             </div>
-            </div> <!-- <div id="htmlbody"> -->
 
-            <div id="svg" class="svg">
+            <div id="svg-wrapper" class="svg-wrapper">
             </div>
 
-        </div>
-        </div>
-        </div>
+        </div> <!-- content_inner_wrapper -->
+        </div> <!-- content_wrapper -->
+        </div> <!-- wrapper -->
 
         <div id="footer_wrapper">
         <div id="footer_inner_wrapper">
@@ -195,7 +194,7 @@
                 Copyright &copy; 2013 Sankaranarayan K V; this file is published under the Creative Commons CC-BY-SA 2.0 license.
             </div> <!-- copyright -->
 
-        </div>
-        </div>
+        </div> <!-- footer_inner_wrapper -->
+        </div> <!-- footer_wrapper -->
     </body>
 </html>
