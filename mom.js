@@ -40,6 +40,8 @@ var EARTH_SOI_RADIUS_IN_KM = 925000 * 0.90;
 var soiRadius;
 var ZOOM_SCALE = 1.10;
 var ZOOM_TIMEOUT = 0;
+var SVG_ORIGIN_X = 100; // TODO match with CSS value; find a better way
+var SVG_ORIGIN_Y = 100; // TODO match with CSS value; find a better way
 var FORMAT_PERCENT = d3.format(".0%");
 var FORMAT_METRIC = d3.format(" >10,.2f");
 
@@ -98,7 +100,6 @@ var progress = 0;
 var mouseDown = false;
 var firefox = false;
 var chrome = false;
-var zoomUsed = false;
 
 function initConfig() {
 
@@ -106,8 +107,8 @@ function initConfig() {
 
         var svgWidth = window.innerWidth;
         var svgHeight = window.innerHeight - 40;
-        offsetx = svgWidth / 2;
-        offsety = svgHeight / 3;
+        offsetx = svgWidth / 2 - SVG_ORIGIN_X;
+        offsety = svgHeight / 3 - SVG_ORIGIN_Y;
 
         PIXELS_PER_AU = 60000;
         trackWidth = 0.6;
@@ -146,8 +147,8 @@ function initConfig() {
 
         var svgWidth = window.innerWidth;
         var svgHeight = window.innerHeight - 40;
-        offsetx = svgWidth / 2;
-        offsety = svgHeight / 2  + 50;
+        offsetx = svgWidth / 2 - SVG_ORIGIN_X;
+        offsety = svgHeight / 2  + 50 - SVG_ORIGIN_Y;
 
         PIXELS_PER_AU = 200;
         trackWidth = 1;
@@ -450,8 +451,9 @@ function onload() {
 
     initConfig();
     init();
-}
 
+    $("#banner").dialog({height: 400, width: 400, modal: true});
+}
 
 // TODO - find a better way to handle the following
 
@@ -506,16 +508,21 @@ function init() {
         d3.select("#" + b).on("mousedown", handlers[b]["mousedown"]);
 
         d3.select("#" + b).on("mouseup", function() { 
+
             mouseDown = false;
-            adjustLabelLocations(); 
             clearTimeout(timeoutHandleZoom); 
             timeoutHandleZoom = null;
+
+            zoomEnd();
         });
         d3.select("#" + b).on("mouseout", function() { 
+
             mouseDown = false;
             if (timeoutHandleZoom == null) return;
-            adjustLabelLocations(); 
-            clearTimeout(timeoutHandleZoom); 
+            clearTimeout(timeoutHandleZoom);
+            timeoutHandleZoom = null;
+
+            zoomEnd();
         });
         d3.select("#" + b).on("click", function() { 
             // TODO - would there be a case where mousedown is not called?
@@ -575,10 +582,10 @@ function init() {
                         .attr("style", "fill:none;stroke:black;stroke-width:0;fill-opacity:0;stroke-opacity:0")
                         // .attr("class", "background")
                         .call(d3.behavior.zoom()
-                            .translate([offsetx, offsety])
+                            .translate([offsetx+panx, offsety+pany])
                             .scale(zoomFactor)
                             .on("zoom", zoom)
-                            .on("zoomend", adjustLabelLocations));
+                            .on("zoomend", zoomEnd));
 
 
                 missionStart();
@@ -596,6 +603,10 @@ function zoom() {
     panx = d3.event.translate[0] - offsetx;
     pany = d3.event.translate[1] - offsety;
     zoomChangeTransform();
+}
+
+function zoomEnd() {
+    adjustLabelLocations();
 }
 
 function processOrbitElementsData() {
@@ -640,8 +651,6 @@ function processOrbitElementsData() {
 }
 
 function processOrbitVectorsData() {
-
-
     // Add spacecraft orbits
     
     for (var i = 0; i < planetsForLocations.length; ++i) {
@@ -922,17 +931,19 @@ function zoomChangeTransform(t) {
             + ", " + (offsetx+panx+momx-zoomFactor*(momx)-momx)
             + ", " + (offsety+pany+momy-zoomFactor*(momy)-momy)
             + ")"
-        );    
+        );  
+
+    // sychronize D3's state
+    svgRect
+        .call(d3.behavior.zoom()
+        .translate([offsetx+panx, offsety+pany])
+        .scale(zoomFactor)
+        .on("zoom", zoom)
+        .on("zoomend", adjustLabelLocations));          
 }
 
 function zoomChange(t) {
-    if (!zoomUsed) {
-        zoomUsed = true;
-        alert("Now you can drag, zoom in, or zoom out with your mouse just as in Google Maps! Please try it out.")
-    }
-
     zoomChangeTransform(t);
-    // adjustLabelLocations();
     showBangaloreLongitude();
 }
 
@@ -973,15 +984,8 @@ function reset() {
     pany = 0;
     zoomFactor = 1;
 
-    svgRect
-        .call(d3.behavior.zoom()
-        .translate([offsetx, offsety])
-        .scale(zoomFactor)
-        .on("zoom", zoom)
-        .on("zoomend", adjustLabelLocations));
-
     zoomChange(ZOOM_TIMEOUT);
-    adjustLabelLocations();
+    zoomEnd();
 }
 
 function toggleLockMOM() {
