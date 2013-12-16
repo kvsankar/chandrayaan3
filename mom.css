@@ -1,9 +1,39 @@
 
 /* Copyright (c) 2013 Sankaranarayanan K V. All rights reserved. */
 
-/* TODO requires further tuning */
+/*
+ * The ingredients here are made from several sources:
+ * 
+ * toggle buttons - http://stackoverflow.com/a/309318
+ * sticky footer - cleanstickyfooter - https://code.google.com/p/cleanstickyfooter/
+ * 
+ */
 
-/* CSS adapted from cleanstickyfooter - https://code.google.com/p/cleanstickyfooter/ */
+a.up {
+    color: black;
+    background: #ccc;
+    cursor: pointer;
+    border-top: solid 2px #eaeaea;
+    border-left: solid 2px #eaeaea;
+    border-bottom: solid 2px #777;
+    border-right: solid 2px #777;
+    padding: 5px 5px;
+
+}
+
+a.down {
+    color: black;
+    background: #bbb;
+    border-top: solid 2px #777;
+    border-left: solid 2px #777;
+    border-bottom:solid 2px  #eaeaea;
+    border-right: solid 2px #eaeaea;
+}
+
+.ui-dialog {
+  left: 0px;
+  top: 200px;
+}
 
 .overlay {
   fill: none;
@@ -54,7 +84,7 @@ div#wrapper {
     min-height: 100%;
     height: auto !important;
     height: 100%;
-    margin: 0px 0px -35px 0px;
+    margin: 0px 0px -41px 0px;
 }
 
 div#footer_wrapper {
@@ -81,7 +111,7 @@ div#footer_inner_wrapper, div#content_inner_wrapper {
 
 div#footer_wrapper {
     color: #7F7F7F;
-    height: 35px; /* '.push' must be the same height as 'footer' */
+    height: 41px; /* '.push' must be the same height as 'footer' */
 }
 
 .copyright {

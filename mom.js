@@ -534,6 +534,18 @@ function init() {
         });        
     }
 
+    d3.select("#controls-button").on("click", function() {
+        var d = d3.select("#controls-button");
+        if (d.attr("class") == "up") {
+            d.attr("class", "down") 
+        } else { 
+            d.attr("class", "up");
+        }
+    });
+
+    $("#control-panel").dialog({modal: false, position: {my: "left top", at: "left bottom", of: "#date"}, title: "Controls"});
+    $("#stats").dialog({modal: false, position: {my: "left top", at: "left bottom", of: "#control-panel"}, title: "Information"});
+
     animDate = d3.select("#date");
 
     d3.select("svg").remove();
