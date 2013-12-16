@@ -452,7 +452,7 @@ function onload() {
     initConfig();
     init();
 
-    $("#banner").dialog({height: 400, width: 400, modal: true});
+    $("#banner").dialog({height: 200, width: 400, modal: true});
 }
 
 // TODO - find a better way to handle the following
@@ -549,7 +549,7 @@ function init() {
             .attr("height", svgHeight);
     }
         
-    d3.select("#message").html("Loading orbit data ...");
+    d3.select("#progressbar-label").html("Loading orbit data ...");
 
     dataLoaded = false;
 
@@ -559,14 +559,18 @@ function init() {
             var progress = d3.event.loaded / total;
             var msg = dataLoaded ? "" : ("Loading " + orbitsJson + "  ... " + FORMAT_PERCENT(progress) + ".");
             // console.log(msg);
-            d3.select("#message").html(msg);
+            $("#progressbar").progressbar({value: progress});
+            $("#progressbar").show();
+            d3.select("#progressbar-label").html(msg);
         })
         .get(function(error, data) {
             if (error) {
-                d3.select("#message").html("Error: failed to load orbit data.");                
+                $("#progressbar").hide();
+                d3.select("#progressbar-label").html("Error: failed to load orbit data.");                
             } else {
                 dataLoaded = true;
-                d3.select("#message").html("");
+                $("#progressbar").hide();
+                d3.select("#progressbar-label").html("");
                 orbits = data;
                 if (config == "helio") processOrbitElementsData();
                 processOrbitVectorsData();

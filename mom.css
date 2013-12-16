@@ -16,7 +16,19 @@
 
 .banner { 
   display: none; 
-  font-size: 2em;
+  font-size: 1em;
+}
+
+.progressbar {
+    position: absolute;
+    left: 25%;
+    top: 50%;
+    width: 50%;
+}
+
+.progressbar-label {
+    position: relative;
+    text-align: center;
 }
 
 html, body {
@@ -31,7 +43,7 @@ body {
     padding: 0px;
     background-color: black; 
     color: #B3B3B3;
-    font-size: xx-small;
+    font-size: x-small;
     font-family: sans-serif;  
 }
 
