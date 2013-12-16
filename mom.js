@@ -36,7 +36,7 @@ var CENTER_LABEL_OFFSET_X = -5;
 var CENTER_LABEL_OFFSET_Y = -15;
 var BANGALORE_LONGITUDE = 77.5667;
 var BANGALORE_RADIUS = 20;
-var EARTH_SOI_RADIUS_IN_KM = 925000 * 0.90;
+var EARTH_SOI_RADIUS_IN_KM = 925000 * 0.90; // The 0.90 factor is an adustment since we are using only (x, y) and not z.
 var soiRadius;
 var ZOOM_SCALE = 1.10;
 var ZOOM_TIMEOUT = 0;
@@ -184,7 +184,7 @@ function initConfig() {
 function toggleMode() {
     stopAnimation();
     config = (config == "geo") ? "helio" : "geo";
-    onload();
+    initRest();
 }
 
 function toggleMaven() {
@@ -441,18 +441,23 @@ function adjustLabelLocations() {
         .attr("font-size", (8/zoomFactor));
 }
 
-function onload() {
-
+function initOnce() {
     if (navigator.userAgent.indexOf('Firefox') != -1) {
         firefox = true;
     } else if (navigator.userAgent.indexOf('Chrome') != -1) {
         chrome = true;
     }
-
-    initConfig();
-    init();
-
     $("#banner").dialog({height: 200, width: 400, modal: true});
+}
+
+function initRest() {
+    initConfig();
+    init();    
+}
+
+function onload() {
+    initOnce();
+    initRest();
 }
 
 // TODO - find a better way to handle the following
@@ -557,7 +562,7 @@ function init() {
         .on("progress", function() {
 
             var progress = d3.event.loaded / total;
-            var msg = dataLoaded ? "" : ("Loading " + orbitsJson + "  ... " + FORMAT_PERCENT(progress) + ".");
+            var msg = dataLoaded ? "" : ("Loading orbit data ... " + FORMAT_PERCENT(progress) + ".");
             // console.log(msg);
             $("#progressbar").progressbar({value: progress * 100});
             $("#progressbar").show();
