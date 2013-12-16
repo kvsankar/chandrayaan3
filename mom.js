@@ -559,7 +559,7 @@ function init() {
             var progress = d3.event.loaded / total;
             var msg = dataLoaded ? "" : ("Loading " + orbitsJson + "  ... " + FORMAT_PERCENT(progress) + ".");
             // console.log(msg);
-            $("#progressbar").progressbar({value: progress});
+            $("#progressbar").progressbar({value: progress * 100});
             $("#progressbar").show();
             d3.select("#progressbar-label").html(msg);
         })
