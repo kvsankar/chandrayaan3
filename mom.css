@@ -27,8 +27,10 @@
 }
 
 .progressbar-label {
-    position: relative;
+    position: absolute;
     text-align: center;
+    line-height: 2em;
+    width: 100%;
 }
 
 html, body {
