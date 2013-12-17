@@ -13,11 +13,12 @@
         <script src="ga.js" type="text/javascript" charset="utf-8"></script>
         <script src="jquery-1.9.1.js"></script>
         <script src="jquery-ui-1.10.3.custom.min.js"></script>
+        <script src="jquery.dialogextend.min.js"></script>
         
         <script src="mom.js" type="text/javascript" charset="utf-8"></script>
 
-        <link rel="stylesheet" type="text/css" href="mom.css" />
         <link rel="stylesheet" href="css/ui-darkness/jquery-ui-1.10.3.custom.min.css" />
+        <link rel="stylesheet" type="text/css" href="mom.css" />
 
         <title>ISRO's Mars Orbiter Mission &amp; NASA/GSFC's MAVEN - An Orbit Animation</title>
     </head>
@@ -26,7 +27,7 @@
         <div id="content_wrapper">
         <div id="content_inner_wrapper">
 
-            <div class="blurb">
+            <div id="blurb" class="blurb">
                 <a href="http://www.isro.org/mars/home.aspx">MOM</a> and 
                 <a href="http://www.nasa.gov/mission_pages/maven/main/">MAVEN</a> orbit animation.
                 Inner solar system and MOM / MAVEN orbit animation generated using 
@@ -34,47 +35,47 @@
                 Works best with Google Chrome.
             </div>
 
+            <div id="control-panel" class="control-panel">
+
             <div> <!-- First row buttons -->
                 <button id="animate"    type="button" class="button" onclick="animate()"></button>
-                <button id="slower"     type="button" class="button" onclick="slower()"> Slower </button>
-                <button id="faster"     type="button" class="button" onclick="faster()"> Faster </button> |
+                <button id="slower"     type="button" class="button"> Slower </button>
+                <button id="faster"     type="button" class="button"> Faster </button> |
                 <input type="checkbox" id="checkbox-lock-mom" onclick="toggleLockMOM()"></input>
-                <label>Lock on to MOM</label> |
-            </div> 
-
-            <div> <!-- Second row buttons -->
+                <label>Lock on to MOM</label>
+                |
                 <button id="missionstart"       type="button" class="button" title="6 Nov, 2013 (launch date)" onclick="missionStart()">Launch</button>
                 <button id="missiontmi"         type="button" class="button" title="1 Dec, 2013 (Trans Mars Injection)" onclick="missionTMI()">TMI</button>
                 <button id="missionnow"         type="button" class="button" title="Today" onclick="missionNow()">Now</button>
                 <button id="missionmartian"     type="button" class="button" title="24 Sep, 2014 (Mars Orbit Insertion)" onclick="missionMartian()">MOI</button>
-                <button id="missionend"         type="button" class="button" title="26 Sep, 2014 (no more orbit data for MOM)" onclick="missionEnd()">End</button> | 
+                <button id="missionend"         type="button" class="button" title="26 Sep, 2014 (no more orbit data for MOM)" onclick="missionEnd()">End</button>| 
                 <button id="fastbackward"       type="button" class="button" title="Fast rewind">&#x25C1;</button>
                 <button id="backward"           type="button" class="button" title="Rewind">&#x25C3;</button>
                 <button id="forward"            type="button" class="button" title="Forward">&#x25B9;</button> 
-                <button id="fastforward"        type="button" class="button" title="Fast forward">&#x25B7;</button> |
+                <button id="fastforward"        type="button" class="button" title="Fast forward">&#x25B7;</button> 
+                |
                 <!--
                 <input type="checkbox" id="checkbox-maven" onclick="toggleMaven()"></input>
                 <label>Show MAVEN</label> |
                 -->
-                <button id="mode" type="button" class="button" onclick="toggleMode()"></button> |
+                <button id="mode" type="button" class="button" onclick="toggleMode()"></button>
+                
+                <div class="vspace"></div>
 
-                <a id="controls-button" class="down">Controls</a>
-
-            </div>
+                <div id="date" class="date">
+                    <table summary="Animation Date"><tr><td>Animation Time</td><td><pre><label id="date"></label></pre></td></tr></table>
+                </div>
+            </div> <!-- Firsst row buttons -->
+            </div> <!-- control panel -->
             
-            <div id="banner" class="banner" title="Recent updates">
-                <p>Now you can drag and zoom the animation using your mouse just as in Google maps!</p>
+            <div id="banner" class="banner" title="What's New?">
             </div>
 
             <div id="progressbar" class="progressbar">
                 <div id="progressbar-label" class="progressbar-label"></div>
             </div>
 
-            <div id="date" class="date">
-                <table summary="Animation Date"><tr><td>Animation Time</td><td><pre><label id="date"></label></pre></td></tr></table>
-            </div>
-
-            <div id="control-panel" class="control-panel">
+            <div id="zoom-panel" class="zoom-panel">
                 <table summary="Zoom and pan controls">
                     <tr>
                         <td/>
@@ -103,10 +104,9 @@
                         <td/>                    
                     </tr>
                 </table>
-            </div>
+            </div> <!-- zoom panel -->
 
-            <div class="vspace">
-            </div>
+            <div class="vspace"></div>
 
             <div id="stats" class="stats"> <!-- stats wrapper -->
             <div> <!-- basic statistics -->
@@ -132,6 +132,8 @@
                 </table>
             </div>
 
+            <div class="vspace"></div>
+
             <div class="helio"> <!-- extended statistics / Relative to Earth -->
                 <table summary="MOM and MAVEN distance and velocity data: relative to Earth" class="stats">
                     <tr>
@@ -154,6 +156,8 @@
                     </tr>
                 </table>
             </div>
+
+            <div class="vspace"></div>
 
             <div class="helio"> <!-- extended statistics / Relative to Mars -->
                 <table summary="MOM and MAVEN distance and velocity data: relative to Mars" class="stats">

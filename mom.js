@@ -100,6 +100,7 @@ var progress = 0;
 var mouseDown = false;
 var firefox = false;
 var chrome = false;
+var bannerShown = false;
 
 function initConfig() {
 
@@ -447,7 +448,6 @@ function initOnce() {
     } else if (navigator.userAgent.indexOf('Chrome') != -1) {
         chrome = true;
     }
-    $("#banner").dialog({height: 200, width: 400, modal: true});
 }
 
 function initRest() {
@@ -472,6 +472,8 @@ function f7()  { forward();         timeoutHandleZoom = setTimeout(f7,  ZOOM_TIM
 function f8()  { fastForward();     timeoutHandleZoom = setTimeout(f8,  ZOOM_TIMEOUT); }
 function f9()  { backward();        timeoutHandleZoom = setTimeout(f9,  ZOOM_TIMEOUT); }
 function f10() { fastBackward();    timeoutHandleZoom = setTimeout(f10, ZOOM_TIMEOUT); }
+function f11() { slower();          timeoutHandleZoom = setTimeout(f11, ZOOM_TIMEOUT); }
+function f12() { faster();          timeoutHandleZoom = setTimeout(f12, ZOOM_TIMEOUT); }
 
 function zoomFunction(f) {
     mouseDown = true;
@@ -498,12 +500,15 @@ function init() {
         "fastforward":  { "mousedown":  f8  },
         "backward":     { "mousedown":  f9  },
         "fastbackward": { "mousedown":  f10 },
+        "slower":       { "mousedown":  f11 },
+        "faster":       { "mousedown":  f12 }
     };
 
     var buttons = [
         "zoomin", "zoomout", 
         "panleft", "panright", "panup", "pandown",
-        "forward", "fastforward", "backward", "fastbackward"
+        "forward", "fastforward", "backward", "fastbackward",
+        "slower", "faster"
     ];
 
     for (var i = 0; i < buttons.length; ++i) {
@@ -534,17 +539,67 @@ function init() {
         });        
     }
 
-    d3.select("#controls-button").on("click", function() {
-        var d = d3.select("#controls-button");
-        if (d.attr("class") == "up") {
-            d.attr("class", "down") 
-        } else { 
-            d.attr("class", "up");
-        }
+    $("#control-panel").dialog({
+        modal: false, 
+        position: {
+            my: "left top", 
+            at: "left bottom", 
+            of: "#blurb"}, 
+        width: "100%",
+        height: '100',
+        resizable: false,
+        title: "Controls",
+        closeOnEscape: false 
+    }).dialogExtend({
+        closable: false,
+        "dblclick" : "collapse",
+        minimizable: true,
+        collapsable: true,
     });
+    $("#control-panel")
+        .closest('.ui-dialog')
+        .addClass("transparent-panel")
+        .css({'background': 'transparent', 'background-image': 'none', 'border': '0'});    
 
-    $("#control-panel").dialog({modal: false, position: {my: "left top", at: "left bottom", of: "#date"}, title: "Controls"});
-    $("#stats").dialog({modal: false, position: {my: "left top", at: "left bottom", of: "#control-panel"}, title: "Information"});
+    $("#zoom-panel").dialog({
+        modal: false, 
+        position: {
+            my: "left top", 
+            at: "left bottom", 
+            of: "#control-panel"}, 
+        title: "Pan/Zoom",
+        closeOnEscape: false
+    }).dialogExtend({
+        closable: false,
+        "dblclick" : "collapse",
+        minimizable: true,
+        collapsable: true,
+    });
+    $("#zoom-panel")
+        .closest('.ui-dialog')
+        .addClass("transparent-panel")
+        .css({'background': 'transparent', 'background-image': 'none', 'border': '0'});
+
+    $("#stats").dialog({
+        modal: false, 
+        position: {
+            my: "left top", 
+            at: "left bottom", 
+            of: "#zoom-panel"}, 
+            title: "Information",
+            minimizable: true,
+            collapsable: true,
+            closeOnEscape: false
+        }).dialogExtend({
+            closable: false,
+            "dblclick" : "collapse",
+            minimizable: true,
+            collapsable: true,            
+    });
+    $("#stats")
+        .closest('.ui-dialog')
+        .addClass("transparent-panel")
+        .css({'background': 'transparent', 'background-image': 'none', 'border': '0'});
 
     animDate = d3.select("#date");
 
@@ -569,6 +624,16 @@ function init() {
     d3.select("#progressbar-label").html("Loading orbit data ...");
 
     dataLoaded = false;
+
+    d3.xhr("whatsnew.html")
+        .get(function(error, data) {
+            if (error) {
+                // console.log("Error: unable to load whatsnew.html");
+            } else {
+                // console.log("whatsnew.html = " + data);
+                d3.select("#banner").html(data.response);
+           }
+        });
 
     d3.json(orbitsJson)
         .on("progress", function() {
@@ -608,9 +673,14 @@ function init() {
                             .on("zoom", zoom)
                             .on("zoomend", zoomEnd));
 
-
                 missionStart();
                 d3.selectAll("button").attr("disabled", null);
+
+                if (!bannerShown) {
+                    bannerShown = true;
+                    $("#banner").dialog({height: 200, width: 400, modal: true});
+                }
+                
             }
         });
 
@@ -918,12 +988,12 @@ function missionEnd() {
 
 function faster() {
     timeout /= ZOOM_SCALE;
-    if (timeout < 0) timeout = 0;
     // console.log("timeout = " + timeout);
 }
 
 function slower() {
     timeout *= ZOOM_SCALE;
+    if (timeout >= 5000) timeout = 5000;
     // console.log("timeout = " + timeout);
 }
 
