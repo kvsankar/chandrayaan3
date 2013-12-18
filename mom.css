@@ -115,6 +115,12 @@ div#footer_wrapper {
     height: 41px; /* '.push' must be the same height as 'footer' */
 }
 
+.date {
+  font-size: 1em;
+  color: white;
+  font-family: monospace;
+}
+
 .copyright {
     font-size: 0.8em;
 }

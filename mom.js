@@ -90,6 +90,7 @@ var lockOnMOM = false;
 var previousLockOnMOM = false;
 var now;
 var count = 0;
+var countStep = 1;
 var animationRunning = false;
 var stopAnimationFlag = false;
 var timeoutHandle;
@@ -142,6 +143,7 @@ function initConfig() {
         d3.select("#mode").html("Switch to Helio Mode");
         d3.selectAll(".geo").style("visibility", "visible");
         d3.selectAll(".helio").style("visibility", "hidden");
+        d3.selectAll(".helio").style("display", "none");
         d3.select("#center").text("Earth");
 
     } else if (config == "helio") {
@@ -178,6 +180,7 @@ function initConfig() {
         d3.select("#mode").html("Switch to Geo Mode");
         d3.selectAll(".geo").style("visibility", "hidden");
         d3.selectAll(".helio").style("visibility", "visible");
+        d3.selectAll(".helio").style("display", "inline");
         d3.select("#center").text("Sun");
     }
 }
@@ -274,7 +277,7 @@ function setLabelLocation(planetKey) {
 
 function setLocation() {
 
-    // console.log("setLocation(): count = " + count);
+    // console.log("setLocation(): count = " + count + ", nSteps = " + nSteps);
 
     now = startTime + count * countDurationMilliSeconds;
     var nowDate = new Date(now);
@@ -544,16 +547,19 @@ function init() {
         position: {
             my: "left top", 
             at: "left bottom", 
-            of: "#blurb"}, 
+            of: "#blurb",
+            collision: "fit flip"}, 
         width: "100%",
         height: '100',
         resizable: false,
-        title: "Controls",
+        // title: "Controls",
         closeOnEscape: false 
     }).dialogExtend({
+        titlebar: 'none',
         closable: false,
         "dblclick" : "collapse",
-        minimizable: true,
+        minimizable: false,
+        minimizeLocation: 'right',
         collapsable: true,
     });
     $("#control-panel")
@@ -566,13 +572,15 @@ function init() {
         position: {
             my: "left top", 
             at: "left bottom", 
-            of: "#control-panel"}, 
+            of: "#control-panel",
+            collision: "fit flip"},
         title: "Pan/Zoom",
         closeOnEscape: false
     }).dialogExtend({
         closable: false,
         "dblclick" : "collapse",
         minimizable: true,
+        minimizeLocation: 'right',
         collapsable: true,
     });
     $("#zoom-panel")
@@ -585,15 +593,17 @@ function init() {
         position: {
             my: "left top", 
             at: "left bottom", 
-            of: "#zoom-panel"}, 
+            of: "#zoom-panel",
+            collision: "fit flip"}, 
             title: "Information",
-            minimizable: true,
+            minimizable: true,            
             collapsable: true,
             closeOnEscape: false
         }).dialogExtend({
             closable: false,
             "dblclick" : "collapse",
             minimizable: true,
+            minimizeLocation: 'right',            
             collapsable: true,            
     });
     $("#stats")
@@ -894,9 +904,13 @@ function changeLocation() {
 
     if (!stopAnimationFlag) {
         setLocation();
-        ++count;
+        count += countStep;
         if (count < nSteps) {
             timeoutHandle = setTimeout(function() { changeLocation(); }, timeout);
+        } else {
+            count = nSteps - 1;
+            d3.select("#animate").text("Start");
+            animationRunning = false;
         }
     }
 }
@@ -908,7 +922,7 @@ function animate() {
     } else {
         animationRunning = true;
         stopAnimationFlag = false;
-        if (count >= nSteps) count = 0;
+        if (count >= nSteps - 1) count = 0;
         changeLocation();
         d3.select("#animate").text("Stop");
     }
@@ -986,14 +1000,23 @@ function missionEnd() {
     missionSetTime();
 }
 
-function faster() {
-    timeout /= ZOOM_SCALE;
+function faster() {    
+    if (timeout > 1) {
+        timeout /= ZOOM_SCALE;
+    } else {
+        countStep += 1;
+        if (countStep > 12) countStep = 12;
+    }
     // console.log("timeout = " + timeout);
 }
 
 function slower() {
-    timeout *= ZOOM_SCALE;
-    if (timeout >= 5000) timeout = 5000;
+    if (countStep > 1) {
+        countStep -= 1;
+    } else {
+        timeout *= ZOOM_SCALE; 
+        if (timeout >= 1000) timeout = 1000;
+    }
     // console.log("timeout = " + timeout);
 }
 
