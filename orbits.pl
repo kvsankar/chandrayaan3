@@ -477,7 +477,17 @@ sub print_elements ($$) {
 
 sub main {
 
-    GetOptions("phase=s" => \$phase, "use-cache" => \$use_cached_data);
+    GetOptions(
+        "phase=s" => \$phase, 
+        "use-cache" => \$use_cached_data,
+        "data-dir=s" => \$data_dir);
+
+    unless (-d $data_dir) {
+      unless (mkdir($data_dir)) {
+        print_error("Unable to create data directory $data_dir");
+        exit(1);
+      }
+    }
 
     $phase = 'geo' unless $phase;
 
