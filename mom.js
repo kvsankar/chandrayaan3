@@ -915,7 +915,7 @@ function changeLocation() {
     }
 }
 
-function animate() {
+function momAnimate() {
 
     if (animationRunning) {
         stopAnimation();

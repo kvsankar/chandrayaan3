@@ -27,7 +27,9 @@ my $SUN_CENTER = '500@10';
 
 my $phase;
 my $use_cached_data = 0;
-my $data_dir = ".";
+my $date = `date '+%Y%m%d%H%M%S'`;
+chomp($date);
+my $data_dir = "data-fetched/" . $date;
 my $debugging = 1;
 
 my $config = {
@@ -489,7 +491,7 @@ sub main {
       }
     }
 
-    $phase = 'geo' unless $phase;
+    $phase = 'helio' unless $phase;
 
     unless (($phase eq "geo") || ($phase eq "helio")) {
         print_error("Argument 'phase' must be either 'geo' or 'helio' (without quotes).");
