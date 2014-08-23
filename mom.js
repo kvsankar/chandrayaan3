@@ -621,6 +621,7 @@ function init() {
     svgContainer = d3.select("#svg-wrapper")
         .append("svg")
             .attr("id", "svg")
+            .attr("overflow", "visible") // added for SVG elements to be visible in Chrome 36+; TODO side effects analysis
         .append("g")
             .attr("transform", "translate(" + offsetx + ", " + offsety + ")");
             
