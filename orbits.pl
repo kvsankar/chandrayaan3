@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 
 # Copyright (c) 2013 Sankaranarayanan K V. All rights reserved.
 
@@ -12,18 +12,30 @@ use JSON;
 
 # constants - ephemerides related
 
-my $MAVEN      = -202;
-my $MOM        = -3;
-my $EMB        = 3;
-my $SUN        = 10;
-my $MERCURY    = 199;
-my $VENUS      = 299;
-my $MOON       = 301;
-my $EARTH      = 399;
-my $MARS       = 499;
+my $JPL_MAVEN      = -202;
+my $JPL_MOM        = -3;
+my $JPL_EMB        = 3;
+my $JPL_SUN        = 10;
+my $JPL_MERCURY    = 199;
+my $JPL_VENUS      = 299;
+my $JPL_MOON       = 301;
+my $JPL_EARTH      = 399;
+my $JPL_MARS       = 499;
+my $JPL_CSS        = "C/2013 A1";
+my $JPL_EARTH_CENTER = '@399';
+my $JPL_SUN_CENTER = '500@10';
 
-my $EARTH_CENTER = '@399';
-my $SUN_CENTER = '500@10';
+my %planet_codes = 
+    ("MAVEN"    => $JPL_MAVEN,
+     "MOM"      => $JPL_MOM,
+     "EMB"      => $JPL_EMB,
+     "SUN"      => $JPL_SUN,
+     "MERCURY"  => $JPL_MERCURY,
+     "VENUS"    => $JPL_VENUS,
+     "MOON"     => $JPL_MOON,
+     "EARTH"    => $JPL_EARTH,
+     "MARS"     => $JPL_MARS,
+     "CSS"      => $JPL_CSS);
 
 my $phase;
 my $use_cached_data = 0;
@@ -37,13 +49,13 @@ my $config = {
         'start_year'       => '2013', 'start_month'       => '11', 'start_day'       => '06',
         'stop_year'        => '2014', 'stop_month'        => '09', 'stop_day'       => '26',
         'start_year_maven' => '2013', 'start_month_maven' => '11', 'start_day_maven' => '19',
-        'stop_year_maven'  => '2015', 'stop_month_maven'  => '09', 'stop_day_maven'  => '22',
+        'stop_year_maven'  => '2014', 'stop_month_maven'  => '09', 'stop_day_maven'  => '25',
 
         'step_size_in_minutes' => 240,
 
-        'planets' => [$MERCURY, $VENUS, $EARTH, $MARS, $MOM, $MAVEN],
+        'planets' => ["MERCURY", "VENUS", "EARTH", "MARS", "MOM", "MAVEN", "CSS"],
 
-        'center' => $SUN_CENTER,
+        'center' => $JPL_SUN_CENTER,
 
         'orbits_file' => "$data_dir/orbits.json"
     },
@@ -55,9 +67,9 @@ my $config = {
 
         'step_size_in_minutes' => 20,
 
-        'planets' => [$MOON, $MOM, $MAVEN],
+        'planets' => ["MOON", "MOM", "MAVEN"],
 
-        'center' => $EARTH_CENTER,
+        'center' => $JPL_EARTH_CENTER,
 
         'orbits_file' => "$data_dir/geo.json"
     },
@@ -87,6 +99,14 @@ my $jd = my_jd($now);
 my $gmtime = gmtime($now);
 my %orbits_raw;
 my %orbits; 
+
+sub filename_for_planet($) {
+  my $fn = shift;
+  my $retfn = $fn;
+  $retfn =~ s/\//_/g;
+  print_debug("planet=$fn, filename=$retfn");
+  return $retfn;
+}
 
 sub init_config ($) {
     my $option = shift;
@@ -127,7 +147,7 @@ sub print_config() {
 sub get_horizons_start_time($) {
     my $planet = shift;
 
-    if ($planet == $MAVEN) {
+    if ($planet eq "MAVEN") {
         return "$start_year_maven\-$start_month_maven\-$start_day_maven";
     } else {
         return "$start_year\-$start_month\-$start_day";
@@ -137,7 +157,7 @@ sub get_horizons_start_time($) {
 sub get_horizons_stop_time($) {
     my $planet = shift;
 
-    if (($planet == $MAVEN) || (($planet > 0) && ($phase eq "helio"))) {
+    if (($planet eq "MAVEN") || ($planet eq "C/2013 A1") || (($planet_codes{$planet} > 0) && ($phase eq "helio"))) {
         return "$stop_year_maven\-$stop_month_maven\-$stop_day_maven";
     } else {
         return "$stop_year\-$stop_month\-$stop_day";
@@ -175,7 +195,7 @@ sub my_jd ($) {
 
 sub is_craft($) {
 	my $planet = shift;
-	return ($planet < 0) || (($planet == $MOON) && ($phase eq "geo"));
+	return ($planet < 0) || (($planet == "MOON") && ($phase eq "geo"));
 }
 
 sub save_fetched_data () {
@@ -183,26 +203,27 @@ sub save_fetched_data () {
     my $cache_file_name = "$data_dir/momcache.txt";
     my $fh = FileHandle->new;
     unless ($fh->open(">$cache_file_name")) {
-        print_err("Faield to write to $cache_file_name: $!");
+        print_error("Faield to write to $cache_file_name: $!");
     }
     print $fh "jd=$jd\n";
     close $fh;
 
     foreach my $planet (@planets) {
         
-        my $ho_file_name = "$data_dir/ho-$planet-elements.txt";
+        my $fn = filename_for_planet($planet);
+        my $ho_file_name = "$data_dir/ho-$fn-elements.txt";
         my $fh = FileHandle->new;
         unless ($fh->open(">$ho_file_name")) {
-            print_err("Can't write to $ho_file_name: $!");
+            print_error("Can't write to $ho_file_name: $!");
         }
         my $horizons = $orbits_raw{$planet}->{'elements_content'};
         print $fh $horizons;
         close $fh;
 
-        $ho_file_name = "$data_dir/ho-$planet-vectors.txt";
+        $ho_file_name = "$data_dir/ho-$fn-vectors.txt";
         $fh = FileHandle->new;
         unless ($fh->open(">$ho_file_name")) {
-            print_err("Can't write to $ho_file_name: $!");
+            print_error("Can't write to $ho_file_name: $!");
         }
         $horizons = $orbits_raw{$planet}->{'vectors_content'};
         print $fh $horizons;
@@ -218,7 +239,7 @@ sub save_orbit_data_json() {
     my $json_file_name = $orbits_file;
     my $fh = FileHandle->new;
     unless ($fh->open(">$json_file_name")) {
-        print_err("Can't write to $json_file_name: $!");
+        print_error("Can't write to $json_file_name: $!");
         return 0;
     }
     print $fh $utf8_encoded_json_text;
@@ -230,10 +251,11 @@ sub save_orbit_data () {
 
     foreach my $planet (@planets) {
         
-        my $ho_file_name = "$data_dir/ho-$planet-orbit.txt";
+        my $fn = filename_for_planet($planet);
+        my $ho_file_name = "$data_dir/ho-$fn-orbit.txt";
         my $fh = FileHandle->new;
         unless ($fh->open(">$ho_file_name")) {
-            print_err("Can't write to $ho_file_name: $!");
+            print_error("Can't write to $ho_file_name: $!");
         }
         my $elements = $orbits{$planet}->{'elements'};
 
@@ -265,7 +287,7 @@ sub fetch_horizons_data ($$) {
     }
 
     my $url = "http://ssd.jpl.nasa.gov/horizons_batch.cgi?batch=1";
-    $url = $url . "&COMMAND='" . $planet . "'";
+    $url = $url . "&COMMAND='" . $planet_codes{$planet} . "'";
     # $url = $url . "&MAKE_EPHEM='YES'";
     $url = $url . "&TABLE_TYPE='$table_type'";
     $url = $url . "&CENTER='$center'";
@@ -296,7 +318,7 @@ sub fetch_horizons_data ($$) {
         return 1;
     }
     else {
-        print_err("HTTP request failed: " . $res->status_line);
+        print_error("HTTP request failed: " . $res->status_line);
         return 0;
     }
 }
@@ -335,7 +357,8 @@ sub load_cached_data {
         foreach my $planet (@planets) {
 
             foreach my $key ('elements', 'vectors') {
-                my $fn = "$data_dir/ho-$planet-$key.txt";
+                my $pn = filename_for_planet($planet);
+                my $fn = "$data_dir/ho-$pn-$key.txt";
 
                 if (-r $fn) {
                     if (open IN, "<$fn") {
@@ -347,7 +370,7 @@ sub load_cached_data {
                         close IN;
 
                     } else {
-                        print_err("Unabled to open $fn: $!");
+                        print_error("Unabled to open $fn: $!");
                         $ret_status = 0;
                         last;
                     }
@@ -356,7 +379,7 @@ sub load_cached_data {
         }
         close CACHE;
     } else {
-        print_err("Unable to open $cache_file: $!");
+        print_error("Unable to open $cache_file: $!");
         $ret_status = 0;
     }
 
