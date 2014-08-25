@@ -1,20 +1,19 @@
 
-// Copyright (c) 2013 Sankaranarayanan K. V. All rights reserved.
+// Copyright (c) 2013-2014 Sankaranarayanan K. V. All rights reserved.
 
 // orbit and location related data
 
 // constants
 
-// We use NASA JPL HORIZONS identifiers
-
-var MAVEN   = -202;
-var MOM     = -3;
-var SUN     = 10;
-var MERCURY = 199;
-var VENUS   = 299;
-var EARTH   = 399;
-var MARS    = 499;
-var MOON    = 301;
+var MAVEN   = "MAVEN";
+var MOM     = "MOM";
+var SUN     = "SUN";
+var MERCURY = "MERCURY";
+var VENUS   = "VENUS";
+var EARTH   = "EARTH";
+var MARS    = "MARS";
+var MOON    = "MOON";
+var CSS     = "CSS";
 
 var KM_PER_AU = 149597870.691;
 var DEGREES_PER_RADIAN = 57.2957795;
@@ -22,14 +21,15 @@ var DEGREES_PER_CIRCLE = 360.0;
 var MILLI_SECONDS_PER_HOUR = 3600000;
 
 var planetProperties = {
-    "MAVEN":    { "id": MAVEN,      "name": "MAVEN",    "color": "lightpink",  "r": 2.4, "labelOffsetX": +10, "labelOffsetY": -10 },
-    "MOM":      { "id": MOM,        "name": "MOM",      "color": "orange",  "r": 3.2, "labelOffsetX": -30, "labelOffsetY": -10 },
-    "SUN":      { "id": SUN,        "name": "Sun",      "color": "yellow",  "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
-    "MERCURY":  { "id": MERCURY,    "name": "Mercury",  "color": "green",   "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
-    "VENUS":    { "id": VENUS,      "name": "Venus",    "color": "grey",    "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
-    "EARTH":    { "id": EARTH,      "name": "Earth",    "color": "blue",    "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
-    "MARS":     { "id": MARS,       "name": "Mars",     "color": "red",     "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
-    "MOON":     { "id": MOON,       "name": "Moon",     "color": "grey",    "r": 3,   "labelOffsetX": +10, "labelOffsetY": +10 },
+    "MAVEN":    { "id": MAVEN,      "name": "MAVEN",            "color": "lightpink",   "r": 2.4, "labelOffsetX": +10, "labelOffsetY": -10 },
+    "MOM":      { "id": MOM,        "name": "MOM",              "color": "orange",      "r": 3.2, "labelOffsetX": -30, "labelOffsetY": -10 },
+    "SUN":      { "id": SUN,        "name": "Sun",              "color": "yellow",      "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
+    "MERCURY":  { "id": MERCURY,    "name": "Mercury",          "color": "green",       "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
+    "VENUS":    { "id": VENUS,      "name": "Venus",            "color": "grey",        "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
+    "EARTH":    { "id": EARTH,      "name": "Earth",            "color": "blue",        "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
+    "MARS":     { "id": MARS,       "name": "Mars",             "color": "red",         "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
+    "MOON":     { "id": MOON,       "name": "Moon",             "color": "grey",        "r": 3,   "labelOffsetX": +10, "labelOffsetY": +10 },
+    "CSS":      { "id": CSS,        "name": "Siding Spring",    "color": "cyan",        "r": 3,   "labelOffsetX": +10, "labelOffsetY": +10 },
 };
 
 var CENTER_LABEL_OFFSET_X = -5;
@@ -158,10 +158,10 @@ function initConfig() {
         centerPlanet = "SUN";
         centerRadius = 6;
         planetsForOrbits = ["MERCURY", "VENUS", "EARTH", "MARS"];
-        planetsForLocations = ["MERCURY", "VENUS", "EARTH", "MARS", "MOM", "MAVEN"];
+        planetsForLocations = ["MERCURY", "VENUS", "EARTH", "MARS", "MOM", "MAVEN", "CSS"];
         countDurationMilliSeconds = 4.0 * MILLI_SECONDS_PER_HOUR; // TODO add to and read from JSON
         orbitsJson = "orbits.json";
-        total = 4555792; // TODO
+        total = 2749268; // TODO
         leapSize = 20; // 5 days
 
         startTime                  = Date.UTC(2013, 11-1,  6, 0, 0, 0, 0);
@@ -169,7 +169,7 @@ function initConfig() {
         martianPhaseStartTime      = Date.UTC(2014,  9-1, 24, 0, 0, 0, 0);
         endTime                    = Date.UTC(2014,  9-1, 26, 0, 0, 0, 0);
         mavenStartTime             = Date.UTC(2013, 11-1, 19, 0, 0, 0, 0);
-        mavenEndTime               = Date.UTC(2015,  9-1, 22, 0, 0, 0, 0);
+        mavenEndTime               = Date.UTC(2014,  9-1, 25, 0, 0, 0, 0);
 
         latestEndTime = mavenEndTime;
         nSteps = (latestEndTime - startTime) / countDurationMilliSeconds;
@@ -197,7 +197,7 @@ function toggleMaven() {
     var orbitVisibility = showMaven ? "visible" : "hidden";
     d3.select("#orbit-MAVEN").attr("visibility", orbitVisibility);
 
-    var visibility = (showMaven && (isLocationAvaialable("MAVEN", now))) ? "visible" : "hidden";    
+    var visibility = (showMaven && (isLocationAvaialable("MAVEN", now))) ? "visible" : "hidden";
     d3.select("#MAVEN").attr("visibility", visibility);
     d3.select("#label-MAVEN").attr("visibility", visibility);
     d3.selectAll(".maven").attr("visibility", visibility);
@@ -212,7 +212,7 @@ function showPlanet(planet) {
 }
 
 function shouldDrawOrbit(planet) {
-    return ((planet == "MOM") || (planet == "MAVEN") || (planet == "MOON"));
+    return ((planet == "MOM") || (planet == "MAVEN") || (planet == "MOON") || ((config == "helio") && (planet == "CSS")));
 }
 
 function planetStartTime(planet) {
@@ -265,7 +265,7 @@ function setLabelLocation(planetKey) {
         var labely = newy + planetProps.labelOffsetY/zoomFactor;
 
         d3.select("#label-" + planetKey)
-            .attr("visibility", showPlanet(planetKey) ? "visible" : "hidden")                
+            .attr("visibility", showPlanet(planetKey) ? "visible" : "hidden")
             .attr("x", labelx)
             .attr("y", labely);
 
@@ -350,7 +350,7 @@ function setLocation() {
                     vy = vectors[index]["vy"] - orbits[EARTH]["vectors"][count]["vy"];
                     vz = vectors[index]["vz"] - orbits[EARTH]["vectors"][count]["vz"];
                     v = Math.sqrt(vx*vx + vy*vy + vz*vz);
-                    d3.select("#velocity-" + planetKey +"-Earth").text(FORMAT_METRIC(v));    
+                    d3.select("#velocity-" + planetKey +"-Earth").text(FORMAT_METRIC(v));
 
                     // relative to Mars
                     x = vectors[index]["x"] - orbits[MARS]["vectors"][count]["x"];
@@ -363,7 +363,7 @@ function setLocation() {
                     vy = vectors[index]["vy"] - orbits[MARS]["vectors"][count]["vy"];
                     vz = vectors[index]["vz"] - orbits[MARS]["vectors"][count]["vz"];
                     v = Math.sqrt(vx*vx + vy*vy + vz*vz);
-                    d3.select("#velocity-" + planetKey +"-Mars").text(FORMAT_METRIC(v));    
+                    d3.select("#velocity-" + planetKey +"-Mars").text(FORMAT_METRIC(v));
                 }
             }
 
@@ -379,7 +379,7 @@ function setLocation() {
             d3.select("#velocity-" + planetKey + "-Mars").text("");
         }
     }
-    
+
     for (var i = 0; i < planetsForLocations.length; ++i) {
 
         var planetKey = planetsForLocations[i];
@@ -394,7 +394,7 @@ function setLocation() {
 
 function showBangaloreLongitude() {
     if (config == "helio") return;
-    
+
     var mst = getMST(new Date(now), BANGALORE_LONGITUDE);
 
     var x1 = 0;
@@ -414,13 +414,13 @@ function adjustLabelLocations() {
     d3.selectAll("ellipse").attr("stroke-width", (1/zoomFactor));
     for (var i = 0; i < planetsForOrbits.length; ++i) {
         var planetKey = planetsForLocations[i];
-        d3.selectAll("#orbit-" + planetKey).attr("r", (0.5/zoomFactor));    
+        d3.selectAll("#orbit-" + planetKey).attr("r", (0.5/zoomFactor));
     }
 
     d3.select("#" + centerPlanet).attr("r", (centerRadius/zoomFactor));
 
     for (var i = 0; i < planetsForLocations.length; ++i) {
-    
+
         var planetKey = planetsForLocations[i];
         setLabelLocation(planetKey);
 
@@ -455,7 +455,7 @@ function initOnce() {
 
 function initRest() {
     initConfig();
-    init();    
+    init();
 }
 
 function onload() {
@@ -508,7 +508,7 @@ function init() {
     };
 
     var buttons = [
-        "zoomin", "zoomout", 
+        "zoomin", "zoomout",
         "panleft", "panright", "panup", "pandown",
         "forward", "fastforward", "backward", "fastbackward",
         "slower", "faster"
@@ -520,15 +520,15 @@ function init() {
 
         d3.select("#" + b).on("mousedown", handlers[b]["mousedown"]);
 
-        d3.select("#" + b).on("mouseup", function() { 
+        d3.select("#" + b).on("mouseup", function() {
 
             mouseDown = false;
-            clearTimeout(timeoutHandleZoom); 
+            clearTimeout(timeoutHandleZoom);
             timeoutHandleZoom = null;
 
             zoomEnd();
         });
-        d3.select("#" + b).on("mouseout", function() { 
+        d3.select("#" + b).on("mouseout", function() {
 
             mouseDown = false;
             if (timeoutHandleZoom == null) return;
@@ -537,23 +537,23 @@ function init() {
 
             zoomEnd();
         });
-        d3.select("#" + b).on("click", function() { 
+        d3.select("#" + b).on("click", function() {
             // TODO - would there be a case where mousedown is not called?
-        });        
+        });
     }
 
     $("#control-panel").dialog({
-        modal: false, 
+        modal: false,
         position: {
-            my: "left top", 
-            at: "left bottom", 
+            my: "left top",
+            at: "left bottom",
             of: "#blurb",
-            collision: "fit flip"}, 
+            collision: "fit flip"},
         width: "100%",
         height: '100',
         resizable: false,
         // title: "Controls",
-        closeOnEscape: false 
+        closeOnEscape: false
     }).dialogExtend({
         titlebar: 'none',
         closable: false,
@@ -565,13 +565,13 @@ function init() {
     $("#control-panel")
         .closest('.ui-dialog')
         .addClass("transparent-panel")
-        .css({'background': 'transparent', 'background-image': 'none', 'border': '0'});    
+        .css({'background': 'transparent', 'background-image': 'none', 'border': '0'});
 
     $("#zoom-panel").dialog({
-        modal: false, 
+        modal: false,
         position: {
-            my: "left top", 
-            at: "left bottom", 
+            my: "left top",
+            at: "left bottom",
             of: "#control-panel",
             collision: "fit flip"},
         title: "Pan/Zoom",
@@ -589,22 +589,22 @@ function init() {
         .css({'background': 'transparent', 'background-image': 'none', 'border': '0'});
 
     $("#stats").dialog({
-        modal: false, 
+        modal: false,
         position: {
-            my: "left top", 
-            at: "left bottom", 
+            my: "left top",
+            at: "left bottom",
             of: "#zoom-panel",
-            collision: "fit flip"}, 
+            collision: "fit flip"},
             title: "Information",
-            minimizable: true,            
+            minimizable: true,
             collapsable: true,
             closeOnEscape: false
         }).dialogExtend({
             closable: false,
             "dblclick" : "collapse",
             minimizable: true,
-            minimizeLocation: 'right',            
-            collapsable: true,            
+            minimizeLocation: 'right',
+            collapsable: true,
     });
     $("#stats")
         .closest('.ui-dialog')
@@ -624,14 +624,12 @@ function init() {
             .attr("overflow", "visible") // added for SVG elements to be visible in Chrome 36+; TODO side effects analysis
         .append("g")
             .attr("transform", "translate(" + offsetx + ", " + offsety + ")");
-            
-    if (firefox) {
-        // console.log("svgWidth = " + svgWidth + ", svgHeight = " + svgHeight);
-        d3.select("svg")
-            .attr("width", svgWidth)
-            .attr("height", svgHeight);
-    }
-        
+
+     // console.log("svgWidth = " + svgWidth + ", svgHeight = " + svgHeight);
+     d3.select("svg")
+         .attr("width", svgWidth)
+         .attr("height", svgHeight);
+
     d3.select("#progressbar-label").html("Loading orbit data ...");
 
     dataLoaded = false;
@@ -659,7 +657,7 @@ function init() {
         .get(function(error, data) {
             if (error) {
                 $("#progressbar").hide();
-                d3.select("#progressbar-label").html("Error: failed to load orbit data.");                
+                d3.select("#progressbar-label").html("Error: failed to load orbit data.");
             } else {
                 dataLoaded = true;
                 $("#progressbar").hide();
@@ -691,7 +689,7 @@ function init() {
                     bannerShown = true;
                     $("#banner").dialog({height: 200, width: 400, modal: true});
                 }
-                
+
             }
         });
 
@@ -712,7 +710,7 @@ function zoomEnd() {
 }
 
 function processOrbitElementsData() {
-    
+
     // Add elliptical orbits
 
     for (var i = 0; i < planetsForOrbits.length; ++i) {
@@ -724,7 +722,7 @@ function processOrbitElementsData() {
         var elements = planet["elements"];
 
         for (var jd in elements) { // only 1 is expected
-            
+
             var el = elements[jd];
             epochJD = jd;
             epochDate = el.date;
@@ -754,7 +752,7 @@ function processOrbitElementsData() {
 
 function processOrbitVectorsData() {
     // Add spacecraft orbits
-    
+
     for (var i = 0; i < planetsForLocations.length; ++i) {
 
         var planetKey = planetsForLocations[i];
@@ -764,13 +762,13 @@ function processOrbitVectorsData() {
         var vectors = planet["vectors"];
 
         if (shouldDrawOrbit(planetKey)) {
-            
+
             svgContainer.append("g")
                 .attr("id", "orbit-" + planetKey)
                 .attr("visibility", "visible");
 
             for (var j = 0; j < vectors.length-1; ++j) {
-                
+
                 var x1 = vectors[j]["x"];
                 var y1 = vectors[j]["y"];
                 var newx1 = +1 * (x1 / KM_PER_AU) * PIXELS_PER_AU;
@@ -930,13 +928,13 @@ function momAnimate() {
 }
 
 function fastBackward() {
-    count -= leapSize; 
+    count -= leapSize;
     if (count < 0) count = 0;
     setLocation();
 }
 
 function backward() {
-    count -= 1; 
+    count -= 1;
     if (count < 0) count = 0;
     setLocation();
 }
@@ -949,7 +947,7 @@ function stopAnimation() {
 }
 
 function forward() {
-    count += 1; 
+    count += 1;
     if (count >= nSteps) {
         count = nSteps - 1;
     }
@@ -957,7 +955,7 @@ function forward() {
 }
 
 function fastForward() {
-    count += leapSize; 
+    count += leapSize;
     if (count >= nSteps) {
         count = nSteps - 1;
     }
@@ -1001,7 +999,7 @@ function missionEnd() {
     missionSetTime();
 }
 
-function faster() {    
+function faster() {
     if (timeout > 1) {
         timeout /= ZOOM_SCALE;
     } else {
@@ -1015,7 +1013,7 @@ function slower() {
     if (countStep > 1) {
         countStep -= 1;
     } else {
-        timeout *= ZOOM_SCALE; 
+        timeout *= ZOOM_SCALE;
         if (timeout >= 1000) timeout = 1000;
     }
     // console.log("timeout = " + timeout);
@@ -1038,7 +1036,7 @@ function zoomChangeTransform(t) {
 
     container
         .attr("transform",
-            "matrix(" 
+            "matrix("
             + zoomFactor
             + ", 0"
             + ", 0"
@@ -1046,7 +1044,7 @@ function zoomChangeTransform(t) {
             + ", " + (offsetx+panx+momx-zoomFactor*(momx)-momx)
             + ", " + (offsety+pany+momy-zoomFactor*(momy)-momy)
             + ")"
-        );  
+        );
 
     // sychronize D3's state
     svgRect
@@ -1054,7 +1052,7 @@ function zoomChangeTransform(t) {
         .translate([offsetx+panx, offsety+pany])
         .scale(zoomFactor)
         .on("zoom", zoom)
-        .on("zoomend", adjustLabelLocations));          
+        .on("zoomend", adjustLabelLocations));
 }
 
 function zoomChange(t) {
@@ -1125,7 +1123,7 @@ formatFloat = function formatFloat(rdecPlaces, thouSeparator, decSeparator) {
 // The following function getMST() is from
 //
 // http://mysite.verizon.net/res148h4j/javascript/script_clock.html
-// 
+//
 //
 /*
 ** "getMST" computes Mean Sidereal Time in units of degrees. Use lon = 0 to
@@ -1145,13 +1143,13 @@ function getMST( now, lon )
     // 1994 June 16th at 18h UT
     // days since J2000: -2024.75
     // GMST: 174.77111347427126
-    //       11h 39m 5.0672s 
+    //       11h 39m 5.0672s
     // year   = 1994;
     // month  = 6;
     // day    = 16;
     // hour   = 18;
-    // minute = 0; 
-    // second = 0; 
+    // minute = 0;
+    // second = 0;
 
     if( month == 1 || month == 2 )
     {
@@ -1165,11 +1163,11 @@ function getMST( now, lon )
     var c = Math.floor(365.25 * year);
     var d = Math.floor(30.6001 * (month + 1));
 
-    // days since J2000.0   
+    // days since J2000.0
     var jd = b + c + d - 730550.5 + day + (hour + minute/60.0 + second/3600.0)/24.0;
-    
-    var jt   = jd/36525.0;                   // julian centuries since J2000.0         
-    var GMST = 280.46061837 + 360.98564736629*jd + 0.000387933*jt*jt - jt*jt*jt/38710000 + lon;           
+
+    var jt   = jd/36525.0;                   // julian centuries since J2000.0
+    var GMST = 280.46061837 + 360.98564736629*jd + 0.000387933*jt*jt - jt*jt*jt/38710000 + lon;
     if( GMST > 0.0 )
     {
         while( GMST > 360.0 )
@@ -1180,7 +1178,7 @@ function getMST( now, lon )
         while( GMST < 0.0 )
             GMST += 360.0;
     }
-        
+
     return GMST;
 }
 
