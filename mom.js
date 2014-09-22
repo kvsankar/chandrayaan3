@@ -21,15 +21,15 @@ var DEGREES_PER_CIRCLE = 360.0;
 var MILLI_SECONDS_PER_HOUR = 3600000;
 
 var planetProperties = {
-    "MAVEN":    { "id": MAVEN,      "name": "MAVEN",            "color": "lightpink",   "r": 2.4, "labelOffsetX": +10, "labelOffsetY": -10 },
-    "MOM":      { "id": MOM,        "name": "MOM",              "color": "orange",      "r": 3.2, "labelOffsetX": -30, "labelOffsetY": -10 },
-    "SUN":      { "id": SUN,        "name": "Sun",              "color": "yellow",      "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
-    "MERCURY":  { "id": MERCURY,    "name": "Mercury",          "color": "green",       "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
-    "VENUS":    { "id": VENUS,      "name": "Venus",            "color": "grey",        "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
-    "EARTH":    { "id": EARTH,      "name": "Earth",            "color": "blue",        "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
-    "MARS":     { "id": MARS,       "name": "Mars",             "color": "red",         "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
-    "MOON":     { "id": MOON,       "name": "Moon",             "color": "grey",        "r": 3,   "labelOffsetX": +10, "labelOffsetY": +10 },
-    "CSS":      { "id": CSS,        "name": "Siding Spring",    "color": "cyan",        "r": 3,   "labelOffsetX": +10, "labelOffsetY": +10 },
+    "MAVEN":    { "id": MAVEN,      "name": "MAVEN",            "color": "lightpink",   "stroke-width": 1.0, "r": 2.4, "labelOffsetX": +10, "labelOffsetY": -10 },
+    "MOM":      { "id": MOM,        "name": "MOM",              "color": "orange",      "stroke-width": 1.0, "r": 3.2, "labelOffsetX": -30, "labelOffsetY": -10 },
+    "SUN":      { "id": SUN,        "name": "Sun",              "color": "yellow",      "stroke-width": 1.0, "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
+    "MERCURY":  { "id": MERCURY,    "name": "Mercury",          "color": "green",       "stroke-width": 1.0, "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
+    "VENUS":    { "id": VENUS,      "name": "Venus",            "color": "grey",        "stroke-width": 1.0, "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
+    "EARTH":    { "id": EARTH,      "name": "Earth",            "color": "blue",        "stroke-width": 1.0, "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
+    "MARS":     { "id": MARS,       "name": "Mars",             "color": "red",         "stroke-width": 0.2, "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
+    "MOON":     { "id": MOON,       "name": "Moon",             "color": "grey",        "stroke-width": 1.0, "r": 3,   "labelOffsetX": +10, "labelOffsetY": +10 },
+    "CSS":      { "id": CSS,        "name": "Siding Spring",    "color": "cyan",        "stroke-width": 1.0, "r": 3,   "labelOffsetX": +10, "labelOffsetY": +10 },
 };
 
 var CENTER_LABEL_OFFSET_X = -5;
@@ -212,7 +212,11 @@ function showPlanet(planet) {
 }
 
 function shouldDrawOrbit(planet) {
-    return ((planet == "MOM") || (planet == "MAVEN") || (planet == "MOON") || ((config == "helio") && (planet == "CSS")));
+    return ((planet == "MARS") ||
+            (planet == "MOM") ||
+            (planet == "MAVEN") ||
+            (planet == "MOON") ||
+            ((config == "helio") && (planet == "CSS")));
 }
 
 function planetStartTime(planet) {
@@ -411,10 +415,11 @@ function showBangaloreLongitude() {
 
 function adjustLabelLocations() {
 
-    d3.selectAll("ellipse").attr("stroke-width", (1/zoomFactor));
     for (var i = 0; i < planetsForOrbits.length; ++i) {
         var planetKey = planetsForLocations[i];
         d3.selectAll("#orbit-" + planetKey).attr("r", (0.5/zoomFactor));
+        var strokeWidth = planetProperties[planetKey]["stroke-width"];
+        d3.selectAll("#ellipse-orbit-" + planetKey).attr("stroke-width", (strokeWidth/zoomFactor));
     }
 
     d3.select("#" + centerPlanet).attr("r", (centerRadius/zoomFactor));
@@ -424,7 +429,7 @@ function adjustLabelLocations() {
         var planetKey = planetsForLocations[i];
         setLabelLocation(planetKey);
 
-        var planetProps =planetProperties[planetKey];
+        var planetProps = planetProperties[planetKey];
         d3.selectAll("#" + planetKey).attr("r", (planetProps.r/zoomFactor));
 
         d3.select("#orbit-" + planetKey)
@@ -737,7 +742,7 @@ function processOrbitElementsData() {
             angle = -1 * angle;
 
             svgContainer.append("ellipse")
-                .attr("id", "orbit-" + planetKey)
+                .attr("id", "ellipse-orbit-" + planetKey)
                 .attr("cx", cx)
                 .attr("cy", cy)
                 .attr("rx", rx)
