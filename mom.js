@@ -157,7 +157,7 @@ function initConfig() {
         trackWidth = 1;
         centerPlanet = "SUN";
         centerRadius = 6;
-        planetsForOrbits = ["MERCURY", "VENUS", "EARTH", "MARS"];
+        planetsForOrbits = ["MERCURY", "VENUS", "EARTH"];
         planetsForLocations = ["MERCURY", "VENUS", "EARTH", "MARS", "MOM", "MAVEN", "CSS"];
         countDurationMilliSeconds = 4.0 * MILLI_SECONDS_PER_HOUR; // TODO add to and read from JSON
         orbitsJson = "orbits.json";
