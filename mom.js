@@ -27,7 +27,7 @@ var planetProperties = {
     "MERCURY":  { "id": MERCURY,    "name": "Mercury",          "color": "green",       "stroke-width": 1.0, "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
     "VENUS":    { "id": VENUS,      "name": "Venus",            "color": "grey",        "stroke-width": 1.0, "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
     "EARTH":    { "id": EARTH,      "name": "Earth",            "color": "blue",        "stroke-width": 1.0, "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
-    "MARS":     { "id": MARS,       "name": "Mars",             "color": "red",         "stroke-width": 0.2, "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
+    "MARS":     { "id": MARS,       "name": "Mars",             "color": "red",         "stroke-width": 0.3, "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
     "MOON":     { "id": MOON,       "name": "Moon",             "color": "grey",        "stroke-width": 1.0, "r": 3,   "labelOffsetX": +10, "labelOffsetY": +10 },
     "CSS":      { "id": CSS,        "name": "Siding Spring",    "color": "cyan",        "stroke-width": 1.0, "r": 3,   "labelOffsetX": +10, "labelOffsetY": +10 },
 };
@@ -157,7 +157,7 @@ function initConfig() {
         trackWidth = 1;
         centerPlanet = "SUN";
         centerRadius = 6;
-        planetsForOrbits = ["MERCURY", "VENUS", "EARTH"];
+        planetsForOrbits = ["MERCURY", "VENUS", "EARTH", "MARS"];
         planetsForLocations = ["MERCURY", "VENUS", "EARTH", "MARS", "MOM", "MAVEN", "CSS"];
         countDurationMilliSeconds = 4.0 * MILLI_SECONDS_PER_HOUR; // TODO add to and read from JSON
         orbitsJson = "orbits.json";
