@@ -22,7 +22,9 @@ my $JPL_MOON       = 301;
 my $JPL_EARTH      = 399;
 my $JPL_MARS       = 499;
 my $JPL_CSS        = "C/2013 A1";
+
 my $JPL_EARTH_CENTER = '@399';
+my $JPL_MARS_CENTER = '@499';
 my $JPL_SUN_CENTER = '500@10';
 
 my %planet_codes = 
@@ -72,6 +74,20 @@ my $config = {
         'center' => $JPL_EARTH_CENTER,
 
         'orbits_file' => "$data_dir/geo.json"
+    },
+    "martian" => {
+        'start_year'       => '2014', 'start_month'       =>  '9', 'start_day'       => '21',
+        'stop_year'        => '2014', 'stop_month'        => '10', 'stop_day'        => '21',
+        'start_year_maven' => '2014', 'start_month_maven' =>  '9', 'start_day_maven' => '21',
+        'stop_year_maven'  => '2014', 'stop_month_maven'  =>  '9', 'stop_day_maven'  => '25', 
+
+        'step_size_in_minutes' => 20,
+
+        'planets' => ["CSS", "MOM", "MAVEN"],
+
+        'center' => $JPL_MARS_CENTER,
+
+        'orbits_file' => "$data_dir/martian.json"
     },
     
 };
@@ -514,10 +530,10 @@ sub main {
       }
     }
 
-    $phase = 'helio' unless $phase;
+    $phase = 'martian' unless $phase;
 
-    unless (($phase eq "geo") || ($phase eq "helio")) {
-        print_error("Argument 'phase' must be either 'geo' or 'helio' (without quotes).");
+    unless (($phase eq "geo") || ($phase eq "helio") || ($phase eq "martian")) {
+        print_error("Argument 'phase' must be either 'geo' or 'helio' or 'martian' (without quotes).");
         exit(1);
     }
 

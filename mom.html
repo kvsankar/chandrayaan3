@@ -40,10 +40,17 @@
             <div> <!-- First row buttons -->
                 <button id="animate"    type="button" class="button" onclick="momAnimate()"></button>
                 <button id="slower"     type="button" class="button"> Slower </button>
-                <button id="faster"     type="button" class="button"> Faster </button> |
+                <button id="faster"     type="button" class="button"> Faster </button>
+                |
+
+                <input type="checkbox" id="checkbox-lock-mars" onclick="toggleLockMars()"></input>
+                <label>Lock on to Mars</label>
+                |
+
                 <input type="checkbox" id="checkbox-lock-mom" onclick="toggleLockMOM()"></input>
                 <label>Lock on to MOM</label>
                 |
+
                 <button id="missionstart"       type="button" class="button" title="6 Nov, 2013 (launch date)" onclick="missionStart()">Launch</button>
                 <button id="missiontmi"         type="button" class="button" title="1 Dec, 2013 (Trans Mars Injection)" onclick="missionTMI()">TMI</button>
                 <button id="missionmartian"     type="button" class="button" title="24 Sep, 2014 (Mars Orbit Insertion)" onclick="missionMartian()">MOI</button>
@@ -58,7 +65,9 @@
                 <input type="checkbox" id="checkbox-maven" onclick="toggleMaven()"></input>
                 <label>Show MAVEN</label> |
                 -->
-                <button id="mode" type="button" class="button" onclick="toggleMode()"></button>
+                <button id="mode-geo" type="button" class="button" onclick="setGeoMode()">Geo</button>
+                <button id="mode-helio" type="button" class="button" onclick="setHelioMode()">Helio</button>
+                <button id="mode-martian" type="button" class="button" onclick="setMartianMode()">Martian</button>
                 
                 <div class="vspace"></div>
             </div> <!-- First row buttons -->

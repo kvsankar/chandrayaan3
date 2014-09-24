@@ -47,7 +47,7 @@ var FORMAT_METRIC = d3.format(" >10,.2f");
 
 // begin - data structures which change based on configuration
 
-var config = "helio";
+var config = "martian";
 var offsetx = 0;
 var offsety = 0;
 var PIXELS_PER_AU;
@@ -88,6 +88,8 @@ var panx = 0;
 var pany = 0;
 var lockOnMOM = false;
 var previousLockOnMOM = false;
+var lockOnMars = false;
+var previousLockOnMars = false;
 var now;
 var count = 0;
 var countStep = 1;
@@ -104,6 +106,9 @@ var chrome = false;
 var bannerShown = false;
 
 function initConfig() {
+
+    helioCentricPhaseStartTime = Date.UTC(2013, 11-1, 30, 19, 20, 0, 0);
+    martianPhaseStartTime      = Date.UTC(2014,  9-1, 24,  0,  0, 0, 0);
 
     if (config == "geo") {
 
@@ -125,8 +130,6 @@ function initConfig() {
         leapSize = 12; // 4 hours
 
         startTime                  = Date.UTC(2013, 11-1,  6,  0,  0, 0, 0);
-        helioCentricPhaseStartTime = Date.UTC(2013, 11-1, 30, 19, 20, 0, 0);
-        martianPhaseStartTime      = Date.UTC(2014,  9-1, 24,  0,  0, 0, 0);
         endTime                    = Date.UTC(2013, 12-1, 11,  0,  0, 0, 0);
         mavenStartTime             = Date.UTC(2013, 11-1, 19,  0,  0, 0, 0);
         mavenEndTime               = Date.UTC(2014,  9-1, 26,  0,  0, 0, 0);
@@ -140,10 +143,18 @@ function initConfig() {
 
         count = 0;
 
-        d3.select("#mode").html("Switch to Helio Mode");
+        d3.select("#mode-geo").attr("style", "color: blue; font-weight: bold");
+        d3.select("#mode-helio").attr("style", null);
+        d3.select("#mode-martian").attr("style", null);
+
+        d3.select("#mode-geo").attr("disabled", null);
+        d3.select("#mode-helio").attr("disabled", "disabled");
+        d3.select("#mode-martian").attr("disabled", "disabled");
+
         d3.selectAll(".geo").style("visibility", "visible");
-        d3.selectAll(".helio").style("visibility", "hidden");
+        d3.selectAll(".helio").attr("disabled", "disabled");
         d3.selectAll(".helio").style("display", "none");
+
         d3.select("#center").text("Earth");
 
     } else if (config == "helio") {
@@ -165,8 +176,6 @@ function initConfig() {
         leapSize = 20; // 5 days
 
         startTime                  = Date.UTC(2013, 11-1,  6, 0, 0, 0, 0);
-        helioCentricPhaseStartTime = Date.UTC(2013, 12-1,  1, 0, 0, 0, 0);
-        martianPhaseStartTime      = Date.UTC(2014,  9-1, 24, 0, 0, 0, 0);
         endTime                    = Date.UTC(2015,  4-1,  1, 0, 0, 0, 0);
         mavenStartTime             = Date.UTC(2013, 11-1, 19, 0, 0, 0, 0);
         mavenEndTime               = Date.UTC(2014,  9-1, 26, 0, 0, 0, 0);
@@ -177,18 +186,90 @@ function initConfig() {
 
         count = 0;
 
-        d3.select("#mode").html("Switch to Geo Mode");
+        d3.select("#mode-geo").attr("style", null);
+        d3.select("#mode-helio").attr("style", "color: blue; font-weight: bold");
+        d3.select("#mode-martian").attr("style", null);
+
+        d3.select("#mode-geo").attr("disabled", "disabled");
+        d3.select("#mode-helio").attr("disabled", null);
+        d3.select("#mode-martian").attr("disabled", "disabled");
+
         d3.selectAll(".geo").style("visibility", "hidden");
         d3.selectAll(".helio").style("visibility", "visible");
         d3.selectAll(".helio").style("display", "inline");
         d3.select("#center").text("Sun");
+
+    } else if (config == "martian") {
+
+        var svgWidth = window.innerWidth;
+        var svgHeight = window.innerHeight - 40;
+        offsetx = svgWidth / 3 - SVG_ORIGIN_X;
+        offsety = 2 * svgHeight / 3 + 100 - SVG_ORIGIN_Y;
+
+        PIXELS_PER_AU = 800000;
+        trackWidth = 0.6;
+        centerPlanet = "MARS";
+        centerRadius = 6; 
+        planetsForOrbits = [];
+        planetsForLocations = ["MOM", "MAVEN", "CSS"];
+        countDurationMilliSeconds = (1/3) * MILLI_SECONDS_PER_HOUR; // TODO add to and read from JSON
+        orbitsJson = "martian.json";
+        total = 1348990; // TODO
+        leapSize = 12; // 4 hours
+
+        startTime                  = Date.UTC(2014,  9-1, 21,  0,  0, 0, 0);
+        endTime                    = Date.UTC(2014, 10-1, 21,  0,  0, 0, 0);
+        mavenStartTime             = Date.UTC(2014,  9-1, 21,  0,  0, 0, 0);
+        mavenEndTime               = Date.UTC(2014,  9-1, 25,  0,  0, 0, 0);
+
+        latestEndTime = endTime;
+        nSteps = (latestEndTime - startTime) / countDurationMilliSeconds;
+        timeout = 5;
+
+        epochJD = "N/A";
+        epochDate = "N/A";
+
+        count = 0;
+
+        d3.select("#mode-geo").attr("style", null);
+        d3.select("#mode-helio").attr("style", null);
+        d3.select("#mode-martian").attr("style", "color: blue; font-weight: bold");
+
+        d3.select("#mode-geo").attr("disabled", "disabled");
+        d3.select("#mode-helio").attr("disabled", "disabled");
+        d3.select("#mode-martian").attr("disabled", null);
+
+        d3.selectAll(".geo").style("visibility", "visible");
+        d3.selectAll(".helio").attr("disabled", "disabled");
+        d3.selectAll(".helio").style("display", "none");
+
+        d3.select("#center").text("Mars");
+
     }
 }
 
-function toggleMode() {
+function setGeoMode() {
+  if (config != "geo") {
     stopAnimation();
-    config = (config == "geo") ? "helio" : "geo";
+    config = "geo";
     initRest();
+  }
+}
+
+function setHelioMode() {
+  if (config != "helio") {
+    stopAnimation();
+    config = "helio";
+    initRest();
+  }
+}
+
+function setMartianMode() {
+  if (config != "martian") {
+    stopAnimation();
+    config = "martian";
+    initRest();
+  }
 }
 
 function toggleMaven() {
@@ -216,7 +297,7 @@ function shouldDrawOrbit(planet) {
             (planet == "MOM") ||
             (planet == "MAVEN") ||
             (planet == "MOON") ||
-            ((config == "helio") && (planet == "CSS")));
+            (((config == "martian") || (config == "helio")) && (planet == "CSS")));
 }
 
 function planetStartTime(planet) {
@@ -494,7 +575,9 @@ function init() {
     panx = 0;
     pany = 0;
     lockOnMOM = false;
+    lockOnMars = false;
     d3.select("#checkbox-lock-mom").property("checked", false);
+    d3.select("#checkbox-lock-mars").property("checked", false);
     d3.selectAll("button").attr("disabled", true);
 
     var handlers = {
@@ -1034,6 +1117,11 @@ function zoomChangeTransform(t) {
         momy = parseFloat(d3.select("#MOM").attr("cy"));
     }
 
+    if (lockOnMars) {
+        momx = parseFloat(d3.select("#MARS").attr("cx"));
+        momy = parseFloat(d3.select("#MARS").attr("cy"));
+    }
+
     var container = svgContainer;
     // if (t != 0) {
     //     container = svgContainer.transition().delay(t);
@@ -1109,6 +1197,16 @@ function reset() {
 function toggleLockMOM() {
     previousLockOnMOM = lockOnMOM;
     lockOnMOM = !lockOnMOM;
+    previousLockOnMars = lockOnMars;
+    lockOnMars = false;
+    reset();
+}
+
+function toggleLockMars() {
+    previousLockOnMars = lockOnMars;
+    lockOnMars = !lockOnMars;
+    previousLockOnMOM = lockOnMOM;
+    lockOnMOM = false;
     reset();
 }
 
