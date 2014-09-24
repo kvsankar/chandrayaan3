@@ -47,9 +47,9 @@ my $debugging = 1;
 my $config = {
     "helio" => {
         'start_year'       => '2013', 'start_month'       => '11', 'start_day'       => '06',
-        'stop_year'        => '2014', 'stop_month'        => '09', 'stop_day'       => '26',
+        'stop_year'        => '2015', 'stop_month'        => '04', 'stop_day'       => '01',
         'start_year_maven' => '2013', 'start_month_maven' => '11', 'start_day_maven' => '19',
-        'stop_year_maven'  => '2014', 'stop_month_maven'  => '09', 'stop_day_maven'  => '25',
+        'stop_year_maven'  => '2014', 'stop_month_maven'  => '09', 'stop_day_maven'  => '26',
 
         'step_size_in_minutes' => 240,
 
@@ -157,7 +157,7 @@ sub get_horizons_start_time($) {
 sub get_horizons_stop_time($) {
     my $planet = shift;
 
-    if (($planet eq "MAVEN") || ($planet eq "C/2013 A1") || (($planet_codes{$planet} > 0) && ($phase eq "helio"))) {
+    if ($planet eq "MAVEN") {
         return "$stop_year_maven\-$stop_month_maven\-$stop_day_maven";
     } else {
         return "$stop_year\-$stop_month\-$stop_day";

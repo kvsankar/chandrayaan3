@@ -129,7 +129,7 @@ function initConfig() {
         martianPhaseStartTime      = Date.UTC(2014,  9-1, 24,  0,  0, 0, 0);
         endTime                    = Date.UTC(2013, 12-1, 11,  0,  0, 0, 0);
         mavenStartTime             = Date.UTC(2013, 11-1, 19,  0,  0, 0, 0);
-        mavenEndTime               = Date.UTC(2015,  9-1, 22,  0,  0, 0, 0);
+        mavenEndTime               = Date.UTC(2014,  9-1, 26,  0,  0, 0, 0);
 
         latestEndTime = endTime;
         nSteps = (latestEndTime - startTime) / countDurationMilliSeconds;
@@ -167,11 +167,11 @@ function initConfig() {
         startTime                  = Date.UTC(2013, 11-1,  6, 0, 0, 0, 0);
         helioCentricPhaseStartTime = Date.UTC(2013, 12-1,  1, 0, 0, 0, 0);
         martianPhaseStartTime      = Date.UTC(2014,  9-1, 24, 0, 0, 0, 0);
-        endTime                    = Date.UTC(2014,  9-1, 26, 0, 0, 0, 0);
+        endTime                    = Date.UTC(2015,  4-1,  1, 0, 0, 0, 0);
         mavenStartTime             = Date.UTC(2013, 11-1, 19, 0, 0, 0, 0);
-        mavenEndTime               = Date.UTC(2014,  9-1, 25, 0, 0, 0, 0);
+        mavenEndTime               = Date.UTC(2014,  9-1, 26, 0, 0, 0, 0);
 
-        latestEndTime = mavenEndTime;
+        latestEndTime = endTime;
         nSteps = (latestEndTime - startTime) / countDurationMilliSeconds;
         timeout = 5;
 
@@ -233,7 +233,7 @@ function isLocationAvaialable(planet, date) {
     } else if (planet == "MAVEN") {
         return ((date >= mavenStartTime) && (date <= mavenEndTime));
     } else {
-        return ((date >= startTime) && (date <= mavenEndTime));
+        return ((date >= startTime) && (date <= endTime));
     }
 }
 
