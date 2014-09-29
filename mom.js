@@ -879,7 +879,7 @@ function processOrbitVectorsData() {
         }
     }
 
-    // Add center planet - Sun/Earth
+    // Add center planet - Sun/Earth/Mars
 
     svgContainer.append("circle")
         .attr("id", centerPlanet)
@@ -890,16 +890,19 @@ function processOrbitVectorsData() {
         .attr("stroke-width", 0)
         .attr("fill", planetProperties[centerPlanet].color);
 
-    svgContainer
-        .append("g")
-            .attr("class", "label")
-        .append("text")
-            .attr("id", "label-" + centerPlanet)
-            .attr("x", CENTER_LABEL_OFFSET_X)
-            .attr("y", CENTER_LABEL_OFFSET_Y)
-            .attr("font-size", 10)
-            .attr("fill", planetProperties[centerPlanet].color)
-            .text(planetProperties[centerPlanet].name);
+    if ((config == "geo") || (config == "helio")) {
+
+        svgContainer
+            .append("g")
+                .attr("class", "label")
+            .append("text")
+                .attr("id", "label-" + centerPlanet)
+                .attr("x", CENTER_LABEL_OFFSET_X)
+                .attr("y", CENTER_LABEL_OFFSET_Y)
+                .attr("font-size", 10)
+                .attr("fill", planetProperties[centerPlanet].color)
+                .text(planetProperties[centerPlanet].name);
+    }
 
     if (config == "geo") {
         svgContainer.append("circle")
@@ -923,6 +926,17 @@ function processOrbitVectorsData() {
             .text("Earth's Sphere of Influence");
     }
 
+    if (config == "martian") { 
+           var r = 3390/KM_PER_AU*PIXELS_PER_AU/zoomFactor;
+           svgContainer.append("image")
+               .attr("id", "mars-image")
+               .attr("xlink:href", "mom-mars-image.jpg")
+               .attr("x", -r)
+               .attr("y", -r)
+               .attr("height", 2*r)
+               .attr("width", 2*r);
+    }
+
     // Add planetary positions
 
     for (var i = 0; i < planetsForLocations.length; ++i) {
@@ -944,6 +958,7 @@ function processOrbitVectorsData() {
             .attr("stroke", "none")
             .attr("stroke-width", 0)
             .attr("fill", planetProps.color);
+
     }
 
     // Add labels
@@ -971,17 +986,20 @@ function processOrbitVectorsData() {
         d3.select("#label-"+planetKey).text(planetProps.name);
     }
 
-    // Add Bangalore longitude
+    if (config == "geo") {
 
-    svgContainer.append("line")
-        .attr("id", "Bangalore")
-        .attr("class", "geo")
-        .attr("x1", 0)
-        .attr("y1", 0)
-        .attr("x2", 0)
-        .attr("y2", 0)
-        .attr("style", "stroke: DarkGray; stroke-opacity: 0.5; stroke-width: " + (0.5/zoomFactor))
-        .attr("visibility", "inherit");
+        // Add Bangalore longitude
+
+        svgContainer.append("line")
+            .attr("id", "Bangalore")
+            .attr("class", "geo")
+            .attr("x1", 0)
+            .attr("y1", 0)
+            .attr("x2", 0)
+            .attr("y2", 0)
+            .attr("style", "stroke: DarkGray; stroke-opacity: 0.5; stroke-width: " + (0.5/zoomFactor))
+            .attr("visibility", "inherit");
+    }
 
     d3.select("#epochjd").html(epochJD);
     d3.select("#epochdate").html(epochDate);
