@@ -7,6 +7,8 @@ of the orbits of the <a href="http://www.isro.org/mars/home.aspx">
 Mars Orbiter Mission</a> and <a href="http://www.nasa.gov/mission_pages/maven/main/">
 MAVEN</a>.
 
+![Screenshot](/mom-github.jpg?raw=true)
+
 ## Design
 
 ### Fetching orbit data
