@@ -930,7 +930,7 @@ function processOrbitVectorsData() {
            var r = 3390/KM_PER_AU*PIXELS_PER_AU/zoomFactor;
            svgContainer.append("image")
                .attr("id", "mars-image")
-               .attr("xlink:href", "mom-mars-image.jpg")
+               .attr("xlink:href", "mom-mars-image-transparent.gif")
                .attr("x", -r)
                .attr("y", -r)
                .attr("height", 2*r)
