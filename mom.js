@@ -209,7 +209,7 @@ function initConfig() {
         PIXELS_PER_AU = 800000;
         trackWidth = 0.6;
         centerPlanet = "MARS";
-        centerRadius = 6; 
+        centerRadius = 6;
         planetsForOrbits = [];
         planetsForLocations = ["MOM", "MAVEN", "CSS"];
         countDurationMilliSeconds = (1/3) * MILLI_SECONDS_PER_HOUR; // TODO add to and read from JSON
@@ -513,9 +513,15 @@ function adjustLabelLocations() {
         var planetProps = planetProperties[planetKey];
         d3.selectAll("#" + planetKey).attr("r", (planetProps.r/zoomFactor));
 
+        // TODO probably the following statement is not required after the introduction of path
+        // d3.select("#orbit-" + planetKey)
+        //     .selectAll("line")
+        //     .attr("style", "stroke: " + planetProps.color + "; stroke-width: " + (0.5/zoomFactor));
+
         d3.select("#orbit-" + planetKey)
-            .selectAll("line")
-            .attr("style", "stroke: " + planetProps.color + "; stroke-width: " + (0.5/zoomFactor));
+            .selectAll("path")
+            .attr("style", "stroke: " + planetProps.color + "; stroke-width: " + (1.0/zoomFactor) + "; fill: none");
+
         d3.select("#label-" + planetKey).attr("font-size", (10/zoomFactor));
     }
 
@@ -855,27 +861,16 @@ function processOrbitVectorsData() {
                 .attr("id", "orbit-" + planetKey)
                 .attr("visibility", "visible");
 
-            for (var j = 0; j < vectors.length-1; ++j) {
+            var line = d3.svg.line()
+                .x(function(d) { return +1 * d["x"] / KM_PER_AU * PIXELS_PER_AU; } )
+                .y(function(d) { return -1 * d["y"] / KM_PER_AU *PIXELS_PER_AU; } )
+                .interpolate("cardinal-open");
 
-                var x1 = vectors[j]["x"];
-                var y1 = vectors[j]["y"];
-                var newx1 = +1 * (x1 / KM_PER_AU) * PIXELS_PER_AU;
-                var newy1 = -1 * (y1 / KM_PER_AU) * PIXELS_PER_AU;
-
-                var x2 = vectors[j+1]["x"];
-                var y2 = vectors[j+1]["y"];
-                var newx2 = +1 * (x2 / KM_PER_AU) * PIXELS_PER_AU;
-                var newy2 = -1 * (y2 / KM_PER_AU) * PIXELS_PER_AU;
-
-                svgContainer.select("#" + "orbit-" + planetKey)
-                    .append("line")
-                    .attr("x1", newx1)
-                    .attr("y1", newy1)
-                    .attr("x2", newx2)
-                    .attr("y2", newy2)
-                    .attr("style", "stroke: " + planetProps.color + "; stroke-width: " + (0.5/zoomFactor))
-                    .attr("visibility", "inherit");
-            }
+            svgContainer.select("#" + "orbit-" + planetKey)
+                .append("path")
+                .attr("d", line(vectors))
+                .attr("style", "stroke: " + planetProps.color + "; stroke-width: " + (1.0/zoomFactor) + "; fill: none")
+                .attr("visibility", "inherit");
         }
     }
 
@@ -926,7 +921,7 @@ function processOrbitVectorsData() {
             .text("Earth's Sphere of Influence");
     }
 
-    if (config == "martian") { 
+    if (config == "martian") {
            var r = 3390/KM_PER_AU*PIXELS_PER_AU/zoomFactor;
            svgContainer.append("image")
                .attr("id", "mars-image")
