@@ -591,7 +591,7 @@ function initConfig() {
         planetsForLocations = ["MOON", "CY2"];
         stepDurationInMilliSeconds = 5 * MILLI_SECONDS_PER_MINUTE; // TODO add to and read from JSON
         orbitsJson = "geo-cy2.json";
-        orbitsJsonFileSizeInBytes = 2167 * 1024; // TODO
+        orbitsJsonFileSizeInBytes = 4428 * 1024; // TODO
         stepsPerHop = 4;
 
         startTime                  = Date.UTC(2019, 7-1, 22,  9, 31, 0, 0);
@@ -637,7 +637,7 @@ function initConfig() {
         planetsForLocations = ["EARTH", "CY2"];
         stepDurationInMilliSeconds = 5 * MILLI_SECONDS_PER_MINUTE; // TODO add to and read from JSON
         orbitsJson = "lunar-cy2.json";
-        orbitsJsonFileSizeInBytes = 2167 * 1024; // TODO
+        orbitsJsonFileSizeInBytes = 4434 * 1024; // TODO
         stepsPerHop = 4;
 
         startTime                  = Date.UTC(2019, 7-1, 22,  9, 31, 0, 0);
