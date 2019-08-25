@@ -48,10 +48,11 @@ The site consists of the following three sets of files:
 
 #### Third party library files, style sheets, and images
 
+    d3.v3.min.js
+    ephemeris-0.1.0.min.js
     jquery.dialogextend.min.js
     jquery-ui-1.10.3.custom.min.js
     jquery-1.9.1.js
-    d3.v3.min.js
     three.min.js
     TrackballControls.js
     css/ui-darkness/images/*
@@ -67,9 +68,12 @@ The animation is primarily handled using D3 JS and THREE JS.
 Planetary orbits are rendered as ellipses based on orbital elements.
 Spacecraft orbits are rendered using line segments using position data.
 
-JQuery and JQueryUI are primarily used for control and information panels.
+JQuery and JQueryUI are used for control and information panels.
 
 ### Hosting
 
-At present the page can be hosted statically.
+At present the page can be hosted statically. There are no server components needed.
+However, to prevent browsers from complaining about CORS, one may use a tiny web server
+like Mongoose to test the local site. 
+
 
