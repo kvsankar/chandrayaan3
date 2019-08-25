@@ -172,6 +172,7 @@ var eventBurnFlags = [];
 var currentDimension = "2D"; 
 var theSceneHandler = null;
 var animationScenes = {};
+var joyRideFlag = false;
 
 class SceneHandler {
 
@@ -222,7 +223,23 @@ class SceneHandler {
                 animationScene.camera.lookAt(animationScene.craft.position);                
             }                
 
-            this.renderer.render(animationScene.scene, animationScene.camera);
+            if (joyRideFlag) {
+                var craftEarthDistance = animationScene.craft.position.distanceTo(animationScene.primaryBody3D.position);
+                var craftMoonDistance = animationScene.craft.position.distanceTo(animationScene.secondaryBody3D.position);
+
+                // console.log("craftEarthDistance = " + craftEarthDistance + ", craftMoonDistance = " + craftMoonDistance);
+
+                if (craftEarthDistance < craftMoonDistance) {
+                    animationScene.craftCamera.lookAt(animationScene.primaryBody3D.position);
+                } else {
+                    animationScene.craftCamera.lookAt(animationScene.secondaryBody3D.position);
+                }
+                
+                this.renderer.render(animationScene.scene, animationScene.craftCamera);
+
+            } else {
+                this.renderer.render(animationScene.scene, animationScene.camera);    
+            }
         }
     }
 }
@@ -321,7 +338,7 @@ class AnimationScene {
 
         getTextures().then(result=>{
 
-            console.log("Loaded textures: ", result);
+            // console.log("Loaded textures: ", result);
 
             scene.earthTexture = result[0];
             scene.earthBumpMapTexture = result[1];
@@ -548,8 +565,8 @@ class AnimationScene {
         var craftMaterial = new THREE.MeshBasicMaterial({color: craftColor, transparent: false, opacity: 1.0});
         this.craft = new THREE.Mesh(craftGeometry, craftMaterial);
         var craftEdgesGeometry = new THREE.EdgesGeometry(craftGeometry);
-        var craftEdges = new THREE.LineSegments(craftEdgesGeometry, new THREE.LineBasicMaterial({color: craftEdgeColor}));
-        this.craft.add(craftEdges);
+        this.craftEdges = new THREE.LineSegments(craftEdgesGeometry, new THREE.LineBasicMaterial({color: craftEdgeColor}));
+        this.craft.add(this.craftEdges);
 
         this.scene.add(this.craft);
 
@@ -571,6 +588,10 @@ class AnimationScene {
         this.camera.position.y = defaultCameraDistance;
         this.camera.position.z = defaultCameraDistance;
         this.camera.up.set(0, 0, 1);
+
+        this.craftCamera = new THREE.PerspectiveCamera(50, width/height, 0.1, 10000);
+        this.craft.add(this.craftCamera);
+        this.craftCamera.up.set(0, 0, 1);
 
         // add camera controls
         this.cameraControls = new THREE.TrackballControls(this.camera, theSceneHandler.renderer.domElement, cameraControlsCallback);
@@ -704,7 +725,7 @@ class AnimationScene {
         var currentAngle = this.moonAxisRotationAngle;
         var angle = W - currentAngle;
 
-        console.log("Rotating by " + rad_to_deg(angle) + " degrees");
+        // console.log("Rotating by " + rad_to_deg(angle) + " degrees");
 
         var point = this.moonContainer.position;
         var axis = this.moonAxisVector.normalize();
@@ -2301,6 +2322,13 @@ function togglePlane() {
         setLocation();
         render();
     }
+}
+
+function toggleJoyRide() {
+    joyRideFlag = !joyRideFlag;
+    animationScenes[config].craft.visible = !joyRideFlag;
+    animationScenes[config].craftEdges.visible = !joyRideFlag;
+    render();
 }
 
 function toggleView() {
