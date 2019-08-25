@@ -9,13 +9,14 @@
     <meta name="author" content="Sankaranarayanan Viswanathan" />
     <meta name="keywords" content="chandrayaan, chandrayaan2, moon, isro, india, space, astronomy, animation" />
 
-    <script type='text/javascript' src="third-party/d3.v3.min.js" 					charset="utf-8"></script>
-    <script type='text/javascript' src="third-party/jquery-1.9.1.js"				charset="utf-8"></script>
+    <script type='text/javascript' src="third-party/d3.v3.min.js" 					        charset="utf-8"></script>
+    <script type='text/javascript' src="third-party/jquery-1.9.1.js"				        charset="utf-8"></script>
     <script type='text/javascript' src="third-party/jquery-ui-1.10.3.custom.min.js"	charset="utf-8"></script>
-    <script type='text/javascript' src="third-party/jquery.dialogextend.min.js"		charset="utf-8"></script>
-    <script type='text/javascript' src="third-party/three.min.js" 					charset="utf-8"></script>
-    <script type='text/javascript' src="third-party/TrackballControls.js" 			charset="utf-8"></script>
-	<script type='text/javascript' src="third-party/ephemeris-0.1.0.min.js" 		charset="utf-8"></script>
+    <script type='text/javascript' src="third-party/jquery.dialogextend.min.js"		  charset="utf-8"></script>
+    <script type='text/javascript' src="third-party/three.min.js" 					        charset="utf-8"></script>
+    <script type='text/javascript' src="third-party/threex.atmospherematerial.js"   charset="utf-8"></script>
+    <script type='text/javascript' src="third-party/TrackballControls.js" 			    charset="utf-8"></script>
+	  <script type='text/javascript' src="third-party/ephemeris-0.1.0.min.js" 		    charset="utf-8"></script>
 
 
     <script type='text/javascript' src="astro.js"   charset="utf-8"></script>
@@ -73,9 +74,18 @@
 
         <span class="hspace">|</span>
 
-        <!--
         <span class="dimension-3D">
 
+            <span class="hspace">|</span>
+
+            <span class="config-label">View</span>
+
+            <input type="checkbox" name="view" value="orbit"      id="view-orbit"       onclick="toggleView()" checked="checked">Orbit</input>
+            <input type="checkbox" name="view" value="xyz"        id="view-xyz-axes"    onclick="toggleView()" checked="checked">XYZ Axes</input>
+            <input type="checkbox" name="view" value="poles"      id="view-poles"       onclick="toggleView()" checked="checked">Poles</input>
+            <input type="checkbox" name="view" value="polar-axes" id="view-polar-axes"  onclick="toggleView()" checked="checked">Polar Axes</input>
+
+            <!--
             <span class="config-label">Camera Placed At:</span>
             <input type="radio" name="camera" value="AUTO"  id="camerapos-auto" onclick="toggleCameraPos()" checked="checked">Auto</input>
             <input type="radio" name="camera" value="CY2"   id="camerapos-cy2"   onclick="toggleCameraPos()">CY2</input>
@@ -89,9 +99,9 @@
             <input type="radio" name="look" value="CY2"   id="cameralook-cy2"   onclick="toggleCameraLook()">CY2</input>
             <input type="radio" name="look" value="EARTH" id="cameralook-earth" onclick="toggleCameraLook()">Earth</input>
             <input type="radio" name="look" value="MOON"  id="cameralook-moon"  onclick="toggleCameraLook()">Moon</input>
+            -->
 
         </span>
-        -->
 
         <div class="vspace"></div>
 
