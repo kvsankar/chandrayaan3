@@ -22,23 +22,38 @@ var MILLI_SECONDS_PER_HOUR = 3600000;
 var GREENWICH_LONGITUDE = 0; // used to be that of Bangalore earlier: 77.5667;
 var EARTH_MOON_DISTANCE_MEAN_AU = 0.00257;
 var EARTH_RADIUS_KM = 6371;
+var EARTH_RADIUS_MAX_KM = 6378;
+var EARTH_RADIUS_MIN_KM = 6357;
 var MOON_RADIUS_KM = 1737.1;
+var EARTH_AXIS_INCLINATION_DEGREES = 23.5;
+var EARTH_AXIS_INCLINATION_RADS = EARTH_AXIS_INCLINATION_DEGREES * Math.PI / 180.0;
+
+var blackColor = 0x000000; // black
+var earthAxisColor = 0xFFFF00; // yellow
+var moonAxisColor = 0xFFFF00; // yellow
+var northPoleColor = 0xff6347; // tomato
+var southPoleColor = 0x6a5acd; // steel blue
+var primaryLightColor = 0xFFFFFF; // white
+var ambientLightColor = 0x404040; // soft white
+
+var primaryLightIntensity = 10;
+var ambientLightIntensity = 1;
 
 var planetProperties = {
-    "CY2":      { "id": CY2,        "name": "CY2",              "color": "orange",      "stroke-width": 1.0, "r": 3.2, "labelOffsetX": -30, "labelOffsetY": -10 },
-    "SUN":      { "id": SUN,        "name": "Sun",              "color": "yellow",      "stroke-width": 1.0, "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
-    "MERCURY":  { "id": MERCURY,    "name": "Mercury",          "color": "green",       "stroke-width": 1.0, "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
-    "VENUS":    { "id": VENUS,      "name": "Venus",            "color": "grey",        "stroke-width": 1.0, "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
-    "EARTH":    { "id": EARTH,      "name": "Earth",            "color": "blue",        "stroke-width": 1.0, "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
-    "MARS":     { "id": MARS,       "name": "Mars",             "color": "red",         "stroke-width": 0.3, "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
-    "MOON":     { "id": MOON,       "name": "Moon",             "color": "grey",        "stroke-width": 1.0, "r": 3,   "labelOffsetX": +10, "labelOffsetY": +10 },
-    "CSS":      { "id": CSS,        "name": "Siding Spring",    "color": "cyan",        "stroke-width": 1.0, "r": 3,   "labelOffsetX": +10, "labelOffsetY": +10 },
-};
-
+    "CY2":      { "id": CY2,        "name": "CY2",              "color": "#D4AF37",     "orbitcolor": "orange",     "stroke-width": 1.0, "r": 3.2, "labelOffsetX": -30, "labelOffsetY": -10 },
+    "SUN":      { "id": SUN,        "name": "Sun",              "color": "yellow",      "orbitcolor": "yellow",     "stroke-width": 1.0, "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
+    "MERCURY":  { "id": MERCURY,    "name": "Mercury",          "color": "green",       "orbitcolor": "green",      "stroke-width": 1.0, "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
+    "VENUS":    { "id": VENUS,      "name": "Venus",            "color": "grey",        "orbitcolor": "grey",       "stroke-width": 1.0, "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
+    "EARTH":    { "id": EARTH,      "name": "Earth",            "color": "blue",        "orbitcolor": "blue",       "stroke-width": 1.0, "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
+    "MARS":     { "id": MARS,       "name": "Mars",             "color": "red",         "orbitcolor": "red",        "stroke-width": 0.3, "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
+    "MOON":     { "id": MOON,       "name": "Moon",             "color": "grey",        "orbitcolor": "grey",       "stroke-width": 1.0, "r": 3,   "labelOffsetX": +10, "labelOffsetY": +10 },
+    "CSS":      { "id": CSS,        "name": "Siding Spring",    "color": "cyan",        "orbitcolor": "cyan",       "stroke-width": 1.0, "r": 3,   "labelOffsetX": +10, "labelOffsetY": +10 },
+};      
+    
 var CENTER_LABEL_OFFSET_X = -5;
 var CENTER_LABEL_OFFSET_Y = -15;
 
-var SPEED_CHANGE_FACTOR = 1.41;
+var SPEED_CHANGE_FACTOR = 2;
 var ZOOM_SCALE = 1.10;
 var ZOOM_TIMEOUT = 200; // TODO Why did I end up calling this variable this way? 
 var SVG_ORIGIN_X = 100; // TODO match with CSS value; find a better way
@@ -59,6 +74,7 @@ var nOrbitPoints = 0;
 var progress = 0;
 var bannerShown = false;
 var stopZoom = false;
+var sunLongitude = 0.0;
 
 // animation control
 var mouseDown = false;
@@ -100,6 +116,8 @@ var svgHeight;
 var offsetx = 0;
 var offsety = 0;
 var trackWidth;
+var earthRadius;
+var moonRadius;
 var primaryBody;
 var primaryBodyRadius;
 var secondaryBody;
@@ -197,9 +215,11 @@ class SceneHandler {
         if (animationScene.initialized3D) {
 
             if (lockOnEarth || lockOnMoon) {
+            
                 animationScene.camera.lookAt(animationScene.secondaryBody3D.position);
             } else if (lockOnCY2) {
-                animationScene.camera.lookAt(animationScene.craft.position);
+            	
+                animationScene.camera.lookAt(animationScene.craft.position);                
             }                
 
             this.renderer.render(animationScene.scene, animationScene.camera);
@@ -254,32 +274,136 @@ class AnimationScene {
 
         this.scene = new THREE.Scene();
 
+        // console.log(primaryBodyRadius + ", " + secondaryBodyRadius);
+
         // add primary body
         var primaryBodyColor = planetProperties[primaryBody]["color"];
         var primaryBodyGeometry = new THREE.SphereGeometry(primaryBodyRadius, 100, 100);
         var primaryBodyMaterial = new THREE.MeshPhongMaterial({color: primaryBodyColor, shininess: 1});
-        var primaryBody3D = new THREE.Mesh(primaryBodyGeometry, primaryBodyMaterial);
-        this.scene.add(primaryBody3D);
+        this.primaryBody3D = new THREE.Mesh(primaryBodyGeometry, primaryBodyMaterial);
+        this.scene.add(this.primaryBody3D);
 
         // add secondary body
         var secondaryBodyColor = planetProperties[secondaryBody]["color"];
         var secondaryBodyGeometry = new THREE.SphereGeometry(secondaryBodyRadius, 100, 100);
-        var secondaryBodyMaterial = new THREE.MeshPhongMaterial({color: secondaryBodyColor});
+        var secondaryBodyMaterial = new THREE.MeshPhongMaterial({color: secondaryBodyColor, shininess: 1});
         this.secondaryBody3D = new THREE.Mesh(secondaryBodyGeometry, secondaryBodyMaterial);
         this.scene.add(this.secondaryBody3D);
 
+        // add axes to Earth and Moon
+
+        var earthPoleScale = 1.2;
+        var es = earthRadius * Math.sin(EARTH_AXIS_INCLINATION_RADS);
+        var ec = earthRadius * Math.cos(EARTH_AXIS_INCLINATION_RADS);
+        var earthNorthPole = new THREE.Vector3(0, +1 * earthPoleScale * es, +1 * earthPoleScale * ec);
+        var earthSouthPole = new THREE.Vector3(0, -1 * earthPoleScale * es, -1 * earthPoleScale * ec);
+        var earthAxisGeometry = new THREE.Geometry();
+        earthAxisGeometry.vertices.push(earthNorthPole, earthSouthPole);
+        var earthAxisMaterial = new THREE.LineBasicMaterial({color: earthAxisColor});
+        var earthAxis = new THREE.Line(earthAxisGeometry, earthAxisMaterial);
+
+        var earthNorthPoleGeometry = new THREE.SphereGeometry(earthRadius/50, 100, 100);
+        var earthNorthPoleMaterial = new THREE.MeshPhysicalMaterial({color: blackColor, emissive: northPoleColor, reflectivity: 0.0});
+        var earthNorthPole = new THREE.Mesh(earthNorthPoleGeometry, earthNorthPoleMaterial);
+        earthNorthPole.castShadow = false;
+        earthNorthPole.receiveShadow = false;
+        earthNorthPole.position.set(0, 0.985*es, 0.985*ec);
+
+        var earthSouthPoleGeometry = new THREE.SphereGeometry(earthRadius/50, 100, 100);
+        var earthSouthPoleMaterial = new THREE.MeshPhysicalMaterial({color: blackColor, emissive: southPoleColor, reflectivity: 0.0}); 
+        var earthSouthPole = new THREE.Mesh(earthSouthPoleGeometry, earthSouthPoleMaterial);
+        earthSouthPole.castShadow = false;
+        earthSouthPole.receiveShadow = false;
+        earthSouthPole.position.set(0, -0.985*es, -0.985*ec);
+
+        var today = new Date();
+        var T = today.getT();
+
+		var lp = lunar_pole(today);
+		var a = lp["alpha0"];
+		var d = lp["delta0"];
+		var w = lp["W"];
+
+		var long_lat = to_long_lat(a, d, T);
+		var long = long_lat[0];
+		var lat = long_lat[1];
+
+		// console.log("Lunar NP: (alpha0, delta0) = " + 
+		// 	"(" + rad_to_deg(a) + ", " + rad_to_deg(d) + "), " +
+		// 	"(long, lat) = (" + long + ", " +  lat + "), W = " + rad_to_deg(w));
+
+		var npx = moonRadius * Math.cos(lat) * Math.cos(long); 
+		var npy = moonRadius * Math.cos(lat) * Math.sin(long);
+		var npz = moonRadius * Math.sin(lat);
+
+		var scale = 1.5;
+        var moonNorthPole = new THREE.Vector3(+1 * scale * npx, +1 * scale * npy, +1 * scale * npz);
+        var moonSouthPole = new THREE.Vector3(-1 * scale * npx, -1 * scale * npy, -1 * scale * npz);
+        // console.log(moonNorthPole, moonSouthPole);
+        var moonAxisGeometry = new THREE.Geometry();
+        moonAxisGeometry.vertices.push(moonNorthPole, moonSouthPole);
+        var moonAxisMaterial = new THREE.LineBasicMaterial({color: moonAxisColor});
+        var moonAxis = new THREE.Line(moonAxisGeometry, moonAxisMaterial);
+
+        var moonNorthPoleGeometry = new THREE.SphereGeometry(moonRadius/50, 100, 100);
+        var moonNorthPoleMaterial = new THREE.MeshPhysicalMaterial({color: blackColor, emissive: northPoleColor, reflectivity: 0.0});
+        var moonNorthPoleSphere = new THREE.Mesh(moonNorthPoleGeometry, moonNorthPoleMaterial);
+        moonNorthPoleSphere.castShadow = false;
+        moonNorthPoleSphere.receiveShadow = false;
+        scale = 0.985;
+        moonNorthPoleSphere.position.set(+1 * scale * npx, +1 * scale * npy, +1 * scale * npz);
+
+        var moonSouthPoleGeometry = new THREE.SphereGeometry(moonRadius/50, 100, 100);
+        var moonSouthPoleMaterial = new THREE.MeshPhysicalMaterial({color: blackColor, emissive: southPoleColor, reflectivity: 0.0});
+        var moonSouthPoleSphere = new THREE.Mesh(moonSouthPoleGeometry, moonSouthPoleMaterial);
+        moonSouthPoleSphere.castShadow = false;
+        moonSouthPoleSphere.receiveShadow = false;
+        scale = 0.985;
+        moonSouthPoleSphere.position.set(-1 * scale * npx, -1 * scale * npy, -1 * scale * npz);
+        
+        if (config == "geo") {
+
+        	this.primaryBody3D.add(earthAxis);
+        	this.primaryBody3D.add(earthNorthPole);
+        	this.primaryBody3D.add(earthSouthPole);
+
+            // Not adding axes to secondary object - doesn't look good
+        	// this.secondaryBody3D.add(moonAxis);
+        	// this.secondaryBody3D.add(moonNorthPoleSphere);
+        	// this.secondaryBody3D.add(moonSouthPoleSphere);
+        		
+        
+        } else if (config == "lunar") {
+        
+        	this.primaryBody3D.add(moonAxis);
+        	this.primaryBody3D.add(moonNorthPoleSphere);
+        	this.primaryBody3D.add(moonSouthPoleSphere);
+
+            // Not adding axes to secondary object - doesn't look good
+        	// this.secondaryBody3D.add(earthAxis);
+        	// this.secondaryBody3D.add(earthNorthPole);
+        	// this.secondaryBody3D.add(earthSouthPole);
+        
+        }
+        
         // add spacecraft orbit
         var curves = new THREE.CatmullRomCurve3(this.curve);
         var orbitGeometry = new THREE.Geometry();
         orbitGeometry.vertices = curves.getSpacedPoints(nOrbitPoints * 100);
-        var orbitMaterial = new THREE.LineBasicMaterial(/* { color : 0xff0000 } */ {color: "orange", linewidth: 0.2});
+        var craftOrbitColor = planetProperties[craftId]["orbitcolor"];
+        var orbitMaterial = new THREE.LineBasicMaterial({color: craftOrbitColor, linewidth: 0.2});
         var orbitLine = new THREE.Line(orbitGeometry, orbitMaterial);
         this.scene.add(orbitLine);
 
         var craftColor = planetProperties[craftId]["color"];
-        var craftGeometry = new THREE.BoxGeometry(4, 4, 4);
-        var craftMaterial = new THREE.MeshBasicMaterial({color: 0xD4AF37});
+        var craftEdgeColor = 0xFF0000;
+        var craftGeometry = new THREE.BoxGeometry(5, 5, 5);
+        var craftMaterial = new THREE.MeshBasicMaterial({color: craftColor, transparent: false, opacity: 1.0});
         this.craft = new THREE.Mesh(craftGeometry, craftMaterial);
+        var craftEdgesGeometry = new THREE.EdgesGeometry(craftGeometry);
+        var craftEdges = new THREE.LineSegments(craftEdgesGeometry, new THREE.LineBasicMaterial({color: craftEdgeColor}));
+        this.craft.add(craftEdges);
+
         this.scene.add(this.craft);
 
         // add axes helper
@@ -287,14 +411,9 @@ class AnimationScene {
         this.scene.add(axesHelper);
 
         // add light
-        var color = 0xFFFFFF;
-        var intensity = 10;
-        var light = new THREE.DirectionalLight(color, intensity);
-        light.position.set(100000, 0, 0);
-        this.scene.add(light);
+        this.light = new THREE.DirectionalLight(primaryLightColor, primaryLightIntensity);
+        this.scene.add(this.light);
 
-        var ambientLightColor = 0x404040;
-        var ambientLightIntensity = 1;
         var ambientLight = new THREE.AmbientLight(ambientLightColor, ambientLightIntensity); // soft white light
         this.scene.add(ambientLight);
 
@@ -325,33 +444,6 @@ class AnimationScene {
         d3.select("#eventinfo").text("");
         
         this.initialized3D = true;
-
-        /*
-        // dat gui
-        var gui = new dat.GUI();
-        var cameraGui = gui.addFolder("camera position");
-        cameraGui.add(camera.position, 'x');
-        cameraGui.add(camera.position, 'y');
-        cameraGui.add(camera.position, 'z');
-        cameraGui.open();
-
-        var cameraGui = gui.addFolder("camera projection");
-        cameraGui.add(camera, "fov");
-        cameraGui.open();
-
-        var lightGui = gui.addFolder("light position");
-        lightGui.add(light.position, 'x');
-        lightGui.add(light.position, 'y');
-        lightGui.add(light.position, 'z');
-        lightGui.open();
-
-        var cubeGui = gui.addFolder("cube 
-        position");
-        cubeGui.add(cube.position, 'x');
-        cubeGui.add(cube.position, 'y');
-        cubeGui.add(cube.position, 'z');
-        cubeGui.open();
-        */
     }
 
     processOrbitVectorsData3D() {
@@ -390,6 +482,65 @@ class AnimationScene {
         }
 
         // console.log("nOrbitPoints = " + nOrbitPoints);
+    }
+
+    toggleCameraPos(val) {
+    	// console.log("toggleCameraPos() called in mode " + this.name + " and target origin position " + val);
+
+    	if ((this.name == "geo") && (val == "EARTH")) { 
+    		// console.log("Setting camera position to Origin/Earth.");
+    		this.camera.position.set(0, 0, 0)
+    	};
+    	if ((this.name == "geo") && (val == "MOON")) { 
+    		// console.log("Setting camera position to Moon.");
+    		this.camera.position.set(this.secondaryBody3D.position);
+    	};
+    	if ((this.name == "lunar") && (val == "EARTH")) { 
+    		// console.log("Setting camera position to Earth.");
+    		this.camera.position.set(this.secondaryBody3D.position);
+    	};
+    	if ((this.name == "lunar") && (val == "MOON")) {
+    		// console.log("Setting camera position to Origin/Moon.");
+    		this.camera.position.set(0, 0, 0);
+    	};
+
+    	theSceneHandler.render(this);
+    }
+
+    toggleCameraLook(val) {
+    	// console.log("toggleCameraLook() called in mode " + this.name + " and target look position " + val);
+
+    	if (this.name == "geo") {
+
+    		if (val == "EARTH") { 
+	    		// console.log("Setting camera look to Origin/Earth.");
+	    		this.camera.lookAt(0, 0, 0)
+    		}
+	    	if (val == "MOON") { 
+	    		// console.log("Setting camera look to Moon.");
+	    		this.camera.lookAt(this.secondaryBody3D.position);
+	    	}
+	    	if (val == "CY2") {
+	    		// console.log("Setting camera look to the craft.");
+	    		this.camera.lookAt(this.craft.position);	
+	    	}
+	    }
+
+    	if (this.name == "lunar") {
+
+    		if (val == "EARTH") { 
+	    		// console.log("Setting camera look to Earth.");
+	    		this.camera.lookAt(this.secondaryBody3D.position);
+    		}
+	    	if (val == "MOON") {
+	    		// console.log("Setting camera look to Origin/Moon.");
+	    		this.camera.lookAt(0, 0, 0);
+	    	}
+	    	if (val == "CY2") {
+	    		// console.log("Setting camera look to the craft.");
+	    		this.camera.lookAt(this.craft.position);
+	    	}
+	    }
     }
 
     cameraDisntance(position) {
@@ -431,9 +582,6 @@ function animateLoop() {
 
     if (animationScenes && animationScenes[config].initialized3D) {
         animationScenes[config].cameraControls.update();
-        // var position = animationScenes[config].cameraControls.getPos();
-        // d3.select("#camera-position").text("(" + position.x + ", " + position.y + ", " + position.z + ")");
-
     }
 }
 
@@ -560,7 +708,7 @@ function initConfig() {
 
     if (!theSceneHandler) {
         theSceneHandler = new SceneHandler();
-    }
+    }    
 
     if (config == "geo") {
 
@@ -579,13 +727,15 @@ function initConfig() {
         defaultCameraDistance = 2 * EARTH_MOON_DISTANCE_MEAN_AU * PIXELS_PER_AU;
 
         trackWidth = 0.6;
+
+	    earthRadius = (EARTH_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU;
+    	moonRadius = (MOON_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU;
         
         primaryBody = "EARTH";
-        primaryBodyRadius = (EARTH_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU;
+        primaryBodyRadius = earthRadius;
 
         secondaryBody = "MOON";
-        secondaryBodyRadius = (MOON_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU;
-
+    	secondaryBodyRadius = moonRadius;
 
         planetsForOrbits = ["MOON", "CY2"];
         planetsForLocations = ["MOON", "CY2"];
@@ -627,11 +777,14 @@ function initConfig() {
 
         trackWidth = 0.6;
 
+	    earthRadius = (EARTH_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU;
+    	moonRadius = (MOON_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU;        
+
         primaryBody = "MOON";
-        primaryBodyRadius = (MOON_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU;
+        primaryBodyRadius = moonRadius;
 
         secondaryBody = "EARTH";
-        secondayBodyRadius = (EARTH_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU;
+        secondaryBodyRadius = earthRadius;
 
         planetsForOrbits = ["EARTH", "CY2"];
         planetsForLocations = ["EARTH", "CY2"];
@@ -814,6 +967,31 @@ function setLocation() {
     var nowDate = new Date(now);
     animDate.html(nowDate);
 
+    var ephemYear = nowDate.getUTCFullYear();
+    var ephemMonth = nowDate.getUTCMonth() + 1;
+    var ephemDay = nowDate.getUTCDate();
+    var ephemHours = nowDate.getUTCHours();
+    var ephemMinutes = nowDate.getUTCMinutes();
+    var ephemSeconds = nowDate.getUTCSeconds();
+    var ephemDate = {'year': ephemYear, 'month': ephemMonth, 'day': ephemDay, 'hours': ephemHours, 'minutes': ephemMinutes, 'seconds': ephemSeconds};
+    // onsole.log(ephemDate);
+	$const.tlong = 0.0; // longitude
+	$const.glat = 0.0; // latitude
+	$processor.init(); // TODO not sure whether this needs to be called every time or just once
+	var ephemSun = $moshier.body.sun;
+	$processor.calc(ephemDate, ephemSun);
+	// console.log(ephemSun.position);
+	sunLongitude = ephemSun.position.apparentLongitude * Math.PI / 180.0;
+	// console.log("Sun longitude: " + sunLongitude * 180.0 / Math.PI);
+
+	var ephemMoon = $moshier.body.sun;
+	$processor.calc(ephemDate, ephemMoon);
+	// console.log(ephemMoon.position);
+
+	if (animationScenes[config] && animationScenes[config].initialized3D) {
+		animationScenes[config].light.position.set(Math.cos(sunLongitude), Math.sin(sunLongitude), 0).normalize();	
+	}
+	
     // console.log("now = " + now);
     // console.log("helioCentricPhaseStartTime = " + helioCentricPhaseStartTime);
     // console.log("lunarPhaseStartTime = " + lunarPhaseStartTime);
@@ -889,14 +1067,14 @@ function setLocation() {
                 var z = vectors[index]["z"];
                 var r = Math.sqrt(x*x + y*y + z*z);
 
-                var primaryBodyRadius;
+                var pbr;
                 if (config == "geo") {
-                    primaryBodyRadius = EARTH_RADIUS_KM; 
+                    pbr = EARTH_RADIUS_KM; 
                 } else if (config == "lunar") {
-                    primaryBodyRadius = MOON_RADIUS_KM;
+                    pbr = MOON_RADIUS_KM;
                 }
 
-                var altitude = r - primaryBodyRadius;
+                var altitude = r - pbr;
                 d3.select("#distance-" + planetKey + "-" + primaryBody).text(FORMAT_METRIC(r));
                 d3.select("#altitude-" + planetKey + "-" + primaryBody).text(FORMAT_METRIC(altitude));
 
@@ -1036,14 +1214,9 @@ function adjustLabelLocations() {
             d3.selectAll("#" + planetKey).attr("r", (planetProps.r/zoomFactor));
         }
 
-        // TODO probably the following statement is not required after the introduction of path
-        // d3.select("#orbit-" + planetKey)
-        //     .selectAll("line")
-        //     .attr("style", "stroke: " + planetProps.color + "; stroke-width: " + (0.5/zoomFactor));
-
         d3.select("#orbit-" + planetKey)
             .selectAll("path")
-            .attr("style", "stroke: " + planetProps.color + "; stroke-width: " + (1.0/zoomFactor) + "; fill: none");
+            .attr("style", "stroke: " + planetProps.orbitcolor + "; stroke-width: " + (1.0/zoomFactor) + "; fill: none");
 
         d3.select("#label-" + planetKey).attr("font-size", (10/zoomFactor));
     }
@@ -1409,7 +1582,7 @@ function processOrbitElementsData() {
                 .attr("cy", cy)
                 .attr("rx", rx)
                 .attr("ry", ry)
-                .attr("stroke", planetProps.color)
+                .attr("stroke", planetProps.orbitcolor)
                 .attr("stroke-width", (1.0/zoomFactor))
                 .attr("fill", "none")
                 .attr("transform", "rotate(" + angle + " 0 0)");
@@ -1443,7 +1616,7 @@ function processOrbitVectorsData() {
             svgContainer.select("#" + "orbit-" + planetKey)
                 .append("path")
                 .attr("d", line(vectors))
-                .attr("style", "stroke: " + planetProps.color + "; stroke-width: " + (1.0/zoomFactor) + "; fill: none")
+                .attr("style", "stroke: " + planetProps.orbitcolor + "; stroke-width: " + (1.0/zoomFactor) + "; fill: none")
                 .attr("visibility", "inherit");
         }
     }
@@ -1672,18 +1845,16 @@ function faster() {
     if (ticksPerAnimationStep > 1) {
         ticksPerAnimationStep /= SPEED_CHANGE_FACTOR;
     } else {
-        timelineIndexStep += 1;
-        if (timelineIndexStep > 12) timelineIndexStep = 12;
+    	timelineIndexStep *= SPEED_CHANGE_FACTOR;	
     }
     // console.log("ticksPerAnimationStep = " + ticksPerAnimationStep + ", timelineIndexStep = " + timelineIndexStep);
 }
 
 function slower() {
     if (timelineIndexStep > 1) {
-        timelineIndexStep -= 1;
+        timelineIndexStep /= SPEED_CHANGE_FACTOR;
     } else {
         ticksPerAnimationStep *= SPEED_CHANGE_FACTOR;
-        if (ticksPerAnimationStep >= 1000) ticksPerAnimationStep = 1000;
     }
     // console.log("ticksPerAnimationStep = " + ticksPerAnimationStep + ", timelineIndexStep = " + timelineIndexStep);
 }
@@ -1826,6 +1997,20 @@ function toggleLockEarth() {
     reset();
 }
 
+function toggleCameraPos() {
+	var val = $('input[name=camera]:checked').val();
+	if (animationScenes[config] && animationScenes[config].initialized3D) {
+		animationScenes[config].toggleCameraPos(val);
+	}
+}
+
+function toggleCameraLook() {
+	var val = $('input[name=look]:checked').val();
+	if (animationScenes[config] && animationScenes[config].initialized3D) {
+		animationScenes[config].toggleCameraLook(val);
+	}
+}
+
 function togglePlane() {
     
     var val = $('input[name=plane]:checked').val();
@@ -1833,10 +2018,15 @@ function togglePlane() {
 
     var camera = null;
     var cameraControls = null;
+    var distance = 0.0;
 
     if (currentDimension == "3D") {
         camera = animationScenes[config].camera;
         cameraControls = animationScenes[config].cameraControls;
+
+        var origin = new THREE.Vector3(0, 0, 0);
+        distance = cameraControls.getPos().distanceTo(origin);
+        
         cameraControls.reset();
     }
 
@@ -1856,7 +2046,7 @@ function togglePlane() {
 
             camera.position.x = 0;
             camera.position.y = 0;
-            camera.position.z = defaultCameraDistance;
+            camera.position.z = distance;
             camera.up.set(0, 1, 0); 
 
         }
@@ -1876,7 +2066,7 @@ function togglePlane() {
 
         if (currentDimension == "3D") {
             
-            camera.position.x = defaultCameraDistance;
+            camera.position.x = distance;
             camera.position.y = 0;
             camera.position.z = 0;
             camera.up.set(0, 0, 1);
@@ -1898,7 +2088,7 @@ function togglePlane() {
         if (currentDimension == "3D") {
 
             camera.position.x = 0;
-            camera.position.y = defaultCameraDistance;
+            camera.position.y = distance;
             camera.position.z = 0;
             camera.up.set(1, 0, 0); 
             // TODO 
