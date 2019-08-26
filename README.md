@@ -6,7 +6,36 @@ in http://sankara.net/chandrayaan2.html. That page shows an animation
 of the orbit of the ISRO <a href="http://www.isro.org/mars/home.aspx">
 Chandrayaan 2</a> mission.
 
+I created this animation for educational purposes. It has the following features:
+
+    * Real-world orbit data and predictions based on information available from JPL/NASA HORIZONS interface
+    * Rendering of the orbit in 2D and 3D
+    * Rendering of the orbit with either Earth or Moon at the center
+    * Rendering of the orbit with views locked on Earth, Moon, or the spacecraft
+    * Views aligned with J2000 reference axes
+    * Information on all earth bound and moon bound maneuvers (engine burns)
+    * Realistic textures for Earth and Moon in 3D mode
+    * Astronomically correct rendering of sunlight on Earth and Moon, poles, and polar axes
+    * Various animation controls for education - camera controls (pan, zoom, rotate), timeline controls, visibility controls
+    * A Joy Ride feature which lets you fly along with Chandrayaan 2 (video capture: https://www.youtube.com/watch?v=go-vquqMZdk)
+    
 ## Design
+
+## High level design
+
+The animation has 2D and 3D rendering modes. 
+
+The 2D mode uses SVG and D3 JS. Planetary orbits are rendered as ellipses
+based on orbital elements. Spacecraft orbits are rendered using line segments
+using position data.
+
+The 3D mode uses THREE JS.
+
+JQuery and JQueryUI are used for control and information panels.
+
+Orbit data is fetched offline from JPL/NASA HORIZONS.
+This data in CSV format is processed a bit and converted into JSON format 
+for use in the animation. A few astronomy functions are based on Steve Moshier's routines.
 
 ### Fetching orbit data
 
@@ -41,6 +70,7 @@ The site consists of the following three sets of files:
 
     chandrayaan2.html         # HTML page
     cy2.js                    # JavaScript handling animation
+    astro.js                  # A few astronomy support functions
     cy2.css                   # CSS for the web page
     whatsnew-cy2.html         # What's new page
     geo-cy2.json              # contains all geocentric orbit data
@@ -49,7 +79,7 @@ The site consists of the following three sets of files:
 #### Third party library files, style sheets, and images
 
     d3.v3.min.js
-    ephemeris-0.1.0.min.js
+    ephemeris-0.1.0.min.js (https://github.com/mivion/ephemeris)
     jquery.dialogextend.min.js
     jquery-ui-1.10.3.custom.min.js
     jquery-1.9.1.js
@@ -57,18 +87,11 @@ The site consists of the following three sets of files:
     TrackballControls.js
     css/ui-darkness/images/*
     css/ui-darkness/*.css
+    images/* (earth and moon textues for a few sources)
 
 #### Analytics
 
     ga.js                 # Google analytics (vesion controlled)
-
-### Animation
-
-The animation is primarily handled using D3 JS and THREE JS.
-Planetary orbits are rendered as ellipses based on orbital elements.
-Spacecraft orbits are rendered using line segments using position data.
-
-JQuery and JQueryUI are used for control and information panels.
 
 ### Hosting
 
