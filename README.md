@@ -8,16 +8,16 @@ Chandrayaan 2</a> mission.
 
 I created this animation for educational purposes. It has the following features:
 
-    * Real-world orbit data and predictions based on information available from JPL/NASA HORIZONS interface
-    * Rendering of the orbit in 2D and 3D
-    * Rendering of the orbit with either Earth or Moon at the center
-    * Rendering of the orbit with views locked on Earth, Moon, or the spacecraft
-    * Views aligned with J2000 reference axes
-    * Information on all earth bound and moon bound maneuvers (engine burns)
-    * Realistic textures for Earth and Moon in 3D mode
-    * Astronomically correct rendering of sunlight on Earth and Moon, poles, and polar axes
-    * Various animation controls for education - camera controls (pan, zoom, rotate), timeline controls, visibility controls
-    * A Joy Ride feature which lets you fly along with Chandrayaan 2 (video capture: https://www.youtube.com/watch?v=go-vquqMZdk)
+* Real-world orbit data and predictions based on information available from JPL/NASA HORIZONS interface
+* Rendering of the orbit in 2D and 3D
+* Rendering of the orbit with either Earth or Moon at the center
+* Rendering of the orbit with views locked on Earth, Moon, or the spacecraft
+* Views aligned with J2000 reference axes
+* Information on all earth bound and moon bound maneuvers (engine burns)
+* Realistic textures for Earth and Moon in 3D mode
+* Astronomically correct rendering of sunlight on Earth and Moon, poles, and polar axes
+* Various animation controls for education - camera controls (pan, zoom, rotate), timeline controls, visibility controls
+* A Joy Ride feature which lets you fly along with Chandrayaan 2 (video capture: https://www.youtube.com/watch?v=go-vquqMZdk)
     
 ## Design
 
