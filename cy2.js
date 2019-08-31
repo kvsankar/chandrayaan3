@@ -863,24 +863,23 @@ function addEvents() {
     var ebn5 =         new Date(Date.UTC(2019, 8-1,  6,  9, 34, 0, 0));         // 1430 - 1530 IST || Actual: 1504 IST
     var ebn6loi =      new Date(Date.UTC(2019, 8-1, 13, 21,  1, 0, 0));         // 0300 - 0400 IST || Actual: 0221 IST - 1203 seconds
     var lbn1tli =      new Date(Date.UTC(2019, 8-1, 20,  3, 47, 0, 0));         //                 || Actual: 0902 IST - 1738 seconds - achieved 114 km x 18072 km
-    var lbn2 =         new Date(Date.UTC(2019, 8-1, 21,  7, 20, 0, 0));         // Aug 21, 2019 | 12:30 – 13:30 | 121 X 4303 || Actual: 1250 IST - achieved 118 km x 4412 km
-
-    var now =          new Date();
+    var lbn2 =         new Date(Date.UTC(2019, 8-1, 21,  7, 30, 0, 0));         // Aug 21, 2019 | 12:30 – 13:30 | 121 X 4303 || Actual: 1250 IST - 1228 seconds - achieved 118 km x 4412 km    
+    var lbn3 =         new Date(Date.UTC(2019, 8-1, 28,  3, 44, 0, 0));         // Aug 28, 2019 | 05:30 – 06:30 | 178 X 1411 || Actual: 0904 IST - 1190 seconds - achieved 179 km x 1412 km
     
-    var lbn3 =         new Date(Date.UTC(2019, 8-1, 28,  0, 30, 0, 0));         // Aug 28, 2019 | 05:30 – 06:30 | 178 X 1411
-    var lbn4 =         new Date(Date.UTC(2019, 8-1, 30, 13,  0, 0, 0));         // Aug 30, 2019 | 18:00 – 19:00 | 126 X 164
+    var now =          new Date();
+
+    var lbn4 =         new Date(Date.UTC(2019, 8-1, 30, 12, 58, 0, 0));         // Aug 30, 2019 | 18:00 – 19:00 || Actual: 1818 IST - 1155 seconds - 126 X 164 1818 hours
     var lbn5 =         new Date(Date.UTC(2019, 9-1, 1,  13,  0, 0, 0));         // Sep 01, 2019 | 18:00 – 19:00 IST | 114 X 128
-    var animationEnd = new Date(Date.UTC(2019, 8-1, 30,  4, 56, 0, 0));
+    var animationEnd = new Date(Date.UTC(2019, 9-1, 3,  12, 41, 0, 0));
 
     eventTimes = [
-        missionStart, ebn1,     ebn2,    ebn3,    ebn4,    ebn5,    ebn6loi,    lbn1tli,     lbn2,    now,    lbn3,    animationEnd, lbn4,    lbn5];
+        missionStart, ebn1,     ebn2,    ebn3,    ebn4,    ebn5,    ebn6loi,    lbn1tli,     lbn2,    lbn3,    lbn4,    now,    lbn5,    animationEnd];
 
     eventLabels = [
-        "Launch",     "EBN#1", "EBN#2", "EBN#3", "EBN#4", "EBN#5", "EBN#6/LOI", "LBN#1/TLI", "LBN#2", "Now",  "LBN#3", "Data End",   "LBN#4", "LBN#5", ];
+        "Launch",     "EBN#1", "EBN#2", "EBN#3", "EBN#4", "EBN#5", "EBN#6/LOI", "LBN#1/TLI", "LBN#2", "LBN#3", "LBN#4", "Now",  "LBN#5", "Data End"];
 
     eventBurnFlags = [
-        false,        true,    true,     true,   true,    true,    true,        true,         true,    false, true,   false,        true,     true  
-    ];
+        false,        true,    true,     true,   true,    true,    true,        true,         true,    true,   true,    false,  true,  false];
 
     eventInfos = [
         "Launch:    22nd Jul, 15:01 IST - Chandrayaan 2 placed in orbit",
@@ -892,11 +891,11 @@ function addEvents() {
         "EBN#6/LOI: 14th Aug, 02:21 IST - Target orbit: 266 x 413623, Completed",
         "LBN#1/TLI: 20th Aug, 09:02 IST - Target orbit: 118 x  18078, Achieved 114 x  18072",
         "LBN#2:     21st Aug, 12:50 IST - Target orbit: 121 x   4303, Achieved 118 x   4412",
-        "Now",
-        "LBN#3:     28th Aug, 05:30 - 06:30 IST - Target orbit: 178 X 1411",
-        "Data End:       30th Aug, 04:56 IST - Orbit data predictions end here",
-        "LBN#4:     30th Aug, 18:00 - 19:00 IST - Target orbit: 126 x 164",
+        "LBN#3:     28th Aug, 09:04 IST - Target orbit: 178 X   1411, achieved 179 x   1412",
+        "LBN#4:     30th Aug, 18:18 IST - Target orbit: 126 x    164, achieved 124 x    164",
         "LBN#5:      1st Sep, 18:00 - 19:00 IST - Target orbit: 114 x 128",
+        "Now",
+        "Data End:  30th Aug, 04:56 IST - Orbit data predictions end here",
     ];
 }
 
@@ -948,7 +947,7 @@ function initConfig() {
         stepsPerHop = 4;
 
         startTime                  = Date.UTC(2019, 7-1, 22,  9, 31, 0, 0);
-        endTime                    = Date.UTC(2019, 8-1, 30,  4, 56, 0, 0);
+        endTime                    = Date.UTC(2019, 9-1,  3, 12, 41, 0, 0);
 
         latestEndTime = endTime;
         timelineTotalSteps = (latestEndTime - startTime) / stepDurationInMilliSeconds;
@@ -997,7 +996,7 @@ function initConfig() {
         stepsPerHop = 4;
 
         startTime                  = Date.UTC(2019, 7-1, 22,  9, 31, 0, 0);
-        endTime                    = Date.UTC(2019, 8-1, 30,  4, 56, 0, 0);
+        endTime                    = Date.UTC(2019, 9-1,  3, 12, 41, 0, 0);
 
         latestEndTime = endTime;
         timelineTotalSteps = (latestEndTime - startTime) / stepDurationInMilliSeconds;
