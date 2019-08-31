@@ -91,7 +91,7 @@ The site consists of the following three sets of files:
 
 #### Analytics
 
-    ga.js                 # Google analytics (vesion controlled)
+    ga.js                 # Google analytics
 
 ### Hosting
 
