@@ -13,6 +13,7 @@ use JSON;
 # constants - ephemerides related
 
 my $JPL_MAVEN      = -202;
+my $JPL_CY2        = -152; # Chandrayaan 2
 my $JPL_MOM        = -3;
 my $JPL_EMB        = 3;
 my $JPL_SUN        = 10;
@@ -26,9 +27,11 @@ my $JPL_CSS        = "C/2013 A1";
 my $JPL_EARTH_CENTER = '@399';
 my $JPL_MARS_CENTER = '@499';
 my $JPL_SUN_CENTER = '500@10';
+my $JPL_MOON_CENTER = '@301';
 
 my %planet_codes = 
     ("MAVEN"    => $JPL_MAVEN,
+     "CY2"      => $JPL_CY2,
      "MOM"      => $JPL_MOM,
      "EMB"      => $JPL_EMB,
      "SUN"      => $JPL_SUN,
@@ -41,17 +44,19 @@ my %planet_codes =
 
 my $phase;
 my $use_cached_data = 0;
-my $date = `date '+%Y%m%d%H%M%S'`;
+my $date = 'today';
 chomp($date);
 my $data_dir = "data-fetched/" . $date;
 my $debugging = 1;
 
 my $config = {
     "helio" => {
-        'start_year'       => '2013', 'start_month'       => '11', 'start_day'       => '06',
-        'stop_year'        => '2015', 'stop_month'        => '04', 'stop_day'       => '01',
-        'start_year_maven' => '2013', 'start_month_maven' => '11', 'start_day_maven' => '19',
-        'stop_year_maven'  => '2014', 'stop_month_maven'  => '09', 'stop_day_maven'  => '26',
+    	# TODO find a better way to manage two aircraft
+
+        'start_year'       => '2013', 'start_month'       => '11', 'start_day'       => '06', 'start_hour' => '00', 'start_minute' => '00',
+        'stop_year'        => '2015', 'stop_month'        => '04', 'stop_day'       => '01', 'stop_hour' => '00', 'stop_minute' => '00',
+        'start_year_maven' => '2013', 'start_month_maven' => '11', 'start_day_maven' => '19', 'start_hour_maven' => '00', 'start_minute_maven' => '00',
+        'stop_year_maven'  => '2014', 'stop_month_maven'  => '09', 'stop_day_maven'  => '26', 'stop_hour_maven' => '00', 'stop_minute_maven' => '00',
 
         'step_size_in_minutes' => 240,
 
@@ -62,40 +67,40 @@ my $config = {
         'orbits_file' => "$data_dir/orbits.json"
     },
     "geo" => {
-        'start_year'       => '2013', 'start_month'       => '11', 'start_day'       => '06',
-        'stop_year'        => '2013', 'stop_month'        => '12', 'stop_day'       => '11',
-        'start_year_maven' => '2013', 'start_month_maven' => '11', 'start_day_maven' => '19',
-        'stop_year_maven'  => '2013', 'stop_month_maven'  => '12', 'stop_day_maven'  => '11', # TODO
+        'start_year'       => '2019', 'start_month'       => '07', 'start_day'       => '22', 'start_hour' => '09', 'start_minute' => '31',
+        # 'stop_year'        => '2019', 'stop_month'        => '09', 'stop_day'        => '16', 'stop_hour' => '0', 'stop_minute' => '0',
+        # 'stop_year'        => '2019', 'stop_month'        => '08', 'stop_day'        => '30', 'stop_hour' => '4', 'stop_minute' => '56',
+        'stop_year'        => '2019', 'stop_month'        => '09', 'stop_day'        => '03', 'stop_hour' => '12', 'stop_minute' => '41',
 
-        'step_size_in_minutes' => 20,
+        'step_size_in_minutes' => 5,
 
-        'planets' => ["MOON", "MOM", "MAVEN"],
+        'planets' => ["MOON", "CY2"],
 
         'center' => $JPL_EARTH_CENTER,
 
-        'orbits_file' => "$data_dir/geo.json"
+        'orbits_file' => "$data_dir/geo-cy2.json"
     },
-    "martian" => {
-        'start_year'       => '2014', 'start_month'       =>  '9', 'start_day'       => '21',
-        'stop_year'        => '2014', 'stop_month'        => '10', 'stop_day'        => '21',
-        'start_year_maven' => '2014', 'start_month_maven' =>  '9', 'start_day_maven' => '21',
-        'stop_year_maven'  => '2014', 'stop_month_maven'  =>  '9', 'stop_day_maven'  => '25', 
+    "lunar" => {
+        'start_year'       => '2019', 'start_month'       => '07', 'start_day'       => '22', 'start_hour' => '09', 'start_minute' => '31',
+        # 'stop_year'        => '2019', 'stop_month'        => '09', 'stop_day'        => '16', 'stop_hour' => '0', 'stop_minute' => '0',
+        # 'stop_year'        => '2019', 'stop_month'        => '08', 'stop_day'        => '30', 'stop_hour' => '4', 'stop_minute' => '56',
+        'stop_year'        => '2019', 'stop_month'        => '09', 'stop_day'        => '03', 'stop_hour' => '12', 'stop_minute' => '41',
 
-        'step_size_in_minutes' => 20,
+        'step_size_in_minutes' => 5,
 
-        'planets' => ["CSS", "MOM", "MAVEN"],
+        'planets' => ["CY2", "EARTH"],
 
-        'center' => $JPL_MARS_CENTER,
+        'center' => $JPL_MOON_CENTER,
 
-        'orbits_file' => "$data_dir/martian.json"
+        'orbits_file' => "$data_dir/lunar-cy2.json"
     },
     
 };
 
-my ($start_year, $start_month, $start_day);
-my ($stop_year, $stop_month, $stop_day);
-my ($start_year_maven, $start_month_maven, $start_day_maven);
-my ($stop_year_maven, $stop_month_maven, $stop_day_maven);
+my ($start_year, $start_month, $start_day, $start_hour, $start_minute);
+my ($stop_year, $stop_month, $stop_day, $stop_hour, $stop_minute);
+my ($start_year_maven, $start_month_maven, $start_day_maven, $start_hour_maven, $start_minute_maven);
+my ($stop_year_maven, $stop_month_maven, $stop_day_maven, $stop_hour_maven, $stop_minute_maven);
 my $step_size_in_minutes;
 my @planets;
 my $center;
@@ -130,16 +135,27 @@ sub init_config ($) {
     $start_year = $config->{$option}->{'start_year'};
     $start_month = $config->{$option}->{'start_month'};
     $start_day = $config->{$option}->{'start_day'};
+    $start_hour = $config->{$option}->{'start_hour'};
+    $start_minute = $config->{$option}->{'start_minute'};
+
     $stop_year = $config->{$option}->{'stop_year'};
     $stop_month = $config->{$option}->{'stop_month'};
     $stop_day = $config->{$option}->{'stop_day'};
+    $stop_hour = $config->{$option}->{'stop_hour'};
+    $stop_minute = $config->{$option}->{'stop_minute'};
 
     $start_year_maven = $config->{$option}->{'start_year_maven'};
     $start_month_maven = $config->{$option}->{'start_month_maven'};
     $start_day_maven = $config->{$option}->{'start_day_maven'};
+    $start_hour_maven = $config->{$option}->{'start_hour_maven'};
+    $start_minute_maven = $config->{$option}->{'start_minute_maven'};
+    
+
     $stop_year_maven = $config->{$option}->{'stop_year_maven'};
     $stop_month_maven = $config->{$option}->{'stop_month_maven'};
     $stop_day_maven = $config->{$option}->{'stop_day_maven'};
+    $stop_hour_maven = $config->{$option}->{'stop_hour_maven'};
+    $stop_minute_maven = $config->{$option}->{'stop_minute_maven'};
 
     $step_size_in_minutes = $config->{$option}->{'step_size_in_minutes'};
 
@@ -151,10 +167,8 @@ sub init_config ($) {
 }
 
 sub print_config() {
-    print "(start_year, start_month, start_day) = ($start_year, $start_month, $start_day)\n";
-    print "(stop_year, stop_month, stop_day) = ($stop_year, $stop_month, $stop_day)\n";
-    print "(start_year_maven, start_month_maven, start_day_maven) = ($start_year_maven, $start_month_maven, $start_day_maven)\n";    
-    print "(stop_year_maven, stop_month_maven, stop_day_maven) = ($stop_year_maven, $stop_month_maven, $stop_day_maven)\n";
+    print "(start_year, start_month, start_day, start_hour, start_minute) = ($start_year, $start_month, $start_day, $start_hour, $start_minute)\n";
+    print "(stop_year, stop_month, stop_day, $stop_hour, $stop_minute) = ($stop_year, $stop_month, $stop_day, $stop_hour, $stop_minute)\n";
     print "step_size_in_minutes = $step_size_in_minutes\n";
     print "planets = ", join(", ", @planets), "\n";
     print "orbits_file = $orbits_file\n";
@@ -164,9 +178,9 @@ sub get_horizons_start_time($) {
     my $planet = shift;
 
     if ($planet eq "MAVEN") {
-        return "$start_year_maven\-$start_month_maven\-$start_day_maven";
+        return "$start_year_maven\-$start_month_maven\-$start_day_maven $start_hour_maven:$start_minute_maven";
     } else {
-        return "$start_year\-$start_month\-$start_day";
+        return "$start_year\-$start_month\-$start_day $start_hour:$start_minute";
     }
 }
 
@@ -174,9 +188,9 @@ sub get_horizons_stop_time($) {
     my $planet = shift;
 
     if ($planet eq "MAVEN") {
-        return "$stop_year_maven\-$stop_month_maven\-$stop_day_maven";
+        return "$stop_year_maven\-$stop_month_maven\-$stop_day_maven $stop_hour_maven:$stop_minute_maven";
     } else {
-        return "$stop_year\-$stop_month\-$stop_day";
+        return "$stop_year\-$stop_month\-$stop_day $stop_hour:$stop_minute";
     }
 }
 
@@ -518,6 +532,8 @@ sub print_elements ($$) {
 
 sub main {
 
+    print "Running ...\n";
+
     GetOptions(
         "phase=s" => \$phase, 
         "use-cache" => \$use_cached_data,
@@ -530,10 +546,10 @@ sub main {
       }
     }
 
-    $phase = 'martian' unless $phase;
+    $phase = 'geo' unless $phase; # Set default as geo for Chandrayaan 2
 
-    unless (($phase eq "geo") || ($phase eq "helio") || ($phase eq "martian")) {
-        print_error("Argument 'phase' must be either 'geo' or 'helio' or 'martian' (without quotes).");
+    unless (($phase eq "geo") || ($phase eq "helio") || ($phase eq "lunar")) {
+        print_error("Argument 'phase' must be either 'geo' or 'helio' or 'lunar' (without quotes).");
         exit(1);
     }
 
