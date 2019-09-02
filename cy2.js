@@ -928,7 +928,8 @@ function initConfig() {
         stepsPerHop = 4;
 
         startTime                  = Date.UTC(2019, 7-1, 22,  9, 31, 0, 0);
-        endTime                    = Date.UTC(2019, 9-1,  3, 12, 41, 0, 0);
+        endTime                    = Date.UTC(2019, 9-1, 10, 12, 41, 0, 0);
+        endTimeCY2                 = Date.UTC(2019, 9-1,  3, 12, 41, 0, 0);
 
         latestEndTime = endTime;
         timelineTotalSteps = (latestEndTime - startTime) / stepDurationInMilliSeconds;
@@ -977,7 +978,8 @@ function initConfig() {
         stepsPerHop = 4;
 
         startTime                  = Date.UTC(2019, 7-1, 22,  9, 31, 0, 0);
-        endTime                    = Date.UTC(2019, 9-1,  3, 12, 41, 0, 0);
+        endTime                    = Date.UTC(2019, 9-1, 10, 12, 41, 0, 0);
+        endTimeCY2                 = Date.UTC(2019, 9-1,  3, 12, 41, 0, 0);
 
         latestEndTime = endTime;
         timelineTotalSteps = (latestEndTime - startTime) / stepDurationInMilliSeconds;
@@ -1095,11 +1097,14 @@ function planetStartTime(planet) {
 }
 
 function isLocationAvaialable(planet, date) {
+    var flaag = false;
     if (planet == "CY2") {
-        return ((date >= startTime) && (date <= endTime));
+        flag = ((date >= startTime) && (date <= endTimeCY2));
     } else {
-        return ((date >= startTime) && (date <= endTime));
+        flag = ((date >= startTime) && (date <= endTime));
     }
+    // console.log("isLocationAvaialable() called for body " + planet + " for time " + date + ": returning " + flag);
+    return flag;
 }
 
 function rotate(x, y, phi) { // unused function for now
@@ -1211,6 +1216,8 @@ function setLocation() {
         if (isLocationAvaialable(planetKey, now)) {
 
             var index = timelineIndex - planetProperties[planetKey]["offset"];
+
+            // console.log("About to access vectors[length: " + vectors.length + "] for " + planetKey + " using index: " + index);
 
             var realx = vectors[index]["x"];
             var realy = vectors[index]["y"];

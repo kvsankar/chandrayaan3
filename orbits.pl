@@ -55,8 +55,8 @@ my $config = {
 
         'start_year'       => '2013', 'start_month'       => '11', 'start_day'       => '06', 'start_hour' => '00', 'start_minute' => '00',
         'stop_year'        => '2015', 'stop_month'        => '04', 'stop_day'       => '01', 'stop_hour' => '00', 'stop_minute' => '00',
-        'start_year_maven' => '2013', 'start_month_maven' => '11', 'start_day_maven' => '19', 'start_hour_maven' => '00', 'start_minute_maven' => '00',
-        'stop_year_maven'  => '2014', 'stop_month_maven'  => '09', 'stop_day_maven'  => '26', 'stop_hour_maven' => '00', 'stop_minute_maven' => '00',
+        'start_year_cy2' => '2013', 'start_month_cy2' => '11', 'start_day_cy2' => '19', 'start_hour_cy2' => '00', 'start_minute_cy2' => '00',
+        'stop_year_cy2'  => '2014', 'stop_month_cy2'  => '09', 'stop_day_cy2'  => '26', 'stop_hour_cy2' => '00', 'stop_minute_cy2' => '00',
 
         'step_size_in_minutes' => 240,
 
@@ -67,10 +67,10 @@ my $config = {
         'orbits_file' => "$data_dir/orbits.json"
     },
     "geo" => {
-        'start_year'       => '2019', 'start_month'       => '07', 'start_day'       => '22', 'start_hour' => '09', 'start_minute' => '31',
-        # 'stop_year'        => '2019', 'stop_month'        => '09', 'stop_day'        => '16', 'stop_hour' => '0', 'stop_minute' => '0',
-        # 'stop_year'        => '2019', 'stop_month'        => '08', 'stop_day'        => '30', 'stop_hour' => '4', 'stop_minute' => '56',
-        'stop_year'        => '2019', 'stop_month'        => '09', 'stop_day'        => '03', 'stop_hour' => '12', 'stop_minute' => '41',
+        'start_year'       => '2019', 'start_month'       => '07', 'start_day'       => '22', 'start_hour'      => '09', 'start_minute'     => '31',
+        'stop_year'        => '2019', 'stop_month'        => '09', 'stop_day'        => '10', 'stop_hour'       => '12', 'stop_minute'      => '41',
+        'start_year_cy2'   => '2019', 'start_month_cy2'   => '07', 'start_day_cy2'   => '22', 'start_hour_cy2'  => '09', 'start_minute_cy2' => '31',
+        'stop_year_cy2'    => '2019', 'stop_month_cy2'    => '09', 'stop_day_cy2'    => '03', 'stop_hour_cy2'   => '12', 'stop_minute_cy2'  => '41',
 
         'step_size_in_minutes' => 5,
 
@@ -81,10 +81,10 @@ my $config = {
         'orbits_file' => "$data_dir/geo-cy2.json"
     },
     "lunar" => {
-        'start_year'       => '2019', 'start_month'       => '07', 'start_day'       => '22', 'start_hour' => '09', 'start_minute' => '31',
-        # 'stop_year'        => '2019', 'stop_month'        => '09', 'stop_day'        => '16', 'stop_hour' => '0', 'stop_minute' => '0',
-        # 'stop_year'        => '2019', 'stop_month'        => '08', 'stop_day'        => '30', 'stop_hour' => '4', 'stop_minute' => '56',
-        'stop_year'        => '2019', 'stop_month'        => '09', 'stop_day'        => '03', 'stop_hour' => '12', 'stop_minute' => '41',
+        'start_year'       => '2019', 'start_month'       => '07', 'start_day'       => '22', 'start_hour'      => '09', 'start_minute'     => '31',
+        'stop_year'        => '2019', 'stop_month'        => '09', 'stop_day'        => '10', 'stop_hour'       => '12', 'stop_minute'      => '41',
+        'start_year_cy2'   => '2019', 'start_month_cy2'   => '07', 'start_day_cy2'   => '22', 'start_hour_cy2'  => '09', 'start_minute_cy2' => '31',
+        'stop_year_cy2'    => '2019', 'stop_month_cy2'    => '09', 'stop_day_cy2'    => '03', 'stop_hour_cy2'   => '12', 'stop_minute_cy2'  => '41',
 
         'step_size_in_minutes' => 5,
 
@@ -99,8 +99,8 @@ my $config = {
 
 my ($start_year, $start_month, $start_day, $start_hour, $start_minute);
 my ($stop_year, $stop_month, $stop_day, $stop_hour, $stop_minute);
-my ($start_year_maven, $start_month_maven, $start_day_maven, $start_hour_maven, $start_minute_maven);
-my ($stop_year_maven, $stop_month_maven, $stop_day_maven, $stop_hour_maven, $stop_minute_maven);
+my ($start_year_cy2, $start_month_cy2, $start_day_cy2, $start_hour_cy2, $start_minute_cy2);
+my ($stop_year_cy2, $stop_month_cy2, $stop_day_cy2, $stop_hour_cy2, $stop_minute_cy2);
 my $step_size_in_minutes;
 my @planets;
 my $center;
@@ -144,18 +144,18 @@ sub init_config ($) {
     $stop_hour = $config->{$option}->{'stop_hour'};
     $stop_minute = $config->{$option}->{'stop_minute'};
 
-    $start_year_maven = $config->{$option}->{'start_year_maven'};
-    $start_month_maven = $config->{$option}->{'start_month_maven'};
-    $start_day_maven = $config->{$option}->{'start_day_maven'};
-    $start_hour_maven = $config->{$option}->{'start_hour_maven'};
-    $start_minute_maven = $config->{$option}->{'start_minute_maven'};
+    $start_year_cy2 = $config->{$option}->{'start_year_cy2'};
+    $start_month_cy2 = $config->{$option}->{'start_month_cy2'};
+    $start_day_cy2 = $config->{$option}->{'start_day_cy2'};
+    $start_hour_cy2 = $config->{$option}->{'start_hour_cy2'};
+    $start_minute_cy2 = $config->{$option}->{'start_minute_cy2'};
     
 
-    $stop_year_maven = $config->{$option}->{'stop_year_maven'};
-    $stop_month_maven = $config->{$option}->{'stop_month_maven'};
-    $stop_day_maven = $config->{$option}->{'stop_day_maven'};
-    $stop_hour_maven = $config->{$option}->{'stop_hour_maven'};
-    $stop_minute_maven = $config->{$option}->{'stop_minute_maven'};
+    $stop_year_cy2 = $config->{$option}->{'stop_year_cy2'};
+    $stop_month_cy2 = $config->{$option}->{'stop_month_cy2'};
+    $stop_day_cy2 = $config->{$option}->{'stop_day_cy2'};
+    $stop_hour_cy2 = $config->{$option}->{'stop_hour_cy2'};
+    $stop_minute_cy2 = $config->{$option}->{'stop_minute_cy2'};
 
     $step_size_in_minutes = $config->{$option}->{'step_size_in_minutes'};
 
@@ -177,8 +177,8 @@ sub print_config() {
 sub get_horizons_start_time($) {
     my $planet = shift;
 
-    if ($planet eq "MAVEN") {
-        return "$start_year_maven\-$start_month_maven\-$start_day_maven $start_hour_maven:$start_minute_maven";
+    if ($planet eq "CY2") {
+        return "$start_year_cy2\-$start_month_cy2\-$start_day_cy2 $start_hour_cy2:$start_minute_cy2";
     } else {
         return "$start_year\-$start_month\-$start_day $start_hour:$start_minute";
     }
@@ -187,8 +187,8 @@ sub get_horizons_start_time($) {
 sub get_horizons_stop_time($) {
     my $planet = shift;
 
-    if ($planet eq "MAVEN") {
-        return "$stop_year_maven\-$stop_month_maven\-$stop_day_maven $stop_hour_maven:$stop_minute_maven";
+    if ($planet eq "CY2") {
+        return "$stop_year_cy2\-$stop_month_cy2\-$stop_day_cy2 $stop_hour_cy2:$stop_minute_cy2";
     } else {
         return "$stop_year\-$stop_month\-$stop_day $stop_hour:$stop_minute";
     }
