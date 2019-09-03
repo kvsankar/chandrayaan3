@@ -1350,7 +1350,7 @@ function setLocation() {
                 
                 // relative to center
 
-                var z = vectors[index]["z"];
+                var z = vectors[index][zVariable];
                 var r = Math.sqrt(x*x + y*y + z*z);
 
                 var pbr;
