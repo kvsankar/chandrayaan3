@@ -162,10 +162,7 @@ var mousedownTimeout = ZOOM_TIMEOUT;
 // Chandrayaan 2 specific times and information
 var timeTransLunarInjection;
 var timeLunarOrbitInsertion;
-var eventTimes = [];
 var eventInfos = [];
-var eventLabels = [];
-var eventBurnFlags = [];
 
 // 3D rendering related variables
 
@@ -823,60 +820,152 @@ function handleDimensionSwitch(newDim) {
 
 function addEvents() {
 
-    // 
-    // Sources of information:
-    // 
-    // https://www.isro.gov.in/update/24-jul-2019/chandrayaan2-update-first-earth-bound-maneuver
-    // https://www.isro.gov.in/update/26-jul-2019/chandrayaan2-update-second-earth-bound-maneuver
-    // https://www.isro.gov.in/update/29-jul-2019/chandrayaan2-update-third-earth-bound-maneuver
-    // https://www.isro.gov.in/update/02-aug-2019/chandrayaan2-update-fourth-earth-bound-maneuver
-    // https://www.isro.gov.in/update/06-aug-2019/chandrayaan2-update-fifth-earth-bound-maneuver
-    // https://www.isro.gov.in/update/14-aug-2019/chandrayaan-2-successfully-enters-lunar-transfer-trajectory
-    // https://www.isro.gov.in/update/20-aug-2019/chandrayaan-2-update-lunar-orbit-insertion 
-    // https://www.isro.gov.in/update/21-aug-2019/chandrayaan-2-update-second-lunar-orbit-maneuver
-    // 
+    var missionStartInfo = {
+        "startTime": new Date(Date.UTC(2019, 7-1, 22,  9, 31, 0, 0)),
+        "durationSeconds": 0,
+        "label" : "Launch",
+        "burnFlag": false,
+        "infoText": "Launch:    22nd Jul, 15:01 IST - Chandrayaan 2 placed in orbit",
+    }
 
-    var missionStart = new Date(Date.UTC(2019, 7-1, 22,  9, 31, 0, 0));
-    var ebn1 =         new Date(Date.UTC(2019, 7-1, 24,  9, 22, 0, 0));         // 1400 - 1530 IST || Actual: 1452 IST
-    var ebn2 =         new Date(Date.UTC(2019, 7-1, 25, 19, 38, 0, 0));         // 0100 - 0200 IST || Actual: 0108 IST
-    var ebn3 =         new Date(Date.UTC(2019, 7-1, 29,  9, 42, 0, 0));         // 1430 - 1530 IST || Actual: 1512 IST
-    var ebn4 =         new Date(Date.UTC(2019, 8-1,  2,  9, 57, 0, 0));         // 1400 - 1500 IST || Actual: 1527 IST
-    var ebn5 =         new Date(Date.UTC(2019, 8-1,  6,  9, 34, 0, 0));         // 1430 - 1530 IST || Actual: 1504 IST
-    var ebn6loi =      new Date(Date.UTC(2019, 8-1, 13, 21,  1, 0, 0));         // 0300 - 0400 IST || Actual: 0221 IST - 1203 seconds
-    var lbn1tli =      new Date(Date.UTC(2019, 8-1, 20,  3, 47, 0, 0));         //                 || Actual: 0902 IST - 1738 seconds - achieved 114 km x 18072 km
-    var lbn2 =         new Date(Date.UTC(2019, 8-1, 21,  7, 30, 0, 0));         // Aug 21, 2019 | 12:30 – 13:30 | 121 X 4303 || Actual: 1250 IST - 1228 seconds - achieved 118 km x 4412 km    
-    var lbn3 =         new Date(Date.UTC(2019, 8-1, 28,  3, 44, 0, 0));         // Aug 28, 2019 | 05:30 – 06:30 | 178 X 1411 || Actual: 0904 IST - 1190 seconds - achieved 179 km x 1412 km
-    
-    var now =          new Date();
+    var ebn1Info = {
+        // https://www.isro.gov.in/update/24-jul-2019/chandrayaan2-update-first-earth-bound-maneuver
+        // 1400 - 1530 IST || Actual: 1452 IST - 48 seconds
+        "startTime": new Date(Date.UTC(2019, 7-1, 24,  9, 22, 0, 0)),
+        "durationSeconds": 48,
+        "label": "EBN#1",
+        "burnFlag": true,
+        "infoText": "EBN#1:     24th Jul, 14:52 IST - Target orbit: 230 x  45162, Achieved 230 X  45163"
+    }
 
-    var lbn4 =         new Date(Date.UTC(2019, 8-1, 30, 12, 58, 0, 0));         // Aug 30, 2019 | 18:00 – 19:00 || Actual: 1818 IST - 1155 seconds - 126 X 164 1818 hours
-    var lbn5 =         new Date(Date.UTC(2019, 9-1, 1,  13,  0, 0, 0));         // Sep 01, 2019 | 18:00 – 19:00 IST | 114 X 128
-    var animationEnd = new Date(Date.UTC(2019, 9-1, 3,  12, 41, 0, 0));
+    var ebn2Info = {
+        // https://www.isro.gov.in/update/26-jul-2019/chandrayaan2-update-second-earth-bound-maneuver
+        // 0100 - 0200 IST || Actual: 0108 IST - 883 seconds
+        "startTime": new Date(Date.UTC(2019, 7-1, 25, 19, 38, 0, 0)),
+        "durationSeconds": 883,
+        "label": "EBN#2", 
+        "burnFlag": true,
+        "infoText": "EBN#2:     26th Jul, 01:08 IST - Target orbit: 250 x  54689, Achieved 251 X  54829",
+    }
 
-    eventTimes = [
-        missionStart, ebn1,     ebn2,    ebn3,    ebn4,    ebn5,    ebn6loi,    lbn1tli,     lbn2,    lbn3,    lbn4,    now,    lbn5,    animationEnd];
+    var ebn3Info = {
+        // https://www.isro.gov.in/update/29-jul-2019/chandrayaan2-update-third-earth-bound-maneuver
+        // 1430 - 1530 IST || Actual: 1512 IST - 989 seconds
+        "startTime": new Date(Date.UTC(2019, 7-1, 29,  9, 42, 0, 0)),
+        "durationSeconds": 989,
+        "label": "EBN#3", 
+        "burnFlag": true,
+        "infoText": "EBN#3:     29th Jul, 15:12 IST - Target orbit: 268 x  71558, Achieved 276 x  71792",
+    }
 
-    eventLabels = [
-        "Launch",     "EBN#1", "EBN#2", "EBN#3", "EBN#4", "EBN#5", "EBN#6/LOI", "LBN#1/TLI", "LBN#2", "LBN#3", "LBN#4", "Now",  "LBN#5", "Data End"];
+    var ebn4Info = {
+        // https://www.isro.gov.in/update/02-aug-2019/chandrayaan2-update-fourth-earth-bound-maneuver
+        // 1400 - 1500 IST || Actual: 1527 IST - 646 seconds
+        "startTime": new Date(Date.UTC(2019, 8-1,  2,  9, 57, 0, 0)),
+        "durationSeconds": 646,
+        "label": "EBN#4", 
+        "burnFlag": true,
+        "infoText": "EBN#4:      2nd Aug, 15:27 IST - Target orbit: 248 x  90229, Achived: 277 x  89472",
+    }
 
-    eventBurnFlags = [
-        false,        true,    true,     true,   true,    true,    true,        true,         true,    true,   true,    false,  true,  false];
+    var ebn5Info = {
+        // https://www.isro.gov.in/update/06-aug-2019/chandrayaan2-update-fifth-earth-bound-maneuver
+        // 1430 - 1530 IST || Actual: 1504 IST - 1041 seconds
+        "startTime": new Date(Date.UTC(2019, 8-1,  6,  9, 34, 0, 0)),
+        "durationSeconds": 1041,
+        "label": "EBN#5", 
+        "burnFlag": true,
+        "infoText": "EBN#5:      6th Aug, 15:04 IST - Target orbit: 221 x 143585, Achieved 276 x 142975",
+    }
+
+    var ebn6tliInfo = {
+        // https://www.isro.gov.in/update/14-aug-2019/chandrayaan-2-successfully-enters-lunar-transfer-trajectory
+        // 0300 - 0400 IST || Actual: 0221 IST - 1203 seconds
+        "startTime": new Date(Date.UTC(2019, 8-1, 13, 20, 51, 0, 0)),
+        "durationSeconds": 1203,
+        "label": "EBN#6/TLI",
+        "burnFlag": true,
+        "infoText": "EBN#6/TLI: 14th Aug, 02:21 IST - Target orbit: 266 x 413623, Completed",
+    }
+
+    var lbn1loiInfo = {
+        // https://www.isro.gov.in/update/20-aug-2019/chandrayaan-2-update-lunar-orbit-insertion 
+        //                 || Actual: 0902 IST - 1738 seconds - achieved 114 km x 18072 km
+        "startTime": new Date(Date.UTC(2019, 8-1, 20,  3, 32, 0, 0)),
+        "durationSeconds": 1738,
+        "label": "LBN#1/LOI", 
+        "burnFlag": true,
+        "infoText": "LBN#1/LOI: 20th Aug, 09:02 IST - Target orbit: 118 x  18078, Achieved 114 x  18072",
+    }
+
+    var lbn2Info = {
+        // https://www.isro.gov.in/update/21-aug-2019/chandrayaan-2-update-second-lunar-orbit-maneuver
+        // Aug 21, 2019 | 12:30 – 13:30 | 121 X 4303 || Actual: 1250 IST - 1228 seconds - achieved 118 km x 4412 km  
+        "startTime": new Date(Date.UTC(2019, 8-1, 21,  7, 20, 0, 0)),
+        "durationSeconds": 1228,
+        "label": "LBN#2",
+        "burnFlag": true,
+        "infoText": "LBN#2:     21st Aug, 12:50 IST - Target orbit: 121 x   4303, Achieved 118 x   4412",
+    }
+
+    var lbn3Info = {
+        // Aug 28, 2019 | 05:30 – 06:30 | 178 X 1411 || Actual: 0904 IST - 1190 seconds - achieved 179 km x 1412 km    
+        "startTime": new Date(Date.UTC(2019, 8-1, 28,  3, 34, 0, 0)),
+        "durationSeconds": 1190,
+        "label": "LBN#3", 
+        "burnFlag": true,
+        "infoText": "LBN#3:     28th Aug, 09:04 IST - Target orbit: 178 X   1411, achieved 179 x   1412",
+    }
+
+    var lbn4Info = {
+        // Aug 30, 2019 | 18:00 – 19:00 || Actual: 1818 IST - 1155 seconds - 126 X 164 1818 hours        
+        "startTime": new Date(Date.UTC(2019, 8-1, 30, 12, 48, 0, 0)),
+        "durationSeconds": 1155,
+        "label": "LBN#4",
+        "burnFlag": true,
+        "infoText": "LBN#4:     30th Aug, 18:18 IST - Target orbit: 126 x    164, achieved 124 x    164",
+    }    
+
+    var lbn5Info = {
+        // Sep 01, 2019 | 18:00 – 19:00 IST | 114 X 128 || Actual: 1821 IST - 52 seconds - achieved 119 km x 127 km
+        "startTime": new Date(Date.UTC(2019, 9-1,  1,  12, 51, 0, 0)),
+        "durationSeconds": 52,
+        "label": "LBN#5", 
+        "burnFlag": true,
+        "infoText":  "LBN#5:      1st Sep, 18:21 IST - Target orbit: 114 x   128, achieved 119 km x 127 km",
+    }
+
+    var nowInfo = {
+        "startTime": new Date(),
+        "durationSeconds": 0,
+        "label": "Now",
+        "burnFlag": false,
+        "infoText": "Now"
+    }
+
+    var animationEndInfo = {
+        "startTime": new Date(Date.UTC(2019, 9-1, 10,  12, 41, 0, 0)),
+        "durationSeconds": 0,
+        "label": "Data End",
+        "burnFlag": false,
+        "infoText": "Data End"
+    }
 
     eventInfos = [
-        "Launch:    22nd Jul, 15:01 IST - Chandrayaan 2 placed in orbit",
-        "EBN#1:     24th Jul, 14:52 IST - Target orbit: 230 x  45162, Achieved 230 X  45163",
-        "EBN#2:     26th Jul, 01:08 IST - Target orbit: 250 x  54689, Achieved 251 X  54829",
-        "EBN#3:     29th Jul, 15:12 IST - Target orbit: 268 x  71558, Achieved 276 x  71792",
-        "EBN#4:      2nd Aug, 15:27 IST - Target orbit: 248 x  90229, Achived: 277 x  89472",
-        "EBN#5:      6th Aug, 15:04 IST - Target orbit: 221 x 143585, Achieved 276 x 142975",
-        "EBN#6/LOI: 14th Aug, 02:21 IST - Target orbit: 266 x 413623, Completed",
-        "LBN#1/TLI: 20th Aug, 09:02 IST - Target orbit: 118 x  18078, Achieved 114 x  18072",
-        "LBN#2:     21st Aug, 12:50 IST - Target orbit: 121 x   4303, Achieved 118 x   4412",
-        "LBN#3:     28th Aug, 09:04 IST - Target orbit: 178 X   1411, achieved 179 x   1412",
-        "LBN#4:     30th Aug, 18:18 IST - Target orbit: 126 x    164, achieved 124 x    164",
-        "LBN#5:      1st Sep, 18:00 - 19:00 IST - Target orbit: 114 x 128",
-        "Now",
-        "Data End:  30th Aug, 04:56 IST - Orbit data predictions end here",
+        missionStartInfo,
+        ebn1Info,
+        ebn2Info,
+        ebn3Info,
+        ebn4Info,
+        ebn5Info,
+        ebn6tliInfo,
+        lbn1loiInfo,
+        lbn2Info,
+        lbn3Info,
+        lbn4Info,
+        lbn5Info,
+        nowInfo,
+        animationEndInfo
     ];
 }
 
@@ -929,7 +1018,7 @@ function initConfig() {
 
         startTime                  = Date.UTC(2019, 7-1, 22,  9, 31, 0, 0);
         endTime                    = Date.UTC(2019, 9-1, 10, 12, 41, 0, 0);
-        endTimeCY2                 = Date.UTC(2019, 9-1,  3, 12, 41, 0, 0);
+        endTimeCY2                 = Date.UTC(2019, 9-1,  4, 23, 56, 0, 0);
 
         latestEndTime = endTime;
         timelineTotalSteps = (latestEndTime - startTime) / stepDurationInMilliSeconds;
@@ -979,7 +1068,7 @@ function initConfig() {
 
         startTime                  = Date.UTC(2019, 7-1, 22,  9, 31, 0, 0);
         endTime                    = Date.UTC(2019, 9-1, 10, 12, 41, 0, 0);
-        endTimeCY2                 = Date.UTC(2019, 9-1,  3, 12, 41, 0, 0);
+        endTimeCY2                 = Date.UTC(2019, 9-1,  4, 23, 56, 0, 0);
 
         latestEndTime = endTime;
         timelineTotalSteps = (latestEndTime - startTime) / stepDurationInMilliSeconds;
@@ -1001,9 +1090,9 @@ function initConfig() {
             .attr("id", "burn" + (i+1))
             .attr("type", "button")
             .attr("class", "button")
-            .attr("title", eventInfos[i])
+            .attr("title", eventInfos[i]["label"])
             .attr("onclick", "burnButtonHandler(" + i + ")")
-            .html(eventLabels[i]);
+            .html(eventInfos[i]["label"]);
     }
 
 }
@@ -1349,16 +1438,16 @@ function setLocation() {
     zoomChangeTransform(0);
     showGreenwichLongitude();
 
-    for (var i = 0; i < eventTimes.length; ++i) {
-        var burnTime = eventTimes[i];
-        var burnFlag = eventBurnFlags[i];
+    for (var i = 0; i < eventInfos.length; ++i) {
+        var burnTime = new Date(eventInfos[i]["startTime"].getTime() + (eventInfos[i]["durationSeconds"] * 1000 / 2));
+        var burnFlag = eventInfos[i]["burnFlag"];
         if (!burnFlag) {
             continue;
         }
         var difftime = Math.abs(nowDate.getTime() - burnTime.getTime());
-        if (difftime < 1 * 60 * 60 * 1000) {
+        if (difftime < 1 * 20 * 60 * 1000) {
             d3.select("#burng").style("visibility", "visible");
-            d3.select("#eventinfo").text(eventInfos[i]);
+            d3.select("#eventinfo").text(eventInfos[i]["infoText"]);
             break;
         } else {
             d3.select("#burng").style("visibility", "hidden");
@@ -2340,7 +2429,8 @@ function toggleView() {
 
 function burnButtonHandler(index) {
     // console.log("burnButtonHandler() called for event index: " + index);
-    now = eventTimes[index];
+    // now = eventInfos[index]["startTime"];
+    now = new Date(eventInfos[index]["startTime"].getTime() + (eventInfos[index]["durationSeconds"] * 1000 / 2));
     missionSetTime();
 }
 

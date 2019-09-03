@@ -70,7 +70,7 @@ my $config = {
         'start_year'       => '2019', 'start_month'       => '07', 'start_day'       => '22', 'start_hour'      => '09', 'start_minute'     => '31',
         'stop_year'        => '2019', 'stop_month'        => '09', 'stop_day'        => '10', 'stop_hour'       => '12', 'stop_minute'      => '41',
         'start_year_cy2'   => '2019', 'start_month_cy2'   => '07', 'start_day_cy2'   => '22', 'start_hour_cy2'  => '09', 'start_minute_cy2' => '31',
-        'stop_year_cy2'    => '2019', 'stop_month_cy2'    => '09', 'stop_day_cy2'    => '03', 'stop_hour_cy2'   => '12', 'stop_minute_cy2'  => '41',
+        'stop_year_cy2'    => '2019', 'stop_month_cy2'    => '09', 'stop_day_cy2'    => '04', 'stop_hour_cy2'   => '23', 'stop_minute_cy2'  => '56',
 
         'step_size_in_minutes' => 5,
 
@@ -84,7 +84,7 @@ my $config = {
         'start_year'       => '2019', 'start_month'       => '07', 'start_day'       => '22', 'start_hour'      => '09', 'start_minute'     => '31',
         'stop_year'        => '2019', 'stop_month'        => '09', 'stop_day'        => '10', 'stop_hour'       => '12', 'stop_minute'      => '41',
         'start_year_cy2'   => '2019', 'start_month_cy2'   => '07', 'start_day_cy2'   => '22', 'start_hour_cy2'  => '09', 'start_minute_cy2' => '31',
-        'stop_year_cy2'    => '2019', 'stop_month_cy2'    => '09', 'stop_day_cy2'    => '03', 'stop_hour_cy2'   => '12', 'stop_minute_cy2'  => '41',
+        'stop_year_cy2'    => '2019', 'stop_month_cy2'    => '09', 'stop_day_cy2'    => '04', 'stop_hour_cy2'   => '23', 'stop_minute_cy2'  => '56',
 
         'step_size_in_minutes' => 5,
 
