@@ -609,6 +609,12 @@ THREE.TrackballControls = function ( object, domElement, callback ) {
 	// https://stackoverflow.com/questions/33962745/three-js-get-camera-position-with-orbit-controls/33970864#33970864 
 	//
 
+	this.getWorldPos = function() {
+        pos = new THREE.Vector3();
+        this.object.getWorldPosition(pos);
+        return pos;
+	}
+
     this.getPos = function() {
         pos = new THREE.Vector3();
         pos.copy( this.object.position );

@@ -214,24 +214,51 @@ class SceneHandler {
 
             if (lockOnEarth || lockOnMoon) {
             
-                animationScene.camera.lookAt(animationScene.secondaryBody3D.position);
+                var x = animationScene.secondaryBody3D.position.x;
+                var y = animationScene.secondaryBody3D.position.y;
+                var z = animationScene.secondaryBody3D.position.z;
+                animationScene.motherContainer.position.set(-x, -y, -z);
+                // animationScene.camera.lookAt(animationScene.secondaryBody3D.position);
+
             } else if (lockOnCY2) {
             	
-                animationScene.camera.lookAt(animationScene.craft.position);                
+                var x = animationScene.craft.position.x;
+                var y = animationScene.craft.position.y;
+                var z = animationScene.craft.position.z;
+                animationScene.motherContainer.position.set(-x, -y, -z);
+                // animationScene.camera.lookAt(animationScene.craft.position);                
             }                
 
             if (joyRideFlag) {
-                var craftEarthDistance = animationScene.craft.position.distanceTo(animationScene.primaryBody3D.position);
-                var craftMoonDistance = animationScene.craft.position.distanceTo(animationScene.secondaryBody3D.position);
+
+                var craftEarthDistance = animationScene.craft.position.distanceTo(animationScene.earthContainer.position);
+                var craftMoonDistance = animationScene.craft.position.distanceTo(animationScene.moonContainer.position);
 
                 // console.log("craftEarthDistance = " + craftEarthDistance + ", craftMoonDistance = " + craftMoonDistance);
 
+                var closerBody;
+                var radius;
+                var distance;
                 if (craftEarthDistance < craftMoonDistance) {
-                    animationScene.craftCamera.lookAt(animationScene.primaryBody3D.position);
+                    closerBody = animationScene.earthContainer;
+                    distance = craftEarthDistance;
+                    radius = earthRadius;
                 } else {
-                    animationScene.craftCamera.lookAt(animationScene.secondaryBody3D.position);
+                    closerBody = animationScene.moonContainer;
+                    distance = craftMoonDistance;
+                    radius = moonRadius;
                 }
                 
+                // var v1 = new THREE.Vector3();
+                // var v2 = new THREE.Vector3();
+
+                // v1.subVectors(closerBody.position, animationScene.craft.position).normalize();
+                // v2.subVectors(animationScene.curve[timelineIndex+1], animationScene.craft.position).normalize();
+                // v2.add(v1);
+                // v2.add(animationScene.craft.position);
+                // var theta = Math.acos(radius/distance);
+
+                animationScene.craftCamera.lookAt(closerBody.position);                
                 this.renderer.render(animationScene.scene, animationScene.craftCamera);
 
             } else {
@@ -246,8 +273,9 @@ function updateCraftScale() {
         // console.log("cameraControlsCallback() called");
 
         var origin = new THREE.Vector3(0, 0, 0);
-        var craftLocation = animationScenes[config].craft.position;
-        var distance = animationScenes[config].cameraControls.getPos().distanceTo(craftLocation);
+        var target = new THREE.Vector3();
+        var craftLocation = animationScenes[config].craft.getWorldPosition(target);
+        var distance = animationScenes[config].cameraControls.getWorldPos().distanceTo(craftLocation);
         var scale =  distance / defaultCameraDistance;
         // console.log("scale = " + scale);
         animationScenes[config].craft.scale.set(scale, scale, scale);
@@ -309,6 +337,7 @@ class AnimationScene {
         this.scene = null;
         this.renderer = null;
         this.curve = [];
+        this.curveVelocities = [];
         this.defaultCameraDistance = 0; 
     }
 
@@ -325,9 +354,12 @@ class AnimationScene {
           THREE.DefaultLoadingManager.onLoad = ()=>resolve(textures);
           const textures = [
             
+            // "images/3_no_ice_clouds_16k.jpg",
             "images/2_no_clouds_8k.jpg",
-            "images/elev_bump_4k.jpg",
-            "images/moon_8k_color_brim16.jpg"
+            // "images/elev_bump_16k.jpg",
+            "images/earthspec1k.jpg",
+            "images/moon_8k_color_brim16.jpg",
+            // "images/moon_8k_normal.jpg"
 
           ].map(filename=>loader.load(filename));
         });
@@ -336,11 +368,19 @@ class AnimationScene {
 
             // console.log("Loaded textures: ", result);
 
-            scene.earthTexture = result[0];
-            scene.earthBumpMapTexture = result[1];
-            scene.moonTexture = result[2];
+            scene.earthTexture          = result[0];
+            // scene.earthBumpMapTexture   = result[1];
+            scene.earthSpecularTexture  = result[1];
+            scene.moonTexture           = result[2];
+            // scene.moonBumpMapTexture    = result[4];
 
-            scene.earthBumpMapTexture.minFilter = THREE.LinearFilter;
+
+            scene.earthTexture.minFilter = THREE.LinearFilter;
+            // scene.earthBumpMapTexture.minFilter = THREE.LinearFilter;
+            scene.earthSpecularTexture.minFilter = THREE.LinearFilter;
+            // scene.moonTexture.minFilter = THREE.LinearFilter;
+            // scene.moonBumpMapTexture.minFilter = THREE.LinearFilter;
+
             scene.init3dRest();
             callback();
 
@@ -390,9 +430,9 @@ class AnimationScene {
             // shininess: 1,
             map: this.earthTexture,
             // bumpMap: this.earthBumpMapTexture,
-            // bumpScale: 0.02,
-            // specularMap: THREE.ImageUtils.loadTexture('images/earthspec1k.jpg'), // shininess on oceans
-            // specular: 0x808080,
+            // bumpScale: 0.01,
+            specularMap: this.earthSpecularTexture, // shininess on oceans
+            specular: 0x101010,
             // side: THREE.DoubleSide
         });
         this.earth = new THREE.Mesh(earthGeometry, earthMaterial);
@@ -440,6 +480,8 @@ class AnimationScene {
         var moonGeometry = new THREE.SphereGeometry(moonRadius, 100, 100);
         var moonMaterial = new THREE.MeshPhongMaterial({
             map: this.moonTexture,
+            // bumpMap: this.moonBumpMapTexture,
+            // bumpScale: 0.05,
             // color: moonColor, 
             shininess: 1
         });
@@ -504,37 +546,37 @@ class AnimationScene {
                 
         if (config == "geo") {
 
+            this.primaryBody3D = this.earthContainer;
+            this.secondaryBody3D = this.moonContainer;
+
         	this.earthContainer.add(this.earthAxis);
         	this.earthContainer.add(this.earthNorthPoleSphere);
         	this.earthContainer.add(this.earthSouthPoleSphere);
 
-            this.primaryBody3D = this.earthContainer;
-            this.secondaryBody3D = this.moonContainer;
-
-            // Not adding axes to secondary object - doesn't look good
-        	// this.secondaryBody3D.add(moonAxis);
-        	// this.secondaryBody3D.add(moonNorthPoleSphere);
-        	// this.secondaryBody3D.add(moonSouthPoleSphere);
+        	this.moonContainer.add(this.moonAxis);
+        	this.moonContainer.add(this.moonNorthPoleSphere);
+        	this.moonContainer.add(this.moonSouthPoleSphere);
         		
         
         } else if (config == "lunar") {
         
+            this.primaryBody3D = this.moonContainer;
+            this.secondaryBody3D = this.earthContainer;
+
         	this.moonContainer.add(this.moonAxis);
         	this.moonContainer.add(this.moonNorthPoleSphere);
         	this.moonContainer.add(this.moonSouthPoleSphere);
 
-            this.primaryBody3D = this.moonContainer;
-            this.secondaryBody3D = this.earthContainer;
-
-            // Not adding axes to secondary object - doesn't look good
-        	// this.secondaryBody3D.add(earthAxis);
-        	// this.secondaryBody3D.add(earthNorthPole);
-        	// this.secondaryBody3D.add(earthSouthPole);
+        	this.earthContainer.add(this.earthAxis);
+        	this.earthContainer.add(this.earthNorthPoleSphere);
+        	this.earthContainer.add(this.earthSouthPoleSphere);
         
         }
         
-        this.scene.add(this.primaryBody3D);
-        this.scene.add(this.secondaryBody3D);
+        this.motherContainer = new THREE.Group();
+
+        this.motherContainer.add(this.primaryBody3D);
+        this.motherContainer.add(this.secondaryBody3D);
 
         // add spacecraft orbit
         var curves = new THREE.CatmullRomCurve3(this.curve);
@@ -543,7 +585,7 @@ class AnimationScene {
         var craftOrbitColor = planetProperties[craftId]["orbitcolor"];
         var orbitMaterial = new THREE.LineBasicMaterial({color: craftOrbitColor, linewidth: 0.2});
         this.orbitLine = new THREE.Line(orbitGeometry, orbitMaterial);
-        this.scene.add(this.orbitLine);
+        this.motherContainer.add(this.orbitLine);
 
         var craftColor = planetProperties[craftId]["color"];
         var craftEdgeColor = 0xFF0000;
@@ -554,18 +596,20 @@ class AnimationScene {
         this.craftEdges = new THREE.LineSegments(craftEdgesGeometry, new THREE.LineBasicMaterial({color: craftEdgeColor}));
         this.craft.add(this.craftEdges);
 
-        this.scene.add(this.craft);
+        this.motherContainer.add(this.craft);
 
         // add axes helper
         this.axesHelper = new THREE.AxesHelper(2*PIXELS_PER_AU*EARTH_MOON_DISTANCE_MEAN_AU);
-        this.scene.add(this.axesHelper);
+        this.motherContainer.add(this.axesHelper);
 
         // add light
         this.light = new THREE.DirectionalLight(primaryLightColor, primaryLightIntensity);
-        this.scene.add(this.light);
+        this.motherContainer.add(this.light);
 
         var ambientLight = new THREE.AmbientLight(ambientLightColor, ambientLightIntensity); // soft white light
-        this.scene.add(ambientLight);
+        this.motherContainer.add(ambientLight);
+
+        this.scene.add(this.motherContainer);
 
         // add camera
         var angle = 50;
@@ -628,8 +672,17 @@ class AnimationScene {
                     var y = +1 * (vectors[j]["y"] / KM_PER_AU) * PIXELS_PER_AU;;
                     var z = +1 * (vectors[j]["z"] / KM_PER_AU) * PIXELS_PER_AU;;
 
-                    var v3 = new THREE.Vector3(x, y, z);
-                    this.curve.push(v3);
+
+                    var vx = +1 * (vectors[j]["vx"] / KM_PER_AU) * PIXELS_PER_AU;;
+                    var vy = +1 * (vectors[j]["vy"] / KM_PER_AU) * PIXELS_PER_AU;;
+                    var vz = +1 * (vectors[j]["vz"] / KM_PER_AU) * PIXELS_PER_AU;;
+
+                    var pos = new THREE.Vector3(x, y, z);
+                    this.curve.push(pos);
+
+                    var vel = new THREE.Vector3(vx, vy, vz);
+                    this.curveVelocities.push(vel);
+
                     ++nOrbitPoints;
                 }
             }
@@ -2414,6 +2467,7 @@ function toggleView() {
     var viewPolarAxes = $("#view-polar-axes").is(":checked"); 
 
     animationScenes[config].orbitLine.visible = viewOrbit;
+
     animationScenes[config].axesHelper.visible = viewXYZAxes;
 
     animationScenes[config].earthNorthPoleSphere.visible = viewPoles;
