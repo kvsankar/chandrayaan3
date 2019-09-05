@@ -13,7 +13,8 @@ use JSON;
 # constants - ephemerides related
 
 my $JPL_MAVEN      = -202;
-my $JPL_CY2        = -152; # Chandrayaan 2
+my $JPL_CY2        = -152; # Chandrayaan 2 Orbiter
+my $JPL_CY2_VIKRAM = -153; # Chandrayaan 2 Lander Vikram
 my $JPL_MOM        = -3;
 my $JPL_EMB        = 3;
 my $JPL_SUN        = 10;
@@ -32,6 +33,7 @@ my $JPL_MOON_CENTER = '@301';
 my %planet_codes = 
     ("MAVEN"    => $JPL_MAVEN,
      "CY2"      => $JPL_CY2,
+     "VIKRAM"   => $JPL_CY2_VIKRAM, 
      "MOM"      => $JPL_MOM,
      "EMB"      => $JPL_EMB,
      "SUN"      => $JPL_SUN,
@@ -67,28 +69,32 @@ my $config = {
         'orbits_file' => "$data_dir/orbits.json"
     },
     "geo" => {
-        'start_year'       => '2019', 'start_month'       => '07', 'start_day'       => '22', 'start_hour'      => '09', 'start_minute'     => '31',
-        'stop_year'        => '2019', 'stop_month'        => '09', 'stop_day'        => '10', 'stop_hour'       => '12', 'stop_minute'      => '41',
-        'start_year_cy2'   => '2019', 'start_month_cy2'   => '07', 'start_day_cy2'   => '22', 'start_hour_cy2'  => '09', 'start_minute_cy2' => '31',
-        'stop_year_cy2'    => '2019', 'stop_month_cy2'    => '09', 'stop_day_cy2'    => '04', 'stop_hour_cy2'   => '23', 'stop_minute_cy2'  => '56',
+        'start_year'       => '2019', 'start_month'       => '07', 'start_day'       => '22', 'start_hour'          => '09', 'start_minute'         => '31',
+        'stop_year'        => '2019', 'stop_month'        => '09', 'stop_day'        => '10', 'stop_hour'           => '12', 'stop_minute'          => '41',
+        'start_year_cy2'   => '2019', 'start_month_cy2'   => '07', 'start_day_cy2'   => '22', 'start_hour_cy2'      => '09', 'start_minute_cy2'     => '31',
+        'stop_year_cy2'    => '2019', 'stop_month_cy2'    => '09', 'stop_day_cy2'    => '07', 'stop_hour_cy2'       => '08', 'stop_minute_cy2'      => '36',
+        'start_year_vikram'=> '2019', 'start_month_vikram'=> '09', 'start_day_vikram'=> '02', 'start_hour_vikram'   => '07', 'start_minute_vikram'  => '46',
+        'stop_year_vikram' => '2019', 'stop_month_vikram' => '09', 'stop_day_vikram' => '06', 'stop_hour_vikram'    => '23', 'stop_minute_vikram'   => '56',
 
-        'step_size_in_minutes' => 5,
+        'step_size_in_minutes' => 1,
 
-        'planets' => ["MOON", "CY2"],
+        'planets' => ["MOON", "CY2", "VIKRAM"],
 
         'center' => $JPL_EARTH_CENTER,
 
         'orbits_file' => "$data_dir/geo-cy2.json"
     },
     "lunar" => {
-        'start_year'       => '2019', 'start_month'       => '07', 'start_day'       => '22', 'start_hour'      => '09', 'start_minute'     => '31',
-        'stop_year'        => '2019', 'stop_month'        => '09', 'stop_day'        => '10', 'stop_hour'       => '12', 'stop_minute'      => '41',
-        'start_year_cy2'   => '2019', 'start_month_cy2'   => '07', 'start_day_cy2'   => '22', 'start_hour_cy2'  => '09', 'start_minute_cy2' => '31',
-        'stop_year_cy2'    => '2019', 'stop_month_cy2'    => '09', 'stop_day_cy2'    => '04', 'stop_hour_cy2'   => '23', 'stop_minute_cy2'  => '56',
+        'start_year'       => '2019', 'start_month'       => '07', 'start_day'       => '22', 'start_hour'          => '09', 'start_minute'         => '31',
+        'stop_year'        => '2019', 'stop_month'        => '09', 'stop_day'        => '10', 'stop_hour'           => '12', 'stop_minute'          => '41',
+        'start_year_cy2'   => '2019', 'start_month_cy2'   => '07', 'start_day_cy2'   => '22', 'start_hour_cy2'      => '09', 'start_minute_cy2'     => '31',
+        'stop_year_cy2'    => '2019', 'stop_month_cy2'    => '09', 'stop_day_cy2'    => '07', 'stop_hour_cy2'       => '08', 'stop_minute_cy2'      => '36',
+        'start_year_vikram'=> '2019', 'start_month_vikram'=> '09', 'start_day_vikram'=> '02', 'start_hour_vikram'   => '07', 'start_minute_vikram'  => '46',
+        'stop_year_vikram' => '2019', 'stop_month_vikram' => '09', 'stop_day_vikram' => '06', 'stop_hour_vikram'    => '23', 'stop_minute_vikram'   => '56',
 
-        'step_size_in_minutes' => 5,
+        'step_size_in_minutes' => 1,
 
-        'planets' => ["CY2", "EARTH"],
+        'planets' => ["CY2", "VIKRAM", "EARTH"],
 
         'center' => $JPL_MOON_CENTER,
 
@@ -102,6 +108,9 @@ my ($stop_year, $stop_month, $stop_day, $stop_hour, $stop_minute);
 my ($start_year_cy2, $start_month_cy2, $start_day_cy2, $start_hour_cy2, $start_minute_cy2);
 my ($stop_year_cy2, $stop_month_cy2, $stop_day_cy2, $stop_hour_cy2, $stop_minute_cy2);
 my $step_size_in_minutes;
+my ($start_year_vikram, $start_month_vikram, $start_day_vikram, $start_hour_vikram, $start_minute_vikram);
+my ($stop_year_vikram, $stop_month_vikram, $stop_day_vikram, $stop_hour_vikram, $stop_minute_vikram);
+
 my @planets;
 my $center;
 my $orbits_file;
@@ -150,12 +159,23 @@ sub init_config ($) {
     $start_hour_cy2 = $config->{$option}->{'start_hour_cy2'};
     $start_minute_cy2 = $config->{$option}->{'start_minute_cy2'};
     
+    $start_year_vikram = $config->{$option}->{'start_year_vikram'};
+    $start_month_vikram = $config->{$option}->{'start_month_vikram'};
+    $start_day_vikram = $config->{$option}->{'start_day_vikram'};
+    $start_hour_vikram = $config->{$option}->{'start_hour_vikram'};
+    $start_minute_vikram = $config->{$option}->{'start_minute_vikram'};
 
     $stop_year_cy2 = $config->{$option}->{'stop_year_cy2'};
     $stop_month_cy2 = $config->{$option}->{'stop_month_cy2'};
     $stop_day_cy2 = $config->{$option}->{'stop_day_cy2'};
     $stop_hour_cy2 = $config->{$option}->{'stop_hour_cy2'};
     $stop_minute_cy2 = $config->{$option}->{'stop_minute_cy2'};
+
+    $stop_year_vikram = $config->{$option}->{'stop_year_vikram'};
+    $stop_month_vikram = $config->{$option}->{'stop_month_vikram'};
+    $stop_day_vikram = $config->{$option}->{'stop_day_vikram'};
+    $stop_hour_vikram = $config->{$option}->{'stop_hour_vikram'};
+    $stop_minute_vikram = $config->{$option}->{'stop_minute_vikram'};
 
     $step_size_in_minutes = $config->{$option}->{'step_size_in_minutes'};
 
@@ -179,6 +199,8 @@ sub get_horizons_start_time($) {
 
     if ($planet eq "CY2") {
         return "$start_year_cy2\-$start_month_cy2\-$start_day_cy2 $start_hour_cy2:$start_minute_cy2";
+    } elsif ($planet eq "VIKRAM") {
+        return "$start_year_vikram\-$start_month_vikram\-$start_day_vikram $start_hour_vikram:$start_minute_vikram";
     } else {
         return "$start_year\-$start_month\-$start_day $start_hour:$start_minute";
     }
@@ -189,6 +211,8 @@ sub get_horizons_stop_time($) {
 
     if ($planet eq "CY2") {
         return "$stop_year_cy2\-$stop_month_cy2\-$stop_day_cy2 $stop_hour_cy2:$stop_minute_cy2";
+    } elsif ($planet eq "VIKRAM") {
+        return "$stop_year_vikram\-$stop_month_vikram\-$stop_day_vikram $stop_hour_vikram:$stop_minute_vikram";
     } else {
         return "$stop_year\-$stop_month\-$stop_day $stop_hour:$stop_minute";
     }
