@@ -52,29 +52,14 @@ my $data_dir = "data-fetched/" . $date;
 my $debugging = 1;
 
 my $config = {
-    "helio" => {
-    	# TODO find a better way to manage two aircraft
 
-        'start_year'       => '2013', 'start_month'       => '11', 'start_day'       => '06', 'start_hour' => '00', 'start_minute' => '00',
-        'stop_year'        => '2015', 'stop_month'        => '04', 'stop_day'       => '01', 'stop_hour' => '00', 'stop_minute' => '00',
-        'start_year_cy2' => '2013', 'start_month_cy2' => '11', 'start_day_cy2' => '19', 'start_hour_cy2' => '00', 'start_minute_cy2' => '00',
-        'stop_year_cy2'  => '2014', 'stop_month_cy2'  => '09', 'stop_day_cy2'  => '26', 'stop_hour_cy2' => '00', 'stop_minute_cy2' => '00',
-
-        'step_size_in_minutes' => 240,
-
-        'planets' => ["MERCURY", "VENUS", "EARTH", "MARS", "MOM", "MAVEN", "CSS"],
-
-        'center' => $JPL_SUN_CENTER,
-
-        'orbits_file' => "$data_dir/orbits.json"
-    },
     "geo" => {
         'start_year'       => '2019', 'start_month'       => '07', 'start_day'       => '22', 'start_hour'          => '09', 'start_minute'         => '31',
         'stop_year'        => '2019', 'stop_month'        => '09', 'stop_day'        => '10', 'stop_hour'           => '12', 'stop_minute'          => '41',
         'start_year_cy2'   => '2019', 'start_month_cy2'   => '07', 'start_day_cy2'   => '22', 'start_hour_cy2'      => '09', 'start_minute_cy2'     => '31',
-        'stop_year_cy2'    => '2019', 'stop_month_cy2'    => '09', 'stop_day_cy2'    => '07', 'stop_hour_cy2'       => '08', 'stop_minute_cy2'      => '36',
+        'stop_year_cy2'    => '2019', 'stop_month_cy2'    => '09', 'stop_day_cy2'    => '08', 'stop_hour_cy2'       => '16', 'stop_minute_cy2'      => '30',
         'start_year_vikram'=> '2019', 'start_month_vikram'=> '09', 'start_day_vikram'=> '02', 'start_hour_vikram'   => '07', 'start_minute_vikram'  => '46',
-        'stop_year_vikram' => '2019', 'stop_month_vikram' => '09', 'stop_day_vikram' => '06', 'stop_hour_vikram'    => '23', 'stop_minute_vikram'   => '56',
+        'stop_year_vikram' => '2019', 'stop_month_vikram' => '09', 'stop_day_vikram' => '06', 'stop_hour_vikram'    => '23', 'stop_minute_vikram'   => '59',
 
         'step_size_in_minutes' => 1,
 
@@ -88,9 +73,9 @@ my $config = {
         'start_year'       => '2019', 'start_month'       => '07', 'start_day'       => '22', 'start_hour'          => '09', 'start_minute'         => '31',
         'stop_year'        => '2019', 'stop_month'        => '09', 'stop_day'        => '10', 'stop_hour'           => '12', 'stop_minute'          => '41',
         'start_year_cy2'   => '2019', 'start_month_cy2'   => '07', 'start_day_cy2'   => '22', 'start_hour_cy2'      => '09', 'start_minute_cy2'     => '31',
-        'stop_year_cy2'    => '2019', 'stop_month_cy2'    => '09', 'stop_day_cy2'    => '07', 'stop_hour_cy2'       => '08', 'stop_minute_cy2'      => '36',
+        'stop_year_cy2'    => '2019', 'stop_month_cy2'    => '09', 'stop_day_cy2'    => '08', 'stop_hour_cy2'       => '16', 'stop_minute_cy2'      => '30',
         'start_year_vikram'=> '2019', 'start_month_vikram'=> '09', 'start_day_vikram'=> '02', 'start_hour_vikram'   => '07', 'start_minute_vikram'  => '46',
-        'stop_year_vikram' => '2019', 'stop_month_vikram' => '09', 'stop_day_vikram' => '06', 'stop_hour_vikram'    => '23', 'stop_minute_vikram'   => '56',
+        'stop_year_vikram' => '2019', 'stop_month_vikram' => '09', 'stop_day_vikram' => '06', 'stop_hour_vikram'    => '23', 'stop_minute_vikram'   => '59',
 
         'step_size_in_minutes' => 1,
 

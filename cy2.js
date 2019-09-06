@@ -180,9 +180,9 @@ function getStartAndEndTimes(id) {
 
     var startTime                  = Date.UTC(2019, 7-1, 22,  9, 31, 0, 0);
     var endTime                    = Date.UTC(2019, 9-1, 10, 12, 41, 0, 0);
-    var endTimeCY2                 = Date.UTC(2019, 9-1,  7,  8, 36, 0, 0);
+    var endTimeCY2                 = Date.UTC(2019, 9-1,  8, 16, 30, 0, 0);
     var startTimeVikram            = Date.UTC(2019, 9-1,  2,  7, 46, 0, 0);
-    var endTimeVikram              = Date.UTC(2019, 9-1,  6, 23, 56, 0, 0);
+    var endTimeVikram              = Date.UTC(2019, 9-1,  6, 23, 59, 0, 0);
 
     if (id === "CY2") {
         return [startTime, endTimeCY2];
