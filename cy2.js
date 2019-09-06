@@ -392,12 +392,9 @@ class AnimationScene {
           THREE.DefaultLoadingManager.onLoad = ()=>resolve(textures);
           const textures = [
             
-            // "images/3_no_ice_clouds_16k.jpg",
-            "images/2_no_clouds_8k.jpg",
-            // "images/elev_bump_16k.jpg",
-            "images/earthspec1k.jpg",
-            "images/moon_8k_color_brim16.jpg",
-            // "images/moon_8k_normal.jpg"
+            "images/earth/2_no_clouds_8k.jpg",
+            "images/earth/earthspec1k.jpg",
+            "images/moon/moon_8k_color_brim16.jpg",
 
           ].map(filename=>loader.load(filename));
         });
@@ -406,18 +403,16 @@ class AnimationScene {
 
             // console.log("Loaded textures: ", result);
 
-            scene.earthTexture          = result[0];
-            // scene.earthBumpMapTexture   = result[1];
-            scene.earthSpecularTexture  = result[1];
-            scene.moonTexture           = result[2];
-            // scene.moonBumpMapTexture    = result[4];
+            var mapIndex = 0;
 
-
+            scene.earthTexture          = result[mapIndex++];
             scene.earthTexture.minFilter = THREE.LinearFilter;
-            // scene.earthBumpMapTexture.minFilter = THREE.LinearFilter;
+
+            scene.earthSpecularTexture  = result[mapIndex++];
             scene.earthSpecularTexture.minFilter = THREE.LinearFilter;
-            // scene.moonTexture.minFilter = THREE.LinearFilter;
-            // scene.moonBumpMapTexture.minFilter = THREE.LinearFilter;
+
+            scene.moonMap               = result[mapIndex++];
+            scene.moonMap.minFilter = THREE.LinearFilter;
 
             scene.init3dRest();
             callback();
@@ -517,10 +512,13 @@ class AnimationScene {
         var moonColor = planetProperties["MOON"]["color"];
         var moonGeometry = new THREE.SphereGeometry(moonRadius, 100, 100);
         var moonMaterial = new THREE.MeshPhongMaterial({
-            map: this.moonTexture,
-            // bumpMap: this.moonBumpMapTexture,
+            map: this.moonMap,
+            // bumpMap: this.moonBumpMap,
             // bumpScale: 0.05,
+            // normalMap: this.moonNormalMap,
+            // normalScale: new THREE.Vector2(0.5, 0.5),
             // color: moonColor, 
+            specular: 0,
             shininess: 1
         });
         this.moon = new THREE.Mesh(moonGeometry, moonMaterial);
