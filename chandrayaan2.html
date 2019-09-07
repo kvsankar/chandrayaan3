@@ -45,16 +45,16 @@
       <div id="control-panel" class="control-panel">
 
       <div> <!-- First row buttons -->
-        <span class="config-label config-first-label">Origin:</span> 
+        <span class="config-label config-first-label">Origin/Phase:</span> 
         <input type="radio" name="mode" value="geo"   onclick="toggleMode()" checked="checked">Earth</input>
         <input type="radio" name="mode" value="lunar" onclick="toggleMode()">Moon</input>
-        <input type="radio" name="mode" value="lro"   onclick="toggleMode()">Moon (Vikram LOS Investigation)</input>
+        <input type="radio" name="mode" value="lro"   onclick="toggleMode()">Moon/Post Vikram LOS</input>
 
         <span class="hspace">|</span>
 
         <span class="config-label">Dimension:</span>
         <input type ="radio" name="dimension" value="2D" id="dimension-2D" onclick="toggleDimension()" checked="checked">2D</input>
-        <input type ="radio" name="dimension" value="3D" id="dimension-3D" onclick="toggleDimension()">3D (Experimental)</input>
+        <input type ="radio" name="dimension" value="3D" id="dimension-3D" onclick="toggleDimension()">3D</input>
 
         <span class="hspace">|</span>
 
@@ -87,7 +87,7 @@
 
             <input type="checkbox" name="view" value="orbit"        id="view-orbit"         onclick="toggleView()" checked="checked">CY2 Orbit</input>
             <input type="checkbox" name="view" value="orbit-vikram" id="view-orbit-vikram"  onclick="toggleView()" checked="checked">Vikram Orbit</input>
-            <input type="checkbox" name="view" value="orbit-lro"    id="view-orbit-lro"     class="lro" onclick="toggleView()" checked="checked">LRO Orbit</input>
+            <input type="checkbox" name="view" value="orbit-lro"    id="view-orbit-lro"     onclick="toggleView()" checked="checked">LRO Orbit</input>
             <input type="checkbox" name="view" value="xyz"          id="view-xyz-axes"      onclick="toggleView()" checked="checked">XYZ Axes</input>
             <input type="checkbox" name="view" value="poles"        id="view-poles"         onclick="toggleView()" checked="checked">Poles</input>
             <input type="checkbox" name="view" value="polar-axes"   id="view-polar-axes"    onclick="toggleView()" checked="checked">Polar Axes</input>

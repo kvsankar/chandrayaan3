@@ -1224,35 +1224,66 @@ function addEvents() {
         "body": "VIKRAM"        
     }
 
-    var animationEndInfo = {
+    var cy2EndInfo = {
         "startTime": new Date(Date.UTC(2019, 9-1, 10, 12, 41, 0, 0)),
         "durationSeconds": 0,
-        "label": "Data End",
+        "label": "CY2 Data End",
         "burnFlag": false,
-        "infoText": "Data End",
+        "infoText": "Chandrayaan 2 Data End",
         "body": ""
     }
 
-    eventInfos = [
-        missionStartInfo,
-        ebn1Info,
-        ebn2Info,
-        ebn3Info,
-        ebn4Info,
-        ebn5Info,
-        ebn6tliInfo,
-        lbn1loiInfo,
-        lbn2Info,
-        lbn3Info,
-        lbn4Info,
-        lbn5Info,
-        vikramSeparationInfo,
-        vikramDeboostOneInfo,
-        vikramDeboostTwoInfo,
-        nowInfo,
-        vikramLandingInfo,
-        animationEndInfo
-    ];
+    var lroStartInfo = {
+        "startTime": new Date(Date.UTC(2019, 9-1, 1, 0, 0, 0, 0)),
+        "durationSeconds": 0,
+        "label": "LRO Data Start",
+        "burnFlag": false,
+        "infoText": "LRO Data Start",
+        "body": ""
+    }
+
+    var lroEndInfo = {
+        "startTime": new Date(Date.UTC(2019, 11-1, 1, 0, 0, 0, 0)),
+        "durationSeconds": 0,
+        "label": "LRO Data End",
+        "burnFlag": false,
+        "infoText": "LRO Data End",
+        "body": ""
+    }
+
+    if ((config == "geo") || (config == "lunar")) {
+        eventInfos = [
+            missionStartInfo,
+            ebn1Info,
+            ebn2Info,
+            ebn3Info,
+            ebn4Info,
+            ebn5Info,
+            ebn6tliInfo,
+            lbn1loiInfo,
+            lbn2Info,
+            lbn3Info,
+            lbn4Info,
+            lbn5Info,
+            vikramSeparationInfo,
+            vikramDeboostOneInfo,
+            vikramDeboostTwoInfo,
+            vikramLandingInfo,
+            nowInfo,
+            cy2EndInfo
+        ];        
+    } else if (config == "lro") {
+        eventInfos = [
+            lroStartInfo,
+            vikramSeparationInfo,
+            vikramDeboostOneInfo,
+            vikramDeboostTwoInfo,
+            nowInfo,
+            vikramLandingInfo,
+            cy2EndInfo,
+            lroEndInfo
+        ];
+    }
 }
 
 function initConfig() {
