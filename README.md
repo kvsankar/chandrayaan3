@@ -99,4 +99,16 @@ At present the page can be hosted statically. There are no server components nee
 However, to prevent browsers from complaining about CORS, one may use a tiny web server
 like Mongoose to test the local site. 
 
+### Future work
+
+This needs a rewrite. The very first release was for the Mars Orbiter Mission launch in 2013. 
+Minor changes were made later to support MOM Mars orbit insertion and the Pluto flyby of New Horizons.
+After a gap of 6 years, this has been modified again in 2019 to support the Chandrayaan 2 mission. 
+The major changes were for 3D support. In that process the code quality has degraded.
+
+The rewrite will focus on present-day JavaScript tooling, an OO design with
+better separation of concerns (2D vs. 3D, model vs. rendering, etc.), and extensibility
+(how does one extend the coode for a new mission easily merely by changing some configuration files). 
+
+
 
