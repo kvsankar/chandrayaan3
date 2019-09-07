@@ -15,6 +15,7 @@ use JSON;
 my $JPL_MAVEN      = -202;
 my $JPL_CY2        = -152; # Chandrayaan 2 Orbiter
 my $JPL_CY2_VIKRAM = -153; # Chandrayaan 2 Lander Vikram
+my $LRO            = -85; # Lunar Reconnaissance Orbiter
 my $JPL_MOM        = -3;
 my $JPL_EMB        = 3;
 my $JPL_SUN        = 10;
@@ -34,6 +35,7 @@ my %planet_codes =
     ("MAVEN"    => $JPL_MAVEN,
      "CY2"      => $JPL_CY2,
      "VIKRAM"   => $JPL_CY2_VIKRAM, 
+     "LRO"      => $LRO,
      "MOM"      => $JPL_MOM,
      "EMB"      => $JPL_EMB,
      "SUN"      => $JPL_SUN,
@@ -85,7 +87,22 @@ my $config = {
 
         'orbits_file' => "$data_dir/lunar-cy2.json"
     },
-    
+    "lro" => {
+        'start_year'       => '2019', 'start_month'       => '09', 'start_day'       => '01', 'start_hour'          => '00', 'start_minute'         => '00',
+        'stop_year'        => '2019', 'stop_month'        => '11', 'stop_day'        => '01', 'stop_hour'           => '00', 'stop_minute'          => '00',
+        'start_year_cy2'   => '2019', 'start_month_cy2'   => '09', 'start_day_cy2'   => '01', 'start_hour_cy2'      => '00', 'start_minute_cy2'     => '00',
+        'stop_year_cy2'    => '2019', 'stop_month_cy2'    => '09', 'stop_day_cy2'    => '08', 'stop_hour_cy2'       => '16', 'stop_minute_cy2'      => '30',
+        'start_year_vikram'=> '2019', 'start_month_vikram'=> '09', 'start_day_vikram'=> '02', 'start_hour_vikram'   => '07', 'start_minute_vikram'  => '50',
+        'stop_year_vikram' => '2019', 'stop_month_vikram' => '09', 'stop_day_vikram' => '06', 'stop_hour_vikram'    => '23', 'stop_minute_vikram'   => '55',
+
+        'step_size_in_minutes' => 5,
+
+        'planets' => ["CY2", "VIKRAM", "LRO", "EARTH"],
+
+        'center' => $JPL_MOON_CENTER,
+
+        'orbits_file' => "$data_dir/lunar-lro.json"
+    },    
 };
 
 my ($start_year, $start_month, $start_day, $start_hour, $start_minute);
@@ -557,7 +574,7 @@ sub main {
 
     $phase = 'geo' unless $phase; # Set default as geo for Chandrayaan 2
 
-    unless (($phase eq "geo") || ($phase eq "helio") || ($phase eq "lunar")) {
+    unless (($phase eq "geo") || ($phase eq "lro") || ($phase eq "lunar")) {
         print_error("Argument 'phase' must be either 'geo' or 'helio' or 'lunar' (without quotes).");
         exit(1);
     }
