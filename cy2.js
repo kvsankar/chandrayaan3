@@ -7,6 +7,7 @@
 
 var CY2     = "CY2";
 var VIKRAM  = "VIKRAM";
+var LRO     = "LRO";
 var SUN     = "SUN";
 var MERCURY = "MERCURY";
 var VENUS   = "VENUS";
@@ -44,6 +45,7 @@ var ambientLightIntensity = 0.5;
 var planetProperties = {
     "CY2":      { "id": CY2,        "name": "CY2",              "color": "#ffa000",     "orbitcolor": "orange",     "stroke-width": 1.0, "r": 3.2, "labelOffsetX": -30, "labelOffsetY": -10 },
     "VIKRAM":   { "id": VIKRAM,     "name": "VIKRAM",           "color": "#ffe000",     "orbitcolor": "#6a5acd",    "stroke-width": 1.0, "r": 3.2, "labelOffsetX": +30, "labelOffsetY": +10 },    
+    "LRO":      { "id": LRO,        "name": "LRO",              "color": "#00FF00",     "orbitcolor": "#00FF00",    "stroke-width": 1.0, "r": 3.2, "labelOffsetX": +30, "labelOffsetY": +10 },    
     "SUN":      { "id": SUN,        "name": "Sun",              "color": "yellow",      "orbitcolor": "yellow",     "stroke-width": 1.0, "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
     "MERCURY":  { "id": MERCURY,    "name": "Mercury",          "color": "green",       "orbitcolor": "green",      "stroke-width": 1.0, "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
     "VENUS":    { "id": VENUS,      "name": "Venus",            "color": "grey",        "orbitcolor": "grey",       "stroke-width": 1.0, "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
@@ -71,10 +73,11 @@ var FORMAT_METRIC = d3.format(" >10,.2f");
 var craftId = "CY2";
 var config = "geo";
 var missionStartCalled = false;
-var orbitDataLoaded = { "geo": false, "lunar": false };
+var orbitDataLoaded = { "geo": false, "lunar": false, "lro": false };
 var orbitData = {};
 var nOrbitPoints = 0;
 var nOrbitPointsVikram = 0;
+var nOrbitPointsLRO = 0;
 var progress = 0;
 var bannerShown = false;
 var stopZoom = false;
@@ -183,6 +186,13 @@ function getStartAndEndTimes(id) {
     var endTimeCY2                 = Date.UTC(2019, 9-1,  8, 16, 30, 0, 0);
     var startTimeVikram            = Date.UTC(2019, 9-1,  2,  7, 46, 0, 0);
     var endTimeVikram              = Date.UTC(2019, 9-1,  6, 23, 59, 0, 0);
+
+    if (config == "lro") {
+        startTime                   = Date.UTC(2019,  9-1, 1,  0, 0, 0, 0);
+        endTime                     = Date.UTC(2019, 11-1, 1,  0, 0, 0, 0);
+        startTimeVikram             = Date.UTC(2019, 9-1,  2,  7, 50, 0, 0);
+        endTimeVikram               = Date.UTC(2019, 9-1,  6, 23, 55, 0, 0);
+    }
 
     if (id === "CY2") {
         return [startTime, endTimeCY2];
@@ -303,8 +313,10 @@ function updateCraftScale() {
         var distance = animationScenes[config].cameraControls.getWorldPos().distanceTo(craftLocation);
         var scale =  distance / defaultCameraDistance;
         // console.log("scale = " + scale);
+
         animationScenes[config].craft.scale.set(scale, scale, scale);
         animationScenes[config].vikramCraft.scale.set(scale, scale, scale); // we'll use the same scale for Vikram too
+        
         // animationScenes[config].craft.scale.set(10, 10, 10);
 
         if (isLocationAvaialable("CY2", now)) {
@@ -316,6 +328,15 @@ function updateCraftScale() {
             animationScenes[config].vikramCraft.visible = true;
         } else {
             animationScenes[config].vikramCraft.visible = false;
+        }
+
+        if (config == "lro") {
+            animationScenes[config].lroCraft.scale.set(scale, scale, scale); // we'll use the same scale for LRO too
+            if (isLocationAvaialable("LRO", now)) {
+                animationScenes[config].lroCraft.visible = true;
+            } else {
+                animationScenes[config].lroCraft.visible = false;
+            }
         }
     }
 }
@@ -375,6 +396,7 @@ class AnimationScene {
         this.renderer = null;
         this.curve = [];
         this.vikramCurve = [];
+        this.lroCurve = [];
         this.curveVelocities = [];
         this.defaultCameraDistance = 0; 
     }
@@ -594,7 +616,7 @@ class AnimationScene {
         	this.moonContainer.add(this.moonSouthPoleSphere);
         		
         
-        } else if (config == "lunar") {
+        } else if ((config == "lunar") || (config == "lro")) {
         
             this.primaryBody3D = this.moonContainer;
             this.secondaryBody3D = this.earthContainer;
@@ -612,7 +634,11 @@ class AnimationScene {
         this.motherContainer = new THREE.Group();
 
         this.motherContainer.add(this.primaryBody3D);
-        this.motherContainer.add(this.secondaryBody3D);
+
+        if (this.name != "lro") {
+            this.motherContainer.add(this.secondaryBody3D);    
+        }
+        
 
         // add Chandrayaan 2 orbiter orbit
         var curves = new THREE.CatmullRomCurve3(this.curve);
@@ -631,6 +657,17 @@ class AnimationScene {
         var vikramOrbitMaterial = new THREE.LineBasicMaterial({color: vikramOrbitColor, linewidth: 0.2});
         this.vikramOrbitLine = new THREE.Line(vikramOrbitGeometry, vikramOrbitMaterial);
         this.motherContainer.add(this.vikramOrbitLine);
+
+        if (this.name == "lro") {
+            // add LRO orbit
+            var lroCurves = new THREE.CatmullRomCurve3(this.lroCurve);
+            var lroOrbitGeometry = new THREE.Geometry();
+            lroOrbitGeometry.vertices = lroCurves.getSpacedPoints(nOrbitPointsLRO * 100);
+            var lroOrbitColor = planetProperties["LRO"]["orbitcolor"];
+            var lroOrbitMaterial = new THREE.LineBasicMaterial({color: lroOrbitColor, linewidth: 0.2});
+            this.lroOrbitLine = new THREE.Line(lroOrbitGeometry, lroOrbitMaterial);
+            this.motherContainer.add(this.lroOrbitLine);            
+        }
 
         var craftColor = planetProperties["CY2"]["color"];
         var craftEdgeColor = 0xFF8000;
@@ -672,6 +709,27 @@ class AnimationScene {
         this.vikramCraft.add(this.vikramCraftEdges);
 
         this.motherContainer.add(this.vikramCraft);
+
+        if (this.name == "lro") {
+            // add LRO
+
+            var lroCraftColor = planetProperties["LRO"]["color"];
+            var lroCraftEdgeColor = 0x000000;
+            var lroCraftGeometry = new THREE.BoxGeometry(5, 5, 5);
+            var lroCraftMaterial = new THREE.MeshBasicMaterial({color: lroCraftColor, transparent: false, opacity: 1.0});
+            this.lroCraft = new THREE.Mesh(lroCraftGeometry, lroCraftMaterial);
+            var lroCraftEdgesGeometry = new THREE.EdgesGeometry(lroCraftGeometry);
+            this.lroCraftEdges = new THREE.LineSegments(lroCraftEdgesGeometry, new THREE.LineBasicMaterial({color: lroCraftEdgeColor}));
+            this.lroCraft.add(this.lroCraftEdges);
+            this.motherContainer.add(this.lroCraft);
+
+            this.lroLineGeometry = new THREE.Geometry();
+            this.lroLineGeometry.vertices.push(this.moonContainer.position, this.lroCraft.position);
+            var lroLineMaterial = new THREE.LineBasicMaterial({color: lroCraftColor});
+            this.lroLine = new THREE.Line(this.lroLineGeometry, lroLineMaterial);        
+            this.lroLine.frustumCulled = false;
+            this.motherContainer.add(this.lroLine);            
+        }
 
         // add axes helper
         this.axesHelper = new THREE.AxesHelper(2*PIXELS_PER_AU*EARTH_MOON_DISTANCE_MEAN_AU);
@@ -723,6 +781,7 @@ class AnimationScene {
 
         nOrbitPoints = 0;
         nOrbitPointsVikram = 0;
+        nOrbitPointsLRO = 0;
 
         // console.log(planetsForLocations);
         
@@ -778,6 +837,23 @@ class AnimationScene {
                     ++nOrbitPointsVikram;
                 }
             }
+
+            if (planetKey == "LRO") {
+
+                for (var j = 0; j < vectors.length; ++j) {
+
+                    // console.log("Reading VIKRAM position data at index " + j);
+
+                    var x = +1 * (vectors[j]["x"] / KM_PER_AU) * PIXELS_PER_AU;;
+                    var y = +1 * (vectors[j]["y"] / KM_PER_AU) * PIXELS_PER_AU;;
+                    var z = +1 * (vectors[j]["z"] / KM_PER_AU) * PIXELS_PER_AU;;
+
+                    var v3 = new THREE.Vector3(x, y, z);
+                    this.lroCurve.push(v3);
+                    ++nOrbitPointsLRO;
+                }
+            }
+
         }
 
         // console.log("nOrbitPoints = " + nOrbitPoints);
@@ -794,11 +870,11 @@ class AnimationScene {
     		// console.log("Setting camera position to Moon.");
     		this.camera.position.set(this.secondaryBody3D.position);
     	};
-    	if ((this.name == "lunar") && (val == "EARTH")) { 
+    	if (((this.name == "lunar") || (this.name == "lro")) && (val == "EARTH")) { 
     		// console.log("Setting camera position to Earth.");
     		this.camera.position.set(this.secondaryBody3D.position);
     	};
-    	if ((this.name == "lunar") && (val == "MOON")) {
+    	if (((this.name == "lunar") || (this.name == "lro")) && (val == "MOON")) {
     		// console.log("Setting camera position to Origin/Moon.");
     		this.camera.position.set(0, 0, 0);
     	};
@@ -825,7 +901,7 @@ class AnimationScene {
 	    	}
 	    }
 
-    	if (this.name == "lunar") {
+    	if ((this.name == "lunar") || (this.name == "lro")) {
 
     		if (val == "EARTH") { 
 	    		// console.log("Setting camera look to Earth.");
@@ -938,11 +1014,15 @@ function handleModeSwitch3(center, newMode, otherModes) {
 }
 
 function handleModeSwitchToGeo() {
-    handleModeSwitch3("Earth", "geo", ["lunar"]);
+    handleModeSwitch3("Earth", "geo", ["lunar", "lro"]);
 }
 
 function handleModeSwitchToLunar() {
-    handleModeSwitch3("Moon", "lunar", ["geo"]);
+    handleModeSwitch3("Moon", "lunar", ["geo", "lro"]);
+}
+
+function handleModeSwitchToLRO() {
+    handleModeSwitch3("Moon", "lro", ["geo", "lunar"]);
 }
 
 function handleModeSwitch(mode) {
@@ -950,6 +1030,8 @@ function handleModeSwitch(mode) {
         handleModeSwitchToGeo();
     } else if (mode == "lunar") {
         handleModeSwitchToLunar();
+    } else if (mode == "lro") {
+        handleModeSwitchToLRO();
     }
 }
 
@@ -1288,6 +1370,58 @@ function initConfig() {
         timelineIndex = 0;
 
         handleModeSwitchToLunar();
+
+    } else if (config == "lro") {
+
+        if (!animationScenes[config]) {
+            animationScenes[config] = new AnimationScene(config);    
+        }
+
+        svgWidth = window.innerWidth;
+        svgHeight = window.innerHeight - $("#footer_wrapper").outerHeight(true);
+
+        offsetx = svgWidth * (1 / 2) - SVG_ORIGIN_X;
+        offsety = svgHeight * (2 / 3) - SVG_ORIGIN_Y;
+
+        PIXELS_PER_AU = Math.min(svgWidth, svgHeight) / (1.5 * (2 * MOON_RADIUS_KM / KM_PER_AU)); 
+        // The smaller dimension of the screen should fit 120% of the whole Moon orbit around Earth
+        
+        trackWidth = 0.6;
+
+        earthRadius = (EARTH_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU;
+        moonRadius = (MOON_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU;        
+
+        defaultCameraDistance = 3 * moonRadius;
+
+        primaryBody = "MOON";
+        primaryBodyRadius = moonRadius;
+
+        secondaryBody = "EARTH";
+        secondaryBodyRadius = earthRadius;
+
+        planetsForOrbits = ["CY2", "VIKRAM", "LRO"];
+        planetsForLocations = ["CY2", "VIKRAM", "LRO"];
+        stepDurationInMilliSeconds = 5 * MILLI_SECONDS_PER_MINUTE; // TODO add to and read from JSON
+        orbitsJson = "lunar-lro.json";
+        orbitsJsonFileSizeInBytes = 29053 * 1024; // TODO
+        stepsPerHop = 4;
+
+        startTime                  = getStartAndEndTimes("LRO")[0];
+        endTime                    = getStartAndEndTimes("LRO")[1];
+        endTimeCY2                 = getStartAndEndTimes("CY2")[1];
+        startTimeVikram            = getStartAndEndTimes("VIKRAM")[0];
+        endTimeVikram              = getStartAndEndTimes("VIKRAM")[1];
+
+        latestEndTime = endTime;
+        timelineTotalSteps = (latestEndTime - startTime) / stepDurationInMilliSeconds;
+        ticksPerAnimationStep = 1;
+
+        epochJD = "N/A";
+        epochDate = "N/A";
+
+        timelineIndex = 0;
+
+        handleModeSwitchToLRO();
     }
 
     // Add event buttons
@@ -1392,6 +1526,7 @@ function shouldDrawOrbit(planet) {
             (planet == "VIKRAM") ||
             (planet == "MOON") ||
             (planet == "EARTH") || 
+            (planet == "LRO") || 
             (((config == "lunar") || (config == "helio")) && (planet == "CSS")));
 }
 
@@ -1401,7 +1536,7 @@ function planetStartTime(planet) {
 }
 
 function isLocationAvaialable(planet, date) {
-    var flaag = false;
+    var flag = false;
     if (planet == "CY2") {
         flag = ((date >= startTime) && (date <= endTimeCY2));
     } else if (planet == "VIKRAM") {
@@ -1409,7 +1544,8 @@ function isLocationAvaialable(planet, date) {
     } else {
         flag = ((date >= startTime) && (date <= endTime));
     }
-    // console.log("isLocationAvaialable() called for body " + planet + " for time " + date + ": returning " + flag);
+    d = new Date(date);
+    // console.log("isLocationAvaialable() called for body " + planet + " for time " + d + ": returning " + flag);
     return flag;
 }
 
@@ -1563,6 +1699,13 @@ function setLocation() {
                     updateCraftScale();
                     render();
                 }
+            } else if (planetKey == "LRO") {
+                if (animationScenes[config] && animationScenes[config].initialized3D) {
+                    animationScenes[config].lroCraft.position.set(realx_screen, realy_screen, realz_screen);
+                    animationScenes[config].lroLine.geometry.verticesNeedUpdate = true;
+                    updateCraftScale();
+                    render();
+                }
             }
 
             if (planetKey == "CY2") {
@@ -1579,7 +1722,7 @@ function setLocation() {
                 var pbr;
                 if (config == "geo") {
                     pbr = EARTH_RADIUS_KM; 
-                } else if (config == "lunar") {
+                } else if ((config == "lunar") || (config == "lro")) {
                     pbr = MOON_RADIUS_KM;
                 }
 
@@ -1611,7 +1754,7 @@ function setLocation() {
                     d3.select("#velocity-" + planetKey +"-MOON").text(FORMAT_METRIC(v));
                 }
 
-                if (config == "lunar") {
+                if ((config == "lunar") || (config == "lro")) {
                     // relative to Earth
 
                     x = vectors[index][xVariable] - orbits[EARTH]["vectors"][timelineIndex][xVariable];
@@ -2680,12 +2823,17 @@ function toggleJoyRide() {
 function toggleView() {
     var viewOrbit = $("#view-orbit").is(":checked"); 
     var viewOrbitVikram = $("#view-orbit-vikram").is(":checked"); 
+    var viewOrbitLRO = $("#view-orbit-lro").is(":checked"); 
     var viewXYZAxes = $("#view-xyz-axes").is(":checked"); 
     var viewPoles = $("#view-poles").is(":checked"); 
     var viewPolarAxes = $("#view-polar-axes").is(":checked"); 
 
     animationScenes[config].orbitLine.visible = viewOrbit;
     animationScenes[config].vikramOrbitLine.visible = viewOrbitVikram;
+
+    if (config == "lro") {
+        animationScenes[config].lroOrbitLine.visible = viewOrbitLRO;    
+    }
     
     animationScenes[config].axesHelper.visible = viewXYZAxes;
 
@@ -2703,7 +2851,12 @@ function toggleView() {
 function burnButtonHandler(index) {
     // console.log("burnButtonHandler() called for event index: " + index);
     // now = eventInfos[index]["startTime"];
-    now = new Date(eventInfos[index]["startTime"].getTime() + (eventInfos[index]["durationSeconds"] * 1000 / 2));
+    if (eventInfos[index]["label"] == "Now") {
+        now = new Date();
+    } else {
+        now = new Date(eventInfos[index]["startTime"].getTime() + (eventInfos[index]["durationSeconds"] * 1000 / 2));    
+    }
+    
     missionSetTime();
 }
 
