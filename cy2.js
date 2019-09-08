@@ -737,7 +737,7 @@ class AnimationScene {
 
         // add light
         this.light = new THREE.DirectionalLight(primaryLightColor, primaryLightIntensity);
-        this.motherContainer.add(this.light);
+        this.scene.add(this.light); // TODO attempt to fix lighting direction problem when piovoting on non-centered objects
 
         var ambientLight = new THREE.AmbientLight(ambientLightColor, ambientLightIntensity); // soft white light
         this.motherContainer.add(ambientLight);
@@ -1638,7 +1638,7 @@ function setLocation() {
     var ephemMinutes = nowDate.getUTCMinutes();
     var ephemSeconds = nowDate.getUTCSeconds();
     var ephemDate = {'year': ephemYear, 'month': ephemMonth, 'day': ephemDay, 'hours': ephemHours, 'minutes': ephemMinutes, 'seconds': ephemSeconds};
-    // onsole.log(ephemDate);
+    // console.log(ephemDate);
 	$const.tlong = 0.0; // longitude
 	$const.glat = 0.0; // latitude
 	$processor.init(); // TODO not sure whether this needs to be called every time or just once
@@ -1648,8 +1648,8 @@ function setLocation() {
 	sunLongitude = ephemSun.position.apparentLongitude * Math.PI / 180.0;
 	// console.log("Sun longitude: " + sunLongitude * 180.0 / Math.PI);
 
-	var ephemMoon = $moshier.body.sun;
-	$processor.calc(ephemDate, ephemMoon);
+	// var ephemMoon = $moshier.body.moon;
+	// $processor.calc(ephemDate, ephemMoon);
 	// console.log(ephemMoon.position);
 
 	if (animationScenes[config] && animationScenes[config].initialized3D) {
