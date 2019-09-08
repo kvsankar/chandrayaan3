@@ -6,6 +6,8 @@ in http://sankara.net/chandrayaan2.html. That page shows an animation
 of the orbit of the ISRO <a href="http://www.isro.org/mars/home.aspx">
 Chandrayaan 2</a> mission.
 
+![Screenshot](/screenshots/chandrayaan2.png?raw=true)
+
 I created this animation for educational purposes. It has the following features:
 
 * Real-world orbit data and predictions based on information available from JPL/NASA HORIZONS interface
