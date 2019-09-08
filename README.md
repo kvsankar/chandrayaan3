@@ -108,6 +108,12 @@ like Mongoose to test the local site.
 
 * Jon D. Giorgini for helping with the JPL/HORIZONS interface and data. 
   He was very responsive whenever I mailed him my queries.
+  He has been of great help since 2013 for the Mars Orbiter Mission until now
+  for the Chandrayaan 2 mission.
+  
+* Members of the Bangalore Astronomy Society (http://bas.org.in/) for their valuable feedback
+
+* Members of the Reddit r/isro (https://www.reddit.com/r/ISRO/) community for their valuable feedback
   
 ## Future work
 
