@@ -984,7 +984,7 @@ function animateLoop() {
 
     requestAnimationFrame(animateLoop);
 
-    if (animationScenes && animationScenes[config].initialized3D) {
+    if (animationScenes[config] && animationScenes[config].initialized3D) {
         animationScenes[config].cameraControls.update();
     }
 }
@@ -1039,7 +1039,7 @@ function handleDimensionSwitch(newDim) {
 
     var oldDim = (newDim === "3D") ? "2D" : "3D";
 
-    // console.log("handleDimensionSwitch() called: oldDim = " + oldDim + ", newDim = " + newDim);
+    // console.log("handleDimensionSwitch() called: oldDim = " + oldDim + "+ newDim = " + newDim);
 
     d3.selectAll(".dimension-" + newDim).style("visibility", "visible");
     d3.selectAll(".dimension-" + newDim).attr("display", "block");
@@ -1471,8 +1471,9 @@ function initConfig() {
 }
 
 function toggleMode() {
+
     var val = $('input[name=mode]:checked').val();
-    // console.log("toggleMode() called with value " + val);
+    // console.log("toggleMode() called with value " + val + ", currentDimension = " + currentDimension);
 
     if (config != val) {
 
@@ -1499,12 +1500,9 @@ function onWindowResize() {
 function toggleDimension() {
     var val = $('input[name=dimension]:checked').val();
     // console.log("toggleDimension() called with value " + val);
+    currentDimension = val;
 
     if (val == "3D") {
-
-        // console.log("Entering 3D dimension");
-
-        currentDimension = val;
 
         if (!animationScenes[config].initialized3D) {
 
