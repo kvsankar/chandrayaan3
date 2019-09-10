@@ -399,6 +399,8 @@ class AnimationScene {
         this.lroCurve = [];
         this.curveVelocities = [];
         this.defaultCameraDistance = 0; 
+
+        this.locations = [];
     }
 
 
@@ -934,6 +936,7 @@ class AnimationScene {
         var y = radiusScale * moonRadius * Math.cos(lat) * Math.sin(long);
         var z = radiusScale * moonRadius * Math.sin(lat);
         sphere.position.set(x, y, z);
+        this.locations.push(sphere);
         this.moonContainer.add(sphere);
     }
 
@@ -2853,6 +2856,7 @@ function toggleView() {
     var viewOrbit = $("#view-orbit").is(":checked"); 
     var viewOrbitVikram = $("#view-orbit-vikram").is(":checked"); 
     var viewOrbitLRO = $("#view-orbit-lro").is(":checked"); 
+    var viewCraters = $("#view-craters").is(":checked"); 
     var viewXYZAxes = $("#view-xyz-axes").is(":checked"); 
     var viewPoles = $("#view-poles").is(":checked"); 
     var viewPolarAxes = $("#view-polar-axes").is(":checked"); 
@@ -2864,6 +2868,8 @@ function toggleView() {
         animationScenes[config].lroOrbitLine.visible = viewOrbitLRO;    
     }
     
+    animationScenes[config].locations.map(x => x.visible = viewCraters);
+
     animationScenes[config].axesHelper.visible = viewXYZAxes;
 
     animationScenes[config].earthNorthPoleSphere.visible = viewPoles;
