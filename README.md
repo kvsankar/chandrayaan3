@@ -8,6 +8,8 @@ Chandrayaan 2</a> mission.
 
 ![Screenshot](/screenshots/chandrayaan2.png?raw=true)
 
+## Features
+
 I created this animation for educational purposes. It has the following features:
 
 * Real-world orbit data and predictions based on information available from JPL/NASA HORIZONS interface
@@ -46,9 +48,9 @@ The Perl script orbits.pl is used to fetch orbit data during development time fr
 
 The script supports the following options:
 
-    --phase=[geo|lunar]   # geocentric or selenocentric phase -- defaults to geo
-    --data-dir=<datadir>  # place to save orbit data files -- defaults to .
-    --use-cache           # use orbit data retrieved and saved earlier -- optional
+    --phase=[geo|lunar|lro]   # geocentric or selenocentric phase -- defaults to geo
+    --data-dir=<datadir>      # place to save orbit data files -- defaults to .
+    --use-cache               # use orbit data retrieved and saved earlier -- optional
 
 Raw orbit data obtained from JPL is stored into the following files:
 
@@ -61,14 +63,15 @@ Orbital elements are also stored here (though they aren't used at present):
 
 Orbit data for use by the JavaScript is written in JSON format in a time-stamped directory under data-fetched:
 
-    orbits.json           # contains all heliocentric orbit data (elements and vectors)
-    geo.json              # contains all geocentric orbit data (elements and vectors)
+    geo-cy2.json                # contains all geocentric orbit data (elements and vectors) until about 2019-09-10
+    lunar-cy2.json              # contains all selenocentric orbit data (elements and vectors) until about 2019-09-10
+    lunar-lro.json              # contains all selenocentric orbit data for Sep and Oct 2019 - post Vikram Loss of Signal
 
 ### Web page
 
 The site consists of the following three sets of files:
 
-#### Core project files (all are version controlled)
+#### Core project files
 
     chandrayaan2.html         # HTML page
     cy2.js                    # JavaScript handling animation
@@ -101,16 +104,37 @@ At present the page can be hosted statically. There are no server components nee
 However, to prevent browsers from complaining about CORS, one may use a tiny web server
 like Mongoose to test the local site. 
 
-### Future work
+## Credits
 
-This needs a rewrite. The very first release was for the Mars Orbiter Mission launch in 2013. 
+* Jon D. Giorgini for helping with the JPL/HORIZONS interface and data. 
+  He was very responsive whenever I mailed him my queries.
+  He has been of great help since 2013 for the Mars Orbiter Mission until now
+  for the Chandrayaan 2 mission.
+  
+* Members of the Bangalore Astronomy Society (http://bas.org.in/) for their valuable feedback
+
+* Members of the Reddit r/isro (https://www.reddit.com/r/ISRO/) community for their valuable feedback
+  
+## Future work
+
+The code base needs a rewrite. The very first release was for the Mars Orbiter Mission launch in 2013. 
 Minor changes were made later to support MOM Mars orbit insertion and the Pluto flyby of New Horizons.
+
 After a gap of 6 years, this has been modified again in 2019 to support the Chandrayaan 2 mission. 
-The major changes were for 3D support. In that process the code quality has degraded.
+The major changes were for 3D support. In that process, the code quality has degraded.
 
-The rewrite will focus on present-day JavaScript tooling, an OO design with
-better separation of concerns (2D vs. 3D, model vs. rendering, etc.), and extensibility
-(how does one extend the coode for a new mission easily merely by changing some configuration files). 
+The rewrite will focus on present-day JavaScript tooling, better abstraction, 
+better separation of concerns (2D vs. 3D, model vs. rendering, etc.), extensibility
+(how does one extend the code for a new mission easily merely by changing configurations), 
+performance (decrease the load time; improve rendering smoothness; on-demand loading of high resolution
+LRO textures), and responsive UX. The current UX is almost unusable on mobile screens. 
 
+## Inspirations
+
+* https://mgvez.github.io/jsorrery/ 
+* https://github.com/Flowm/satvis
+* https://github.com/CoryG89/MoonDemo 
+* http://stuffin.space/ 
+* https://theskylive.com/3dsolarsystem 
 
 
