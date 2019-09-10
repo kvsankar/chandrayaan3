@@ -61,7 +61,7 @@ my $config = {
         'start_year_cy2'   => '2019', 'start_month_cy2'   => '07', 'start_day_cy2'   => '22', 'start_hour_cy2'      => '09', 'start_minute_cy2'     => '31',
         'stop_year_cy2'    => '2019', 'stop_month_cy2'    => '09', 'stop_day_cy2'    => '08', 'stop_hour_cy2'       => '16', 'stop_minute_cy2'      => '30',
         'start_year_vikram'=> '2019', 'start_month_vikram'=> '09', 'start_day_vikram'=> '02', 'start_hour_vikram'   => '07', 'start_minute_vikram'  => '46',
-        'stop_year_vikram' => '2019', 'stop_month_vikram' => '09', 'stop_day_vikram' => '06', 'stop_hour_vikram'    => '23', 'stop_minute_vikram'   => '59',
+        'stop_year_vikram' => '2019', 'stop_month_vikram' => '09', 'stop_day_vikram' => '06', 'stop_hour_vikram'    => '20', 'stop_minute_vikram'   => '26',
 
         'step_size_in_minutes' => 1,
 
@@ -77,7 +77,7 @@ my $config = {
         'start_year_cy2'   => '2019', 'start_month_cy2'   => '07', 'start_day_cy2'   => '22', 'start_hour_cy2'      => '09', 'start_minute_cy2'     => '31',
         'stop_year_cy2'    => '2019', 'stop_month_cy2'    => '09', 'stop_day_cy2'    => '08', 'stop_hour_cy2'       => '16', 'stop_minute_cy2'      => '30',
         'start_year_vikram'=> '2019', 'start_month_vikram'=> '09', 'start_day_vikram'=> '02', 'start_hour_vikram'   => '07', 'start_minute_vikram'  => '46',
-        'stop_year_vikram' => '2019', 'stop_month_vikram' => '09', 'stop_day_vikram' => '06', 'stop_hour_vikram'    => '23', 'stop_minute_vikram'   => '59',
+        'stop_year_vikram' => '2019', 'stop_month_vikram' => '09', 'stop_day_vikram' => '06', 'stop_hour_vikram'    => '20', 'stop_minute_vikram'   => '26',
 
         'step_size_in_minutes' => 1,
 
@@ -93,7 +93,7 @@ my $config = {
         'start_year_cy2'   => '2019', 'start_month_cy2'   => '09', 'start_day_cy2'   => '01', 'start_hour_cy2'      => '00', 'start_minute_cy2'     => '00',
         'stop_year_cy2'    => '2019', 'stop_month_cy2'    => '09', 'stop_day_cy2'    => '08', 'stop_hour_cy2'       => '16', 'stop_minute_cy2'      => '30',
         'start_year_vikram'=> '2019', 'start_month_vikram'=> '09', 'start_day_vikram'=> '02', 'start_hour_vikram'   => '07', 'start_minute_vikram'  => '50',
-        'stop_year_vikram' => '2019', 'stop_month_vikram' => '09', 'stop_day_vikram' => '06', 'stop_hour_vikram'    => '23', 'stop_minute_vikram'   => '55',
+        'stop_year_vikram' => '2019', 'stop_month_vikram' => '09', 'stop_day_vikram' => '06', 'stop_hour_vikram'    => '20', 'stop_minute_vikram'   => '26',
 
         'step_size_in_minutes' => 5,
 

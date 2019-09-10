@@ -185,13 +185,13 @@ function getStartAndEndTimes(id) {
     var endTime                    = Date.UTC(2019, 9-1, 10, 12, 41, 0, 0);
     var endTimeCY2                 = Date.UTC(2019, 9-1,  8, 16, 30, 0, 0);
     var startTimeVikram            = Date.UTC(2019, 9-1,  2,  7, 46, 0, 0);
-    var endTimeVikram              = Date.UTC(2019, 9-1,  6, 23, 59, 0, 0);
+    var endTimeVikram              = Date.UTC(2019, 9-1,  6, 20, 26, 0, 0);
 
     if (config == "lro") {
-        startTime                   = Date.UTC(2019,  9-1, 1,  0, 0, 0, 0);
-        endTime                     = Date.UTC(2019, 11-1, 1,  0, 0, 0, 0);
-        startTimeVikram             = Date.UTC(2019, 9-1,  2,  7, 50, 0, 0);
-        endTimeVikram               = Date.UTC(2019, 9-1,  6, 23, 55, 0, 0);
+        startTime                   = Date.UTC(2019,  9-1, 1,  0,  0, 0, 0); // aligned with 5 minute intervals
+        endTime                     = Date.UTC(2019, 11-1, 1,  0,  0, 0, 0); // aligned with 5 minute intervals
+        startTimeVikram             = Date.UTC(2019, 9-1,  2,  7, 50, 0, 0); // aligned with 5 minute intervals
+        endTimeVikram               = Date.UTC(2019, 9-1,  6, 20, 25, 0, 0); // aligned with 5 minute intervals
     }
 
     if (id === "CY2") {
@@ -1216,7 +1216,7 @@ function addEvents() {
     }
 
     var vikramLandingInfo = {
-        "startTime": new Date(Date.UTC(2019, 9-1,  6, 20, 15, 0, 0)), // 7th Sept 1:45 IST
+        "startTime": new Date(Date.UTC(2019, 9-1,  6, 20, 26, 0, 0)), // 7th Sept 1:56 IST
         "durationSeconds": 0,
         "label": "Vikram Landing",
         "burnFlag": true,
