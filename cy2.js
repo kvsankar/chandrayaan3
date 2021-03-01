@@ -24,10 +24,10 @@ var MILLI_SECONDS_PER_HOUR = 3600000;
 var GREENWICH_LONGITUDE = 0; // used to be that of Bangalore earlier: 77.5667;
 var EARTH_MOON_DISTANCE_MEAN_AU = 0.00257;
 var EARTH_RADIUS_KM = 6371;
-var EARTH_RADIUS_MAX_KM = 6378;
-var EARTH_RADIUS_MIN_KM = 6357;
-var MOON_RADIUS_KM = 1737.1;
-var EARTH_AXIS_INCLINATION_DEGREES = 23.5;
+var EARTH_RADIUS_MAX_KM = 6378.1;
+var EARTH_RADIUS_MIN_KM = 6356.8;
+var MOON_RADIUS_KM = 1737.4;
+var EARTH_AXIS_INCLINATION_DEGREES = 23.439279444;
 var EARTH_AXIS_INCLINATION_RADS = EARTH_AXIS_INCLINATION_DEGREES * Math.PI / 180.0;
 
 var STEP_DURATION_MS = 1 * MILLI_SECONDS_PER_MINUTE; // update this whenever Orbit JSON time resolution changes
@@ -37,10 +37,10 @@ var moonAxisColor = 0xFFFF00; // yellow
 var northPoleColor = 0xff6347; // tomato
 var southPoleColor = 0x6a5acd; // steel blue
 var primaryLightColor = 0xFFFFFF; // white
-var ambientLightColor = 0x101010; // 
+var ambientLightColor = 0x222222; // 
 
-var primaryLightIntensity = 1.0;
-var ambientLightIntensity = 0.5;
+var primaryLightIntensity = 1.3;
+var ambientLightIntensity = 1.0;
 
 var planetProperties = {
     "CY2":      { "id": CY2,        "name": "CY2",              "color": "#ffa000",     "orbitcolor": "orange",     "stroke-width": 1.0, "r": 3.2, "labelOffsetX": -30, "labelOffsetY": -10 },
@@ -178,6 +178,7 @@ var currentDimension = "2D";
 var theSceneHandler = null;
 var animationScenes = {};
 var joyRideFlag = false;
+var moonPhaseCamera = false;
 
 function getStartAndEndTimes(id) {
 
@@ -242,8 +243,14 @@ class SceneHandler {
 
     render(animationScene) {
 
+        // console.log("SceneHandler.render() called");
+
         if (animationScene.initialized3D) {
 
+            if (moonPhaseCamera) {
+                animationScene.camera.lookAt(animationScene.secondaryBody3D.position);            
+            }
+            
             if (lockOnEarth || lockOnMoon) {
             
                 var x = animationScene.secondaryBody3D.position.x;
@@ -305,14 +312,22 @@ class SceneHandler {
 
 function updateCraftScale() {
     if (animationScenes[config] && animationScenes[config].initialized3D) {
-        // console.log("cameraControlsCallback() called");
 
-        var origin = new THREE.Vector3(0, 0, 0);
-        var target = new THREE.Vector3();
-        var craftLocation = animationScenes[config].craft.getWorldPosition(target);
-        var distance = animationScenes[config].cameraControls.getWorldPos().distanceTo(craftLocation);
+        // var origin = new THREE.Vector3(0, 0, 0);
+        // var target = new THREE.Vector3();
+        // var craftLocation = animationScenes[config].craft.getWorldPosition(target);
+        // var distance = animationScenes[config].cameraControls.getWorldPos().distanceTo(craftLocation);
+        // var scale =  distance / defaultCameraDistance;
+
+        var craftLocation = new THREE.Vector3();
+        animationScenes[config].craft.getWorldPosition(craftLocation);
+        
+        var cameraLocation = new THREE.Vector3();
+        animationScenes[config].camera.getWorldPosition(cameraLocation);
+
+        var distance = cameraLocation.distanceTo(craftLocation);
         var scale =  distance / defaultCameraDistance;
-        // console.log("scale = " + scale);
+        // console.log(`Setting scale to ${scale}`); // TODO seems to be buggy
 
         animationScenes[config].craft.scale.set(scale, scale, scale);
         animationScenes[config].vikramCraft.scale.set(scale, scale, scale); // we'll use the same scale for Vikram too
@@ -320,20 +335,24 @@ function updateCraftScale() {
         // animationScenes[config].craft.scale.set(10, 10, 10);
 
         if (isLocationAvaialable("CY2", now)) {
-            animationScenes[config].craft.visible = true;
+            // console.log(`CY2 location avaialble: setting CY2 visibility to ${animationScenes[config].craftVisible}`);
+            animationScenes[config].craft.visible = animationScenes[config].craftVisible;
         } else {
+            // console.log(`CY2 location NOT avaialble: setting CY2 visibility to false`);
             animationScenes[config].craft.visible = false;
         }
         if (isLocationAvaialable("VIKRAM", now)) {
-            animationScenes[config].vikramCraft.visible = true;
+            // console.log(`Vikram location avaialble: setting Vikram visibility to ${animationScenes[config].vikramCraftVisible}`);
+            animationScenes[config].vikramCraft.visible = animationScenes[config].vikramCraftVisible;
         } else {
+            // console.log(`Vikram location NOT avaialble: setting Vikram visibility to false`);
             animationScenes[config].vikramCraft.visible = false;
         }
 
         if (config == "lro") {
             animationScenes[config].lroCraft.scale.set(scale, scale, scale); // we'll use the same scale for LRO too
             if (isLocationAvaialable("LRO", now)) {
-                animationScenes[config].lroCraft.visible = true;
+                animationScenes[config].lroCraft.visible = animationScenes[config].lroCraftVisible;
             } else {
                 animationScenes[config].lroCraft.visible = false;
             }
@@ -342,6 +361,7 @@ function updateCraftScale() {
 }
 
 function cameraControlsCallback() {
+    // console.log("cameraControlsCallback() called");
     updateCraftScale();
 }
 
@@ -391,6 +411,7 @@ class AnimationScene {
         this.secondaryBody3D = null;
         this.craft = null;
         this.camera = null;
+        this.cameraControlsEnabled = true;
         this.cameraControls = null;
         this.scene = null;
         this.renderer = null;
@@ -398,11 +419,18 @@ class AnimationScene {
         this.vikramCurve = [];
         this.lroCurve = [];
         this.curveVelocities = [];
-        this.defaultCameraDistance = 0; 
 
         this.locations = [];
     }
 
+
+    setCameraPosition(x, y, z) {
+        // console.log(`Setting camera position to (${x}, ${y}, ${z}).`);
+
+        this.camera.position.x = x;
+        this.camera.position.y = y;
+        this.camera.position.z = z;
+    }
 
     init3d(callback) {
         if (this.initialized3D) {
@@ -511,28 +539,37 @@ class AnimationScene {
 
         // add Moon
 
-        var today = new Date();
+        // var today = new Date();
+        // var today = eventInfos[0]["startTime"];
 
-        var lp = lunar_pole(today);
-        var a = lp["alpha0"];
-        var d = lp["delta0"];
-        var w = lp["W"];
+        // var lp = lunar_pole(today);
+        // var alpha = lp["alpha"];
+        // var delta = lp["delta"];
+        // var long = lp["long"];
+        // var lat = lp["lat"];
+        // var W = lp["W"];
 
-        var long_lat = to_long_lat(a, d, today.getT());
-        var long = long_lat[0];
-        var lat = long_lat[1];
+        // console.log(`Lunar NP: (long, lat) = (${rad_to_deg(long)}, ${rad_to_deg(lat)}), W = ${rad_to_deg(W)}`);
 
-        // console.log("Lunar NP: (alpha0, delta0) = " + 
-        //  "(" + rad_to_deg(a) + ", " + rad_to_deg(d) + "), " +
-        //  "(long, lat) = (" + long + ", " +  lat + "), W = " + rad_to_deg(w));
+        // var npx = moonRadius * Math.cos(lat) * Math.cos(long); 
+        // var npy = moonRadius * Math.cos(lat) * Math.sin(long);
+        // var npz = moonRadius * Math.sin(lat);
 
-        var npx = moonRadius * Math.cos(lat) * Math.cos(long); 
-        var npy = moonRadius * Math.cos(lat) * Math.sin(long);
-        var npz = moonRadius * Math.sin(lat);
-
-        this.moonContainer = new THREE.Group();
-        this.moonContainer.lookAt(npx, npy, npz);
-
+        // Stellarium rotation code for reference:
+        // https://github.com/Stellarium/stellarium/blob/22218a4b3f9c17d10208278594ac9e83912c726c/src/core/modules/Planet.cpp
+        // 
+        // this.moonContainer.rotateZ(Math.PI / 2 + alpha);
+        // this.moonContainer.rotateX(Math.PI / 2 - delta);
+        // this.moonContainer.rotateX(-1 * EARTH_AXIS_INCLINATION_RADS);
+        // OR
+        // this.moonContainer.rotateZ(Math.PI / 2 + long);
+        // this.moonContainer.rotateX(Math.PI / 2 - lat);
+        // OR
+        // this.moonContainer.rotation.z = Math.PI / 2 + long
+        // this.moonContainer.rotation.x = Math.PI / 2 - lat;
+        // OR
+        // this.moonContainer.lookAt(npx, npy, npz);
+        
         var moonColor = planetProperties["MOON"]["color"];
         var moonGeometry = new THREE.SphereGeometry(moonRadius, 100, 100);
         var moonMaterial = new THREE.MeshPhongMaterial({
@@ -549,7 +586,11 @@ class AnimationScene {
         this.moon.receiveShadow = true;
         this.moon.castShadow = true;
         this.moon.rotateX(Math.PI/2);
+
+        this.moonContainer = new THREE.Group();
         this.moonContainer.add(this.moon);
+
+        this.rotateMoon();
 
         // add axes to Earth and Moon
 
@@ -599,9 +640,36 @@ class AnimationScene {
         this.moonSouthPoleSphere.receiveShadow = false;
         this.moonSouthPoleSphere.position.set(0, 0, -0.985 * moonRadius);
 
-        this.plotMoonLocation(deg_to_rad(+22.1), deg_to_rad(-70.1), "#FF0000"); // Manzinus C - https://en.wikipedia.org/wiki/Manzinus_(crater) 
-        this.plotMoonLocation(deg_to_rad(+24.3), deg_to_rad(-71.3), "#FFFF00"); // Simpelius N - https://en.wikipedia.org/wiki/Simpelius_(crater) 
+        this.dwingeloo = this.plotEarthLocation(deg_to_rad(6.39616944444), deg_to_rad(52.8120194444), "#FF0000");
+        this.chennai = this.plotEarthLocation(deg_to_rad(80.2707), deg_to_rad(13.0827), "#FF0000");
 
+        // Moon selenographic origin (Prime Meridian = 0 degrees, Equator = 0 degrees) for reference
+        this.plotMoonLocation(deg_to_rad(0), deg_to_rad(0), "#FF00FF"); // TODO 2021 - for testing - (0deg longitude == Prime Meridian, 0deg latitude)
+
+        // Some Moon locations for calibrsation
+        //
+        // Some of the values are from Wikipedia and some are from NASA:
+        //
+        // https://astrogeology.usgs.gov/search/map/Moon/Research/Craters/GoranSalamuniccar_MoonCraters
+        //
+        // this.plotMoonLocation(deg_to_rad(- 9.3),      deg_to_rad(+51.6), "#FF0000");      // Plato crater
+        // this.plotMoonLocation(deg_to_rad(- 1.1),      deg_to_rad(+40.6), "#FF0000");      // Mons Piton
+        // this.plotMoonLocation(deg_to_rad(+ 5.211),    deg_to_rad(+ 3.212), "#FF0000");    // Mosting A crater
+        // this.plotMoonLocation(deg_to_rad(+22.1),      deg_to_rad(-70.1), "#FF0000");      // Manzinus C - https://en.wikipedia.org/wiki/Manzinus_(crater) 
+        // this.plotMoonLocation(deg_to_rad(+21.753904), deg_to_rad(-69.996092), "#FF0000"); // Manzinus C - https://en.wikipedia.org/wiki/Manzinus_(crater) 
+        // this.plotMoonLocation(deg_to_rad(+24.3),      deg_to_rad(-71.3), "#FF0000");      // Simpelius N - https://en.wikipedia.org/wiki/Simpelius_(crater) 
+        // this.plotMoonLocation(deg_to_rad(24.103513),  deg_to_rad(-71.365233), "#FF0000"); // Simpelius N - https://en.wikipedia.org/wiki/Simpelius_(crater) 
+
+        // Moon landing location according to orbit data available with JPL
+        this.plotMoonLocation(deg_to_rad(22.77050), deg_to_rad(-70.89754), "#FF00FF");    
+
+        // Primary landing site as per https://www.reddit.com/r/ISRO/comments/d1b64p/submitting_this_as_post_but_for_anyone_looking/
+        //
+        // this.plotMoonLocation(deg_to_rad(22.78110), deg_to_rad(-70.902670), "#0000FF"); // primary 
+        // this.plotMoonLocation(deg_to_rad(18.46947), deg_to_rad(-68.749153), "#FFFF00"); // secondary
+        // this.plotMoonLocation(deg_to_rad(22.78110), deg_to_rad(-70.899920), "#00FFFF"); // chosen one?
+
+        
         // set primary and secondary bodies
                 
         if (config == "geo") {
@@ -679,6 +747,8 @@ class AnimationScene {
         var craftEdgesGeometry = new THREE.EdgesGeometry(craftGeometry);
         this.craftEdges = new THREE.LineSegments(craftEdgesGeometry, new THREE.LineBasicMaterial({color: craftEdgeColor}));
         this.craft.add(this.craftEdges);
+        this.craftVisible = true;
+        this.craft.visible = this.craftVisible; 
 
         this.motherContainer.add(this.craft);
 
@@ -709,6 +779,8 @@ class AnimationScene {
         var vikramCraftEdgesGeometry = new THREE.EdgesGeometry(vikramCraftGeometry);
         this.vikramCraftEdges = new THREE.LineSegments(vikramCraftEdgesGeometry, new THREE.LineBasicMaterial({color: vikramCraftEdgeColor}));
         this.vikramCraft.add(this.vikramCraftEdges);
+        this.vikramCraftVisible = true;
+        this.vikramCraft.visible = this.vikramCraftVisible; 
 
         this.motherContainer.add(this.vikramCraft);
 
@@ -724,6 +796,8 @@ class AnimationScene {
             this.lroCraftEdges = new THREE.LineSegments(lroCraftEdgesGeometry, new THREE.LineBasicMaterial({color: lroCraftEdgeColor}));
             this.lroCraft.add(this.lroCraftEdges);
             this.motherContainer.add(this.lroCraft);
+            this.lroCraftVisible = true;
+            this.lroCraft.visible = this.lroCraftVisible;
 
             this.lroLineGeometry = new THREE.Geometry();
             this.lroLineGeometry.vertices.push(this.moonContainer.position, this.lroCraft.position);
@@ -732,6 +806,14 @@ class AnimationScene {
             this.lroLine.frustumCulled = false;
             this.motherContainer.add(this.lroLine);            
         }
+
+        // this.losLineGeometry = new THREE.Geometry();
+        // this.losLineGeometry.vertices.push(this.dwingeloo.position, this.vikramCraft.position);
+        // var losLineMaterial = new THREE.LineBasicMaterial({color: vikramCraftColor});
+        // this.losLine = new THREE.Line(this.losLineGeometry, losLineMaterial);        
+        // this.losLine.frustumCulled = false;
+        // this.motherContainer.add(this.losLine);        
+        // this.losLine.visible = false; // TODO add a control flag for this
 
         // add axes helper
         this.axesHelper = new THREE.AxesHelper(2*PIXELS_PER_AU*EARTH_MOON_DISTANCE_MEAN_AU);
@@ -747,11 +829,10 @@ class AnimationScene {
         this.scene.add(this.motherContainer);
 
         // add camera
-        var angle = 50;
+        var angle = 50.0;
         this.camera = new THREE.PerspectiveCamera(angle, width/height, 0.001, 10000);
-        this.camera.position.x = defaultCameraDistance;
-        this.camera.position.y = defaultCameraDistance;
-        this.camera.position.z = defaultCameraDistance;
+        // console.log(`defaultCameraDistance=${defaultCameraDistance}`);
+        this.setCameraPosition(defaultCameraDistance, defaultCameraDistance, defaultCameraDistance);
         this.camera.up.set(0, 0, 1);
 
         this.craftCamera = new THREE.PerspectiveCamera(50, width/height, 0.001, 10000);
@@ -759,24 +840,49 @@ class AnimationScene {
         this.craftCamera.up.set(0, 0, 1);
 
         // add camera controls
-        this.cameraControls = new THREE.TrackballControls(this.camera, theSceneHandler.renderer.domElement, cameraControlsCallback);
+        if (this.cameraControlsEnabled) {
+            this.cameraControls = new THREE.TrackballControls(this.camera, theSceneHandler.renderer.domElement, cameraControlsCallback);
 
-        // TrackballControls settings
-        this.cameraControls.rotateSpeed = 1.0;
-        this.cameraControls.zoomSpeed = 1.2;
-        this.cameraControls.panSpeed = 0.8;
-        this.cameraControls.noZoom = false;
-        this.cameraControls.noPan = false;
-        this.cameraControls.staticMoving = true;
-        this.cameraControls.dynamicDampingFactor = 0.3;
-        this.cameraControls.keys = [65, 83, 68];
-        this.cameraControls.addEventListener('change', render);
+            // TrackballControls settings
+            this.cameraControls.rotateSpeed = 1.0;
+            this.cameraControls.zoomSpeed = 1.2;
+            this.cameraControls.panSpeed = 0.8;
+            this.cameraControls.noZoom = false;
+            this.cameraControls.noPan = false;
+            this.cameraControls.staticMoving = true;
+            this.cameraControls.dynamicDampingFactor = 0.3;
+            this.cameraControls.keys = [65, 83, 68];
+            this.cameraControls.addEventListener('change', render);    
+        }
 
-        render();
+        this.setCameraParameters();
 
         d3.select("#eventinfo").text("");
-        
+
         this.initialized3D = true;
+    }
+
+    setCameraParameters() {
+        // console.log("setCameraParameters() called");
+
+        if (moonPhaseCamera) {
+            this.camera.fov = 1.0;
+            this.setCameraPosition(0, 0, 0);
+            this.camera.up.set(0, 0, 1);
+            this.craftVisible = false;
+            this.vikramCraftVisible = false;
+            this.lroCraftVisible = false;
+        } else {
+            this.camera.fov = 50.0;
+            this.setCameraPosition(defaultCameraDistance, defaultCameraDistance, defaultCameraDistance);
+            this.camera.up.set(0, 0, 1);
+            this.craftVisible = true;
+            this.vikramCraftVisible = true;
+            this.lroCraftVisible = true;
+        }
+
+        this.camera.updateProjectionMatrix();
+        this.cameraControls.update();
     }
 
     processOrbitVectorsData3D() {
@@ -891,7 +997,8 @@ class AnimationScene {
 
     		if (val == "EARTH") { 
 	    		// console.log("Setting camera look to Origin/Earth.");
-	    		this.camera.lookAt(0, 0, 0)
+	    		this.camera.lookAt(0, 0, 0);
+                // this.camera.lookAt(this.secondaryBody3D.position);
     		}
 	    	if (val == "MOON") { 
 	    		// console.log("Setting camera look to Moon.");
@@ -924,10 +1031,27 @@ class AnimationScene {
         return Math.sqrt(position.x * position.x + position.y * position.y + position.z * position.z);
     }   
 
+    plotEarthLocation(long, lat, color) {
+        var locationRadiusScale = 0.001;
+        var geometry = new THREE.SphereGeometry(locationRadiusScale * earthRadius, 100, 100);
+        var material = new THREE.MeshPhysicalMaterial({color: blackColor, emissive: color, reflectivity: 0.0, transparent: false, opacity: 0.2});
+        var sphere = new THREE.Mesh(geometry, material);
+        sphere.castShadow = false;
+        sphere.receiveShadow = false;
+        var radiusScale = 1 - (locationRadiusScale/2);
+        var x = radiusScale * earthRadius * Math.cos(lat) * Math.cos(long); 
+        var y = radiusScale * earthRadius * Math.cos(lat) * Math.sin(long);
+        var z = radiusScale * earthRadius * Math.sin(lat);
+        sphere.position.set(x, y, z);
+        this.locations.push(sphere);
+        this.earthContainer.add(sphere);
+        return sphere;
+    }
+
     plotMoonLocation(long, lat, color) {
-        var locationRadiusScale = 0.01
+        var locationRadiusScale = 0.001;
         var geometry = new THREE.SphereGeometry(locationRadiusScale * moonRadius, 100, 100);
-        var material = new THREE.MeshPhysicalMaterial({color: blackColor, emissive: color, reflectivity: 0.0, transparent: true, opacity: 0.2});
+        var material = new THREE.MeshPhysicalMaterial({color: blackColor, emissive: color, reflectivity: 0.0, transparent: false, opacity: 0.2});
         var sphere = new THREE.Mesh(geometry, material);
         sphere.castShadow = false;
         sphere.receiveShadow = false;
@@ -938,23 +1062,35 @@ class AnimationScene {
         sphere.position.set(x, y, z);
         this.locations.push(sphere);
         this.moonContainer.add(sphere);
+        return sphere;
     }
 
     rotateMoon() {
+
         var today = new Date(now);
         var lp = lunar_pole(today);
+        var alpha = lp["alpha"];
+        var delta = lp["delta"];
         var W = lp["W"];
-        this.moonContainer.rotation.z = W;
+        
+        this.moonContainer.rotation.set(0, 0, 0);
+        this.moonContainer.rotateX(-1 * EARTH_AXIS_INCLINATION_RADS);
+        this.moonContainer.rotateZ(+1 * (Math.PI / 2 + alpha));
+        this.moonContainer.rotateX(+1 * (Math.PI / 2 - delta));
+        this.moonContainer.rotateZ(+1 * W);
+
+        // console.log(`rotateMoon: (long, lat) = (${rad_to_deg(long)}, ${rad_to_deg(lat)}), W = ${rad_to_deg(W)}`);
     }
 
     rotateEarth() {
         var mst = deg_to_rad(getMST(new Date(now), GREENWICH_LONGITUDE));
         this.earthContainer.rotation.z = mst;
+        // this.losLine.geometry.verticesNeedUpdate = true;
     } 
 }
 
 function render() {
-    // console.log("render() called");  
+    // console.log("render() global function called");  
     var animationScene = animationScenes[config];
     theSceneHandler.render(animationScene);
 }
@@ -987,7 +1123,7 @@ function animateLoop() {
 
     requestAnimationFrame(animateLoop);
 
-    if (animationScenes[config] && animationScenes[config].initialized3D) {
+    if (animationScenes[config] && animationScenes[config].initialized3D && animationScenes[config].cameraControlsEnabled) {
         animationScenes[config].cameraControls.update();
     }
 }
@@ -1502,7 +1638,7 @@ function onWindowResize() {
 
 function toggleDimension() {
     var val = $('input[name=dimension]:checked').val();
-    // console.log("toggleDimension() called with value " + val);
+    // console.log(`toggleDimension() called with value ${val}`);
     currentDimension = val;
 
     if (val == "3D") {
@@ -1518,33 +1654,24 @@ function toggleDimension() {
 
             animationScenes[config].processOrbitVectorsData3D();
             
-            setTimeout(function() {
-                
-                animationScenes[config].init3d(function() {
-                    setLocation();
-                    // d3.select("#eventinfo").text("");
-                    $("#progressbar").hide();
-                    handleDimensionSwitch(val);
-                    render();
-                });
+            animationScenes[config].init3d(function() {
 
-                /* DON'T PUT ANYTHING HERE */
-
-            }, 10);
-
-            /* DON"T PUT ANYTHING HERE */
+                // console.log("init3d() callback called");
+                // d3.select("#eventinfo").text("");
+                $("#progressbar").hide();
+                handleDimensionSwitch(val);
+                setLocation();
+            });
 
         } else {
 
-            setLocation();
             handleDimensionSwitch(val);
-            render();
+            setLocation();
         }
     } else {
 
-        setLocation();
         handleDimensionSwitch(val);
-        render();
+        setLocation();
     }
 }
 
@@ -1717,26 +1844,23 @@ function setLocation() {
             if (planetKey == secondaryBody) {
                 if (animationScenes[config] && animationScenes[config].initialized3D) {
                     animationScenes[config].secondaryBody3D.position.set(realx_screen, realy_screen, realz_screen);
-                    render();
                 }                
             } else if (planetKey == craftId) {
                 if (animationScenes[config] && animationScenes[config].initialized3D) {
                     animationScenes[config].craft.position.set(realx_screen, realy_screen, realz_screen);
                     updateCraftScale();
-                    render();
                 }                                
             } else if (planetKey == "VIKRAM") {
                 if (animationScenes[config] && animationScenes[config].initialized3D) {
                     animationScenes[config].vikramCraft.position.set(realx_screen, realy_screen, realz_screen);
+                    // animationScenes[config].losLine.geometry.verticesNeedUpdate = true;
                     updateCraftScale();
-                    render();
                 }
             } else if (planetKey == "LRO") {
                 if (animationScenes[config] && animationScenes[config].initialized3D) {
                     animationScenes[config].lroCraft.position.set(realx_screen, realy_screen, realz_screen);
                     animationScenes[config].lroLine.geometry.verticesNeedUpdate = true;
                     updateCraftScale();
-                    render();
                 }
             }
 
@@ -1831,10 +1955,10 @@ function setLocation() {
 
         } else {
 
-            if (animationScenes[config].initialized3D) {
-                animationScenes[config].craft.visible = false;    
-                animationScenes[config].vikramCraft.visible = false;
-            }            
+            // if (animationScenes[config].initialized3D) {
+            //     animationScenes[config].craft.visible = false;    
+            //     animationScenes[config].vikramCraft.visible = false;
+            // }            
 
             d3.select("#" + planetKey)
                 .attr("visibility", "hidden");
@@ -1851,8 +1975,6 @@ function setLocation() {
     for (var i = 0; i < planetsForLocations.length; ++i) {
 
         var planetKey = planetsForLocations[i];
-
-
         setLabelLocation(planetKey);
     }
 
@@ -1884,6 +2006,8 @@ function setLocation() {
             d3.select("#eventinfo").text("");
         }
     }
+
+    render();
 }
 
 function showGreenwichLongitude() {
@@ -2748,17 +2872,17 @@ function togglePlane() {
     // console.log("togglePlane() called with value " + val);
 
     var camera = null;
-    var cameraControls = null;
     var distance = 0.0;
 
     if (currentDimension == "3D") {
         camera = animationScenes[config].camera;
-        cameraControls = animationScenes[config].cameraControls;
 
-        var origin = new THREE.Vector3(0, 0, 0);
-        distance = cameraControls.getPos().distanceTo(origin);
-        
-        cameraControls.reset();
+        if (animationScenes[config].cameraControlsEnabled) {
+            var cameraControls = animationScenes[config].cameraControls;
+            var origin = new THREE.Vector3(0, 0, 0);
+            distance = cameraControls.getPos().distanceTo(origin);            
+            cameraControls.reset();
+        }
     }
 
     if (val == "XY") {
@@ -2775,11 +2899,8 @@ function togglePlane() {
 
         if (currentDimension == "3D") {
 
-            camera.position.x = 0;
-            camera.position.y = 0;
-            camera.position.z = distance;
+            animationScenes[config].setCameraPosition(0, 0, distance);
             camera.up.set(0, 1, 0); 
-
         }
 
     } else if (val == "YZ") {
@@ -2797,9 +2918,7 @@ function togglePlane() {
 
         if (currentDimension == "3D") {
             
-            camera.position.x = distance;
-            camera.position.y = 0;
-            camera.position.z = 0;
+            animationScenes[config].setCameraPosition(distance, 0, 0);
             camera.up.set(0, 0, 1);
         }
 
@@ -2818,9 +2937,7 @@ function togglePlane() {
 
         if (currentDimension == "3D") {
 
-            camera.position.x = 0;
-            camera.position.y = distance;
-            camera.position.z = 0;
+            animationScenes[config].setCameraPosition(0, distance, 0);
             camera.up.set(1, 0, 0); 
             // TODO 
             // Workaround as per: https://github.com/mrdoob/three.js/issues/10161 
@@ -2841,7 +2958,6 @@ function togglePlane() {
 
         handleDimensionSwitch(currentDimension);
         setLocation();
-        render();
     }
 }
 
@@ -2879,6 +2995,23 @@ function toggleView() {
 
     animationScenes[config].earthAxis.visible = viewPolarAxes;
     animationScenes[config].moonAxis.visible = viewPolarAxes;
+
+    render();
+}
+
+function toggleCamera() {
+    var val = $('input[name=camera]:checked').val();
+    // console.log("toggleCamera() called with value " + val);
+
+    if (val =="default") {
+        moonPhaseCamera = false;
+    } else {
+        moonPhaseCamera = true;
+    }
+
+    if (animationScenes[config] && animationScenes[config].initialized3D) {
+        animationScenes[config].setCameraParameters();
+    }
 
     render();
 }
