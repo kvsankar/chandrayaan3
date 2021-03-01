@@ -9,19 +9,18 @@
     <meta name="author" content="Sankaranarayanan Viswanathan" />
     <meta name="keywords" content="chandrayaan, chandrayaan2, moon, isro, india, space, astronomy, animation" />
 
-    <script type='text/javascript' src="third-party/d3.v3.min.js" 					        charset="utf-8"></script>
-    <script type='text/javascript' src="third-party/jquery-1.9.1.js"				        charset="utf-8"></script>
+    <script type='text/javascript' src="third-party/d3.v3.min.js" 					charset="utf-8"></script>
+    <script type='text/javascript' src="third-party/jquery-1.9.1.js"				charset="utf-8"></script>
     <script type='text/javascript' src="third-party/jquery-ui-1.10.3.custom.min.js"	charset="utf-8"></script>
-    <script type='text/javascript' src="third-party/jquery.dialogextend.min.js"		  charset="utf-8"></script>
-    <script type='text/javascript' src="third-party/three.min.js" 					        charset="utf-8"></script>
+    <script type='text/javascript' src="third-party/jquery.dialogextend.min.js"		charset="utf-8"></script>
+    <script type='text/javascript' src="third-party/three.min.js" 					charset="utf-8"></script>
     <script type='text/javascript' src="third-party/threex.atmospherematerial.js"   charset="utf-8"></script>
-    <script type='text/javascript' src="third-party/TrackballControls.js" 			    charset="utf-8"></script>
-	  <script type='text/javascript' src="third-party/ephemeris-0.1.0.min.js" 		    charset="utf-8"></script>
-
+    <script type='text/javascript' src="third-party/TrackballControls.js"           charset="utf-8"></script>
+    <script type='text/javascript' src="third-party/ephemeris-0.1.0.min.js" 		charset="utf-8"></script>
 
     <script type='text/javascript' src="astro.js"   charset="utf-8"></script>
-    <script type="text/javascript" src="cy2.js" 		charset="utf-8"></script>
-    <script type='text/javascript' src="ga.js" 			charset="utf-8"></script>
+    <script type="text/javascript" src="cy2.js" 	charset="utf-8"></script>
+    <script type='text/javascript' src="ga.js" 		charset="utf-8"></script> 
 
     <link rel="stylesheet" href="css/ui-darkness/jquery-ui-1.10.3.custom.min.css" />
     <link rel="stylesheet" type="text/css" href="cy2.css" />
@@ -55,6 +54,12 @@
         <span class="config-label">Dimension:</span>
         <input type ="radio" name="dimension" value="2D" id="dimension-2D" onclick="toggleDimension()" checked="checked">2D</input>
         <input type ="radio" name="dimension" value="3D" id="dimension-3D" onclick="toggleDimension()">3D</input>
+
+        <span class="hspace">|</span>
+
+        <span class="config-label">Camera:</span>
+        <input type ="radio" name="camera" value="default" id="camera-default" onclick="toggleCamera()" checked="checked">Default</input>
+        <input type ="radio" name="camera" value="moon" id="camera-moon" onclick="toggleCamera()">Moon</input>
 
         <span class="hspace">|</span>
 
