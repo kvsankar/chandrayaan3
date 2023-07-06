@@ -1,0 +1,207 @@
+
+/* Copyright (c) 2013-2023 Sankaranarayanan Viswanathan. All rights reserved. */
+
+/*
+ * The ingredients here are made from several sources:
+ * 
+ * toggle buttons - http://stackoverflow.com/a/309318
+ * sticky footer - cleanstickyfooter - https://code.google.com/p/cleanstickyfooter/
+ * 
+ */
+
+.link-button {
+     background: none;
+     color: inherit;
+     border: none; 
+     padding: 0 !important;
+     font: inherit;
+     /*border is optional*/
+     border-bottom: 1px solid #444; 
+     cursor: pointer;
+}
+
+a.up {
+    color: black;
+    background: #ccc;
+    cursor: pointer;
+    border-top: solid 2px #eaeaea;
+    border-left: solid 2px #eaeaea;
+    border-bottom: solid 2px #777;
+    border-right: solid 2px #777;
+    padding: 5px 5px;
+
+}
+
+a.down {
+    color: black;
+    background: #bbb;
+    border-top: solid 2px #777;
+    border-left: solid 2px #777;
+    border-bottom:solid 2px  #eaeaea;
+    border-right: solid 2px #eaeaea;
+}
+
+.transparent-panel {
+  background: transparent;
+  background-image: none;
+  border: 0px;
+}
+
+.overlay {
+  fill: none;
+  pointer-events: all;
+}
+
+.vspace {
+  margin-bottom: 1em;
+}
+
+.banner { 
+  display: none; 
+  font-size: 1em;
+}
+
+.progressbar {
+    position: absolute;
+    left: 25%;
+    top: 50%;
+    width: 50%;
+}
+
+.progressbar-label {
+    position: absolute;
+    text-align: center;
+    line-height: 2em;
+    width: 100%;
+}
+
+
+html, body {
+    height: 100%;
+}
+
+body {
+    z-index: 2;
+    pointer-events: all;
+
+    margin: 0px;
+    padding: 0px;
+    background-color: black; 
+    color: #B3B3B3;
+    font-size: x-small;
+    font-family: sans-serif;  
+}
+
+div#wrapper {
+    width: 100%;
+    min-height: 100%;
+    height: auto !important;
+    height: 100%;
+    margin: 0px 0px -41px 0px;
+}
+
+div#footer_wrapper {
+    width: 100%;
+    height: 41px;
+}
+
+div#content_wrapper {
+    width: 100%;
+    padding: 0px 0px 41px 0px;
+}
+ 
+
+div#footer_wrapper, div#content_wrapper {
+    /* min-width: 942px; */
+}
+ 
+
+div#footer_inner_wrapper, div#content_inner_wrapper {
+    /* width: 942px; */
+    margin: 0px auto;
+}
+
+
+div#footer_wrapper {
+    color: #7F7F7F;
+    height: 41px; /* '.push' must be the same height as 'footer' */
+}
+
+.config-first-label {
+  display: inline-block;
+  width: 8em;
+}
+
+.config-label {
+  font-size: 1em;
+  font-weight: bold;
+}
+
+.copyright {
+    font-size: 0.8em;
+}
+
+.date {
+  font-size: 1.5em;
+  color: darkgrey;
+  font-family: "Lucida Console", monospace;
+}
+
+.dimension-2D {
+  visibility: visible;
+}
+
+.dimension-3D {
+  visibility: hidden;
+}
+
+.eventinfo {
+  font-weight: bold;
+  color: white;
+}
+
+.geo table {
+  border: 2px;
+  border-spacing: 2px;
+  border-collapse: separate;
+}
+
+.hspace {
+  padding: 1em;
+}
+
+.mom {
+  color: orange;
+}
+
+.navbutton {
+  padding: 0px;
+  height: 2em;
+  width: 2em;
+}
+
+.stats td {
+  min-width: 70px;
+}
+
+table {
+    border: none;
+    border-spacing: 0;
+    border-collapse: collapse;
+}
+
+
+svg {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    right: 100%;
+    bottom: 100%;
+    z-index: 1; 
+}
+
+canvas {
+  z-index: 1;
+}
+
+/* end of file */

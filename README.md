@@ -1,5 +1,5 @@
 
-## Chandrayaan 2 orbit animation
+## Chandrayaan 3 orbit animation
 
 This project holds the source code for the 3D and 2D animations used
 in http://sankara.net/chandrayaan2.html. That page shows an animation

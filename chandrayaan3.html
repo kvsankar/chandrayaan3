@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+
+<!-- Copyright (c) 2013-2023 Sankaranarayanan Viswanathan. All rights reserved. -->
+
+<html>
+  <head>
+    <meta charset="UTF-8"/>
+    <meta name="description" content="ISRO's Chandrayaan 3 Mission - An Orbit Animation" />
+    <meta name="author" content="Sankaranarayanan Viswanathan" />
+    <meta name="keywords" content="chandrayaan, chandrayaan3, moon, isro, india, space, astronomy, animation" />
+
+    <script type='text/javascript' src="third-party/d3.v3.min.js" 					charset="utf-8"></script>
+    <script type='text/javascript' src="third-party/jquery-1.9.1.js"				charset="utf-8"></script>
+    <script type='text/javascript' src="third-party/jquery-ui-1.10.3.custom.min.js"	charset="utf-8"></script>
+    <script type='text/javascript' src="third-party/jquery.dialogextend.min.js"		charset="utf-8"></script>
+    <script type='text/javascript' src="third-party/three.min.js" 					charset="utf-8"></script>
+    <script type='text/javascript' src="third-party/threex.atmospherematerial.js"   charset="utf-8"></script>
+    <script type='text/javascript' src="third-party/TrackballControls.js"           charset="utf-8"></script>
+    <script type='text/javascript' src="third-party/ephemeris-0.1.0.min.js" 		charset="utf-8"></script>
+
+    <script type='text/javascript' src="astro.js"   charset="utf-8"></script>
+    <script type="text/javascript" src="cy3.js" 	charset="utf-8"></script>
+    <script type='text/javascript' src="ga.js" 		charset="utf-8"></script> 
+
+    <link rel="stylesheet" href="css/ui-darkness/jquery-ui-1.10.3.custom.min.css" />
+    <link rel="stylesheet" type="text/css" href="cy3.css" />
+
+    <title>ISRO's Chandrayaan 3 Mission 2023 - An Orbit Animation</title>
+
+  </head>
+
+  <body onload="onload()">
+
+    <div id="wrapper">
+    <div id="content_wrapper">
+    <div id="content_inner_wrapper">
+
+      <div id="blurb" class="blurb">
+        <a href="https://www.isro.gov.in/Chandrayaan3_New.html">Chandrayaan 3</a> orbit animation generated using 
+        NASA JPL <a href="https://ssd.jpl.nasa.gov/horizons/">HORIZONS</a> Ephemerides.
+        Works best in desktop screens right now.
+      </div>
+
+      <div id="control-panel" class="control-panel">
+
+      <div> <!-- First row buttons -->
+        <span class="config-label config-first-label">Origin/Phase:</span> 
+        <input type="radio" name="mode" value="geo"   onclick="toggleMode()" checked="checked">Earth</input>
+        <input type="radio" name="mode" value="lunar" onclick="toggleMode()">Moon</input>
+	<!-- <input type="radio" name="mode" value="lro"   onclick="toggleMode()">Moon/Post Vikram LOS</input> -->
+
+        <span class="hspace">|</span>
+
+        <span class="config-label">Dimension:</span>
+        <input type ="radio" name="dimension" value="2D" id="dimension-2D" onclick="toggleDimension()" checked="checked">2D</input>
+        <input type ="radio" name="dimension" value="3D" id="dimension-3D" onclick="toggleDimension()">3D</input>
+
+        <span class="hspace">|</span>
+
+        <span class="config-label">Camera:</span>
+        <input type ="radio" name="camera" value="default" id="camera-default" onclick="toggleCamera()" checked="checked">Default</input>
+        <input type ="radio" name="camera" value="moon" id="camera-moon" onclick="toggleCamera()">Moon</input>
+
+        <span class="hspace">|</span>
+
+        <span class="">
+          <span class="config-label">Lock On:</span> 
+          <input type="checkbox" id="checkbox-lock-cy3"                       onclick="toggleLockCY3()">Chandrayaan 3</input>
+          <span class="geo"  ><input type="checkbox" id="checkbox-lock-moon"  onclick="toggleLockMoon()">Moon</input></span>
+          <span class="lunar lro"><input type="checkbox" id="checkbox-lock-earth" onclick="toggleLockEarth()">Earth</input></span>
+        </span>
+
+        <span class="hspace">|</span>
+
+        <span class="config-label">Plane</span>
+
+        <input type="radio" name="plane" value="XY" id="checkbox-lock-xy" onclick="togglePlane()" checked="checked">XY</input>
+        <input type="radio" name="plane" value="YZ" id="checkbox-lock-xz" onclick="togglePlane()">YZ</input>
+        <input type="radio" name="plane" value="ZX" id="checkbox-lock-yz" onclick="togglePlane()">ZX</input>
+
+        <span class="hspace">|</span>
+
+        <span class="dimension-3D">
+
+            <span class="hspace">|</span>
+
+            <input id="joyride" type="checkbox" onclick="toggleJoyRide()">Joy Ride!</input>
+
+            <span class="hspace">|</span>
+
+            <span class="config-label">View</span>
+
+            <input type="checkbox" name="view" value="orbit"        id="view-orbit"         onclick="toggleView()" checked="checked">CY3 Orbit</input>
+	    <!-- <input type="checkbox" name="view" value="orbit-vikram" id="view-orbit-vikram"  onclick="toggleView()" checked="checked">Vikram Orbit</input> -->
+	    <!-- <input type="checkbox" name="view" value="orbit-lro"    id="view-orbit-lro"     onclick="toggleView()" checked="checked">LRO Orbit</input> -->
+	    <!-- <input type="checkbox" name="view" value="craters"      id="view-craters"       onclick="toggleView()" checked="checked">Craters</input> -->
+            <input type="checkbox" name="view" value="xyz"          id="view-xyz-axes"      onclick="toggleView()" checked="checked">XYZ Axes</input>
+            <input type="checkbox" name="view" value="poles"        id="view-poles"         onclick="toggleView()" checked="checked">Poles</input>
+            <input type="checkbox" name="view" value="polar-axes"   id="view-polar-axes"    onclick="toggleView()" checked="checked">Polar Axes</input>
+
+            <!--
+            <span class="config-label">Camera Placed At:</span>
+            <input type="radio" name="camera" value="AUTO"  id="camerapos-auto" onclick="toggleCameraPos()" checked="checked">Auto</input>
+            <input type="radio" name="camera" value="CY3"   id="camerapos-cy3"   onclick="toggleCameraPos()">CY3</input>
+            <input type="radio" name="camera" value="EARTH" id="camerapos-earth" onclick="toggleCameraPos()">Earth</input>
+            <input type="radio" name="camera" value="MOON"  id="camerapos-moon"  onclick="toggleCameraPos()">Moon</input>
+
+            <span class="hspace">|</span>
+
+            <span class="config-label">Camera Looking At:</span>
+            <input type="radio" name="look" value="AUTO"  id="cameralook-auto" onclick="toggleCameraLook()" checked="checked">Auto</input>
+            <input type="radio" name="look" value="CY3"   id="cameralook-cy3"   onclick="toggleCameraLook()">CY3</input>
+            <input type="radio" name="look" value="EARTH" id="cameralook-earth" onclick="toggleCameraLook()">Earth</input>
+            <input type="radio" name="look" value="MOON"  id="cameralook-moon"  onclick="toggleCameraLook()">Moon</input>
+            -->
+
+        </span>
+
+        <div class="vspace"></div>
+
+        <span class="config-label config-first-label">Animation:</span> 
+        <button id="animate"    type="button" class="button" onclick="cy3Animate()"></button>
+        <button id="slower"     type="button" class="button"> Slower </button>
+        <button id="faster"     type="button" class="button"> Faster </button>
+
+        <span class="hspace">|</span>
+
+        <button id="fastbackward"       type="button" class="button" title="Fast rewind">&lt;&lt;</button> <!-- &#x25C1; --> 
+        <button id="backward"           type="button" class="button" title="Rewind">&lt;</button> <!-- &#x25C3; --> 
+        <button id="forward"            type="button" class="button" title="Forward">&gt;</button> <!-- &#x25B9; -->  
+        <button id="fastforward"        type="button" class="button" title="Fast forward">&gt;&gt;</button> <!-- &#x25B7; --> 
+
+        <div class="vspace"></div>
+        
+        <span class="config-label config-first-label">Timeline:</span>
+
+        <span id="burnbuttons"></span>    
+        
+        <div class="vspace"></div>
+
+        <div id="eventinfo" class="eventinfo"></div>
+
+      </div> <!-- First row buttons -->
+      </div> <!-- control panel -->
+      
+      <div id="banner" class="banner" title="Some quick info before you start...">
+      </div>
+
+      <div id="progressbar" class="progressbar">
+        <div id="progressbar-label" class="progressbar-label"></div>
+      </div>
+
+      <div id="zoom-panel" class="zoom-panel dimension-2D">
+        <table summary="Zoom and pan controls">
+          <tr>
+            <td/>
+            <td><button id="panup"      type="button" class="navbutton">&#x25B2;</button></td>
+            <td/>
+          </tr>
+          <tr>
+            <td><button id="panleft"    type="button" class="navbutton" title="Pan left">&#x25C0;</button></td>
+            <td><button id="reset"      type="button" class="navbutton" title="Reset zoom/pan settings" onclick="reset()">&#x25C8;</button></td>
+            <td><button id="panright"   type="button" class="navbutton" title="Pan right">&#x25B6;</button></td>
+          </tr>
+          <tr>
+            <td/>
+            <td><button id="pandown"    type="button" class="navbutton" title="Pan down">&#x25BC;</button></td>
+            <td/>
+          </tr>
+          <tr/>
+          <tr>
+            <td/>
+            <td><button id="zoomin"     type="button" class="navbutton" title="Zoom in"><b>+</b></button></td>
+            <td/>                        
+          </tr>
+          <tr>
+            <td/>
+            <td><button id="zoomout"    type="button" class="navbutton" title="Zoom out"><b>-</b></button></td>
+            <td/>                    
+          </tr>
+          </table>
+      </div> <!-- zoom panel -->
+
+      <div class="vspace"></div>
+
+      <div id="stats" class="stats"> <!-- stats wrapper -->
+      <div> <!-- basic statistics -->
+          <!--
+          <table summary="CY3 distance and velocity data: relative to center" class="stats">
+              <tr>
+                  <td><b>Relative to center of <label id="center"></label></b></td>
+              </tr>
+              <tr>
+                  <td>Vehicle</td>
+                  <td><label class="cy3">Chandrayaan 3</label></td>
+              </tr>
+              <tr>
+                  <td>Distance (km): </td>
+                  <td><label id="distance-CY3" class="cy3"></label></td>
+              </tr>
+              <tr>
+                  <td>Altitude (km): </td>
+                  <td><label id="altitude-CY3" class="cy3"></label></td>
+              </tr>
+              <tr>
+                  <td>Velocity (km/s): </td>
+                  <td><label id="velocity-CY3" class="cy3"></label></td>
+              </tr>
+          </table>
+          -->
+      </div>
+
+      <div class="vspace"></div>
+
+      <div> <!-- extended statistics / Relative to Earth -->
+        <table summary="CY3 distance and velocity data: relative to Earth" class="stats">
+          <tr>
+            <td><b>Relative to Earth</b></td>
+          </tr>
+          <tr>
+            <td>Vehicle</td>
+            <td><label class="cy3">Chandrayaan 3</label></td>
+          </tr>
+          <tr>
+            <td>Distance (km): </td>
+            <td><label id="distance-CY3-EARTH" class="cy3"></label></td>
+          </tr>
+          <tr>
+            <td>Altitude (km): </td>
+            <td><label id="altitude-CY3-EARTH" class="cy3"></label></td>
+          </tr>
+          <tr>
+            <td>Velocity (km/s): </td>
+            <td><label id="velocity-CY3-EARTH" class="cy3"></label></td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="vspace"></div>
+
+      <div> <!-- extended statistics / Relative to Moon -->
+        <table summary="CY3 distance and velocity data: relative to Moon" class="stats">
+          <tr>
+            <td><b>Relative to Moon</b></td>
+          </tr>
+          <tr>
+            <td>Vehicle</td>
+            <td><label class="cy3">Chandrayaan 3</label></td>
+          </tr>
+          <tr>
+            <td>Distance (km): </td>
+            <td><label id="distance-CY3-MOON" class="cy3"></label></td>
+          </tr>
+          <tr>
+            <td>Altitude (km): </td>
+            <td><label id="altitude-CY3-MOON" class="cy3"></label></td>
+          </tr>
+          <tr>
+            <td>Velocity (km/s): </td>
+            <td><label id="velocity-CY3-MOON" class="cy3"></label></td>
+          </tr>
+        </table>
+      </div>
+      </div> <!-- stats wrapper -->
+
+      <div id="svg-wrapper" class="svg-wrapper dimension-2D">
+      </div>
+      <div id="canvas-wrapper" class="canvas-wrapper dimension-3D">
+      </div>
+
+    </div> <!-- content_inner_wrapper -->
+    </div> <!-- content_wrapper -->
+    </div> <!-- wrapper -->
+
+    <div id="footer_wrapper">
+    <div id="footer_inner_wrapper">
+
+      <div id="date" class="date">
+        <table summary="Animation Date"><tr><td>Animation Time</td><td><pre><label id="date"></label></pre></td></tr></table>
+      </div>
+
+
+      <div class="info">
+        <table summary="Orbit Data Epoch and Mission Phase Information">
+          <tr>
+            <td>Orbit data epoch: JD = <label id="epochjd"></label> | UTC = <label id="epochdate"></label></td>
+            <td>CY3 phase: 
+              <label id="phase-1"></label> | 
+              <label id="phase-2"></label> | 
+              <label id="phase-3"></label>
+            </td>
+          </tr>
+        </table>
+      </div> <!-- info -->
+
+      <div class="copyright">
+          Copyright &copy; 2013-2019 Sankaranarayanan Viswanathan; this file is published under the Creative Commons CC-BY-SA 2.0 license.
+      </div> <!-- copyright -->
+    </div> <!-- footer_inner_wrapper -->
+    </div> <!-- footer_wrapper -->
+  </body>
+</html>
+
+<!-- end of file -->
