@@ -58,12 +58,14 @@ my $debugging = 1;
 
 my $config = {
 
+    # TODO Add support for seconds (ss.sss) later
+
     "geo" => {
-        'start_year'       => '2023', 'start_month'       => '07', 'start_day'       => '13', 'start_hour'          => '09', 'start_minute'         => '27',
+        'start_year'       => '2023', 'start_month'       => '07', 'start_day'       => '14', 'start_hour'          => '09', 'start_minute'         => '23', 
         'stop_year'        => '2023', 'stop_month'        => '09', 'stop_day'        => '13', 'stop_hour'           => '08', 'stop_minute'          => '58',
-        'start_year_CY3'   => '2023', 'start_month_CY3'   => '07', 'start_day_CY3'   => '13', 'start_hour_CY3'      => '09', 'start_minute_CY3'     => '27',
+        'start_year_CY3'   => '2023', 'start_month_CY3'   => '07', 'start_day_CY3'   => '14', 'start_hour_CY3'      => '09', 'start_minute_CY3'     => '23',
         'stop_year_CY3'    => '2023', 'stop_month_CY3'    => '09', 'stop_day_CY3'    => '13', 'stop_hour_CY3'       => '08', 'stop_minute_CY3'      => '58',
-        'start_year_vikram'=> '2023', 'start_month_vikram'=> '09', 'start_day_vikram'=> '13', 'start_hour_vikram'   => '09', 'start_minute_vikram'  => '27',
+        'start_year_vikram'=> '2023', 'start_month_vikram'=> '09', 'start_day_vikram'=> '14', 'start_hour_vikram'   => '09', 'start_minute_vikram'  => '23',
         'stop_year_vikram' => '2023', 'stop_month_vikram' => '09', 'stop_day_vikram' => '13', 'stop_hour_vikram'    => '08', 'stop_minute_vikram'   => '58',
 
         'step_size_in_minutes' => 1,
@@ -75,11 +77,11 @@ my $config = {
         'orbits_file' => "$data_dir/geo-CY3.json"
     },
     "lunar" => {
-        'start_year'       => '2023', 'start_month'       => '07', 'start_day'       => '13', 'start_hour'          => '09', 'start_minute'         => '27',
+        'start_year'       => '2023', 'start_month'       => '07', 'start_day'       => '14', 'start_hour'          => '09', 'start_minute'         => '23', 
         'stop_year'        => '2023', 'stop_month'        => '09', 'stop_day'        => '13', 'stop_hour'           => '08', 'stop_minute'          => '58',
-        'start_year_CY3'   => '2023', 'start_month_CY3'   => '07', 'start_day_CY3'   => '13', 'start_hour_CY3'      => '09', 'start_minute_CY3'     => '27',
+        'start_year_CY3'   => '2023', 'start_month_CY3'   => '07', 'start_day_CY3'   => '14', 'start_hour_CY3'      => '09', 'start_minute_CY3'     => '23',
         'stop_year_CY3'    => '2023', 'stop_month_CY3'    => '09', 'stop_day_CY3'    => '13', 'stop_hour_CY3'       => '08', 'stop_minute_CY3'      => '58',
-        'start_year_vikram'=> '2023', 'start_month_vikram'=> '09', 'start_day_vikram'=> '13', 'start_hour_vikram'   => '09', 'start_minute_vikram'  => '27',
+        'start_year_vikram'=> '2023', 'start_month_vikram'=> '09', 'start_day_vikram'=> '14', 'start_hour_vikram'   => '09', 'start_minute_vikram'  => '23',
         'stop_year_vikram' => '2023', 'stop_month_vikram' => '09', 'stop_day_vikram' => '13', 'stop_hour_vikram'    => '08', 'stop_minute_vikram'   => '58',
 
         'step_size_in_minutes' => 1,
@@ -91,11 +93,11 @@ my $config = {
         'orbits_file' => "$data_dir/lunar-CY3.json"
     },
     "lro" => {
-        'start_year'       => '2023', 'start_month'       => '07', 'start_day'       => '13', 'start_hour'          => '09', 'start_minute'         => '27',
+        'start_year'       => '2023', 'start_month'       => '07', 'start_day'       => '14', 'start_hour'          => '09', 'start_minute'         => '23', 
         'stop_year'        => '2023', 'stop_month'        => '09', 'stop_day'        => '13', 'stop_hour'           => '08', 'stop_minute'          => '58',
-        'start_year_CY3'   => '2023', 'start_month_CY3'   => '07', 'start_day_CY3'   => '13', 'start_hour_CY3'      => '09', 'start_minute_CY3'     => '27',
+        'start_year_CY3'   => '2023', 'start_month_CY3'   => '07', 'start_day_CY3'   => '14', 'start_hour_CY3'      => '09', 'start_minute_CY3'     => '23',
         'stop_year_CY3'    => '2023', 'stop_month_CY3'    => '09', 'stop_day_CY3'    => '13', 'stop_hour_CY3'       => '08', 'stop_minute_CY3'      => '58',
-        'start_year_vikram'=> '2023', 'start_month_vikram'=> '09', 'start_day_vikram'=> '13', 'start_hour_vikram'   => '09', 'start_minute_vikram'  => '27',
+        'start_year_vikram'=> '2023', 'start_month_vikram'=> '09', 'start_day_vikram'=> '14', 'start_hour_vikram'   => '09', 'start_minute_vikram'  => '23',
         'stop_year_vikram' => '2023', 'stop_month_vikram' => '09', 'stop_day_vikram' => '13', 'stop_hour_vikram'    => '08', 'stop_minute_vikram'   => '58',
 
         'step_size_in_minutes' => 5,
@@ -225,13 +227,13 @@ sub get_horizons_stop_time($) {
 
 sub set_start_and_stop_times () {
 
-	$start_time ="$start_year\-$start_month\-$start_day";
-	$start_time_gm = timegm(0, 0, 0, $start_day, $start_month-1, $start_year);
+    $start_time ="$start_year\-$start_month\-$start_day";
+    $start_time_gm = timegm(0, 0, 0, $start_day, $start_month-1, $start_year);
 
-	$stop_time ="$stop_year\-$stop_month\-$stop_day";
-	$stop_time_gm = timegm(0, 0, 0, $stop_day, $stop_month-1, $stop_year);
+    $stop_time ="$stop_year\-$stop_month\-$stop_day";
+    $stop_time_gm = timegm(0, 0, 0, $stop_day, $stop_month-1, $stop_year);
 
-	$step_size = "${step_size_in_minutes}%20m";
+    $step_size = "${step_size_in_minutes}%20m";
 }
 
 sub print_debug ($) {
@@ -253,8 +255,8 @@ sub my_jd ($) {
 }
 
 sub is_craft($) {
-	my $planet = shift;
-	return ($planet < 0) || (($planet == "MOON") && ($phase eq "geo"));
+    my $planet = shift;
+    return ($planet < 0) || (($planet == "MOON") && ($phase eq "geo"));
 }
 
 sub save_fetched_data () {
@@ -495,7 +497,7 @@ sub parse_horizons_elements ($$) {
                     my $exrec = $orbits{$planet}->{'elements'}->{$jdct};
                     @$exrec{keys %$rec} = values %$rec;
                 } else {
-                	# print_debug("Adding elements for planet=$planet, jdct=$jdct");
+                    # print_debug("Adding elements for planet=$planet, jdct=$jdct");
                     $orbits{$planet}->{'elements'}->{$jdct} = $rec;
                 }
             
@@ -585,7 +587,7 @@ sub main {
     init_config($phase);
     print_config();
 
-	set_start_and_stop_times();
+    set_start_and_stop_times();
 
     if ($use_cached_data) {
         load_cached_data();
@@ -612,7 +614,7 @@ sub main {
     }
 
     unless ($use_cached_data) {
-    	save_fetched_data();
+        save_fetched_data();
     }
     
     foreach my $planet (@planets) {
