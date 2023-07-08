@@ -61,8 +61,8 @@ var CENTER_LABEL_OFFSET_Y = -15;
 var SPEED_CHANGE_FACTOR = 2;
 var ZOOM_SCALE = 1.10;
 var ZOOM_TIMEOUT = 200; // TODO Why did I end up calling this variable this way? 
-var SVG_ORIGIN_X = 100; // TODO match with CSS value; find a better way
-var SVG_ORIGIN_Y = 100; // TODO match with CSS value; find a better way
+var SVG_ORIGIN_X = 0; // TODO match with CSS value; find a better way
+var SVG_ORIGIN_Y = 0; // TODO match with CSS value; find a better way
 var FORMAT_PERCENT = d3.format(".0%");
 var FORMAT_METRIC = d3.format(" >10,.2f");
 
@@ -182,7 +182,7 @@ var moonPhaseCamera = false;
 
 function getStartAndEndTimes(id) {
 
-    var startTime                  = Date.UTC(2023, 7-1, 13,  9, 27, 0, 0);
+    var startTime                  = Date.UTC(2023, 7-1, 14,  9, 23, 0, 0);
     var endTime                    = Date.UTC(2023, 9-1, 13,  8, 58, 0, 0);
     var endTimeCY3                 = Date.UTC(2023, 9-1, 13,  8, 58, 0, 0);
     var startTimeVikram            = Date.UTC(2023, 9-1,  2,  7, 46, 0, 0); // TODO Update
@@ -190,10 +190,10 @@ function getStartAndEndTimes(id) {
 
     if (config == "lro") { // TODO Not needed for CY3 mission (at least for now); Will disable in HTML
 
-        startTime                   = Date.UTC(2023,  9-1, 1,  0,  0, 0, 0); // aligned with 5 minute intervals
-        endTime                     = Date.UTC(2023, 11-1, 1,  0,  0, 0, 0); // aligned with 5 minute intervals
-        startTimeVikram             = Date.UTC(2023, 9-1,  2,  7, 50, 0, 0); // aligned with 5 minute intervals
-        endTimeVikram               = Date.UTC(2023, 9-1,  6, 20, 25, 0, 0); // aligned with 5 minute intervals
+        startTime                   = Date.UTC(2023,  9-1,  1,  0,  0, 0, 0); // aligned with 5 minute intervals
+        endTime                     = Date.UTC(2023, 11-1,  1,  0,  0, 0, 0); // aligned with 5 minute intervals
+        startTimeVikram             = Date.UTC(2023,  9-1,  2,  7, 50, 0, 0); // aligned with 5 minute intervals
+        endTimeVikram               = Date.UTC(2023,  9-1,  6, 20, 25, 0, 0); // aligned with 5 minute intervals
     }
 
     if (id === "CY3") {
@@ -237,7 +237,7 @@ class SceneHandler {
         // document.body.appendChild(renderer.domElement);
         this.canvasNode = d3.select("#canvas-wrapper")[0][0].appendChild(this.renderer.domElement); // TODO find a better D3 way to do this         
 
-        window.addEventListener('resize', onWindowResize, false);
+        window.addEventListener('resize', onWindowResize, {passive: false}); // TODO verify 
 
         this.initialized = true;
     }
@@ -261,7 +261,7 @@ class SceneHandler {
                 // animationScene.camera.lookAt(animationScene.secondaryBody3D.position);
 
             } else if (lockOnCY3) {
-            	
+                
                 var x = animationScene.craft.position.x;
                 var y = animationScene.craft.position.y;
                 var z = animationScene.craft.position.z;
@@ -618,7 +618,7 @@ class AnimationScene {
         this.earthSouthPoleSphere.position.set(0, 0, -0.985* earthRadius);
 
 
-		var moonPoleScale = 1.5;
+        var moonPoleScale = 1.5;
         var moonNorthPolePoint = new THREE.Vector3(0, 0, +1 * moonRadius * moonPoleScale);
         var moonSouthPolePoint = new THREE.Vector3(0, 0, -1 * moonRadius * moonPoleScale);
         this.moonAxisVector = moonNorthPolePoint.clone().normalize();
@@ -678,27 +678,27 @@ class AnimationScene {
             this.primaryBody3D = this.earthContainer;
             this.secondaryBody3D = this.moonContainer;
 
-        	this.earthContainer.add(this.earthAxis);
-        	this.earthContainer.add(this.earthNorthPoleSphere);
-        	this.earthContainer.add(this.earthSouthPoleSphere);
+            this.earthContainer.add(this.earthAxis);
+            this.earthContainer.add(this.earthNorthPoleSphere);
+            this.earthContainer.add(this.earthSouthPoleSphere);
 
-        	this.moonContainer.add(this.moonAxis);
-        	this.moonContainer.add(this.moonNorthPoleSphere);
-        	this.moonContainer.add(this.moonSouthPoleSphere);
-        		
+            this.moonContainer.add(this.moonAxis);
+            this.moonContainer.add(this.moonNorthPoleSphere);
+            this.moonContainer.add(this.moonSouthPoleSphere);
+                
         
         } else if ((config == "lunar") || (config == "lro")) {
         
             this.primaryBody3D = this.moonContainer;
             this.secondaryBody3D = this.earthContainer;
 
-        	this.moonContainer.add(this.moonAxis);
-        	this.moonContainer.add(this.moonNorthPoleSphere);
-        	this.moonContainer.add(this.moonSouthPoleSphere);
+            this.moonContainer.add(this.moonAxis);
+            this.moonContainer.add(this.moonNorthPoleSphere);
+            this.moonContainer.add(this.moonSouthPoleSphere);
 
-        	this.earthContainer.add(this.earthAxis);
-        	this.earthContainer.add(this.earthNorthPoleSphere);
-        	this.earthContainer.add(this.earthSouthPoleSphere);
+            this.earthContainer.add(this.earthAxis);
+            this.earthContainer.add(this.earthNorthPoleSphere);
+            this.earthContainer.add(this.earthSouthPoleSphere);
         
         }
         
@@ -729,7 +729,7 @@ class AnimationScene {
         var vikramOrbitMaterial = new THREE.LineBasicMaterial({color: vikramOrbitColor, linewidth: 0.2});
         this.vikramOrbitLine = new THREE.Line(vikramOrbitGeometry, vikramOrbitMaterial);
         this.motherContainer.add(this.vikramOrbitLine);
-	*/
+    */
 
         if (this.name == "lro") {
             // add LRO orbit
@@ -857,7 +857,7 @@ class AnimationScene {
             this.cameraControls.staticMoving = true;
             this.cameraControls.dynamicDampingFactor = 0.3;
             this.cameraControls.keys = [65, 83, 68];
-            this.cameraControls.addEventListener('change', render);    
+            this.cameraControls.addEventListener('change', render, {passive: true}); // TODO Verify   
         }
 
         this.setCameraParameters();
@@ -939,7 +939,7 @@ class AnimationScene {
 
                 for (var j = 0; j < vectors.length; ++j) {
 
-                	// console.log("Reading VIKRAM position data at index " + j);
+                    // console.log("Reading VIKRAM position data at index " + j);
 
                     var x = +1 * (vectors[j]["x"] / KM_PER_AU) * PIXELS_PER_AU;;
                     var y = +1 * (vectors[j]["y"] / KM_PER_AU) * PIXELS_PER_AU;;
@@ -973,63 +973,63 @@ class AnimationScene {
     }
 
     toggleCameraPos(val) {
-    	// console.log("toggleCameraPos() called in mode " + this.name + " and target origin position " + val);
+        // console.log("toggleCameraPos() called in mode " + this.name + " and target origin position " + val);
 
-    	if ((this.name == "geo") && (val == "EARTH")) { 
-    		// console.log("Setting camera position to Origin/Earth.");
-    		this.camera.position.set(0, 0, 0)
-    	};
-    	if ((this.name == "geo") && (val == "MOON")) { 
-    		// console.log("Setting camera position to Moon.");
-    		this.camera.position.set(this.secondaryBody3D.position);
-    	};
-    	if (((this.name == "lunar") || (this.name == "lro")) && (val == "EARTH")) { 
-    		// console.log("Setting camera position to Earth.");
-    		this.camera.position.set(this.secondaryBody3D.position);
-    	};
-    	if (((this.name == "lunar") || (this.name == "lro")) && (val == "MOON")) {
-    		// console.log("Setting camera position to Origin/Moon.");
-    		this.camera.position.set(0, 0, 0);
-    	};
+        if ((this.name == "geo") && (val == "EARTH")) { 
+            // console.log("Setting camera position to Origin/Earth.");
+            this.camera.position.set(0, 0, 0)
+        };
+        if ((this.name == "geo") && (val == "MOON")) { 
+            // console.log("Setting camera position to Moon.");
+            this.camera.position.set(this.secondaryBody3D.position);
+        };
+        if (((this.name == "lunar") || (this.name == "lro")) && (val == "EARTH")) { 
+            // console.log("Setting camera position to Earth.");
+            this.camera.position.set(this.secondaryBody3D.position);
+        };
+        if (((this.name == "lunar") || (this.name == "lro")) && (val == "MOON")) {
+            // console.log("Setting camera position to Origin/Moon.");
+            this.camera.position.set(0, 0, 0);
+        };
 
-    	theSceneHandler.render(this);
+        theSceneHandler.render(this);
     }
 
     toggleCameraLook(val) {
-    	// console.log("toggleCameraLook() called in mode " + this.name + " and target look position " + val);
+        // console.log("toggleCameraLook() called in mode " + this.name + " and target look position " + val);
 
-    	if (this.name == "geo") {
+        if (this.name == "geo") {
 
-    		if (val == "EARTH") { 
-	    		// console.log("Setting camera look to Origin/Earth.");
-	    		this.camera.lookAt(0, 0, 0);
+            if (val == "EARTH") { 
+                // console.log("Setting camera look to Origin/Earth.");
+                this.camera.lookAt(0, 0, 0);
                 // this.camera.lookAt(this.secondaryBody3D.position);
-    		}
-	    	if (val == "MOON") { 
-	    		// console.log("Setting camera look to Moon.");
-	    		this.camera.lookAt(this.secondaryBody3D.position);
-	    	}
-	    	if (val == "CY3") {
-	    		// console.log("Setting camera look to the craft.");
-	    		this.camera.lookAt(this.craft.position);	
-	    	}
-	    }
+            }
+            if (val == "MOON") { 
+                // console.log("Setting camera look to Moon.");
+                this.camera.lookAt(this.secondaryBody3D.position);
+            }
+            if (val == "CY3") {
+                // console.log("Setting camera look to the craft.");
+                this.camera.lookAt(this.craft.position);	
+            }
+        }
 
-    	if ((this.name == "lunar") || (this.name == "lro")) {
+        if ((this.name == "lunar") || (this.name == "lro")) {
 
-    		if (val == "EARTH") { 
-	    		// console.log("Setting camera look to Earth.");
-	    		this.camera.lookAt(this.secondaryBody3D.position);
-    		}
-	    	if (val == "MOON") {
-	    		// console.log("Setting camera look to Origin/Moon.");
-	    		this.camera.lookAt(0, 0, 0);
-	    	}
-	    	if (val == "CY3") {
-	    		// console.log("Setting camera look to the craft.");
-	    		this.camera.lookAt(this.craft.position);
-	    	}
-	    }
+            if (val == "EARTH") { 
+                // console.log("Setting camera look to Earth.");
+                this.camera.lookAt(this.secondaryBody3D.position);
+            }
+            if (val == "MOON") {
+                // console.log("Setting camera look to Origin/Moon.");
+                this.camera.lookAt(0, 0, 0);
+            }
+            if (val == "CY3") {
+                // console.log("Setting camera look to the craft.");
+                this.camera.lookAt(this.craft.position);
+            }
+        }
     }
 
     cameraDisntance(position) {
@@ -1194,11 +1194,11 @@ function handleDimensionSwitch(newDim) {
 function addEvents() {
 
     var missionStartInfo = {
-        "startTime": new Date(Date.UTC(2023, 7-1, 13,  9, 27, 0, 0)),
+        "startTime": new Date(Date.UTC(2023, 7-1, 14,  9, 23, 0, 0)),
         "durationSeconds": 0,
         "label" : "Launch",
         "burnFlag": false,
-        "infoText": "Launch:    13th Jul, 14:57 IST - Chandrayaan 3 placed in orbit",
+        "infoText": "Launch:    13th Jul, 14:52 IST - Chandrayaan 3 placed in orbit",
         "body": "CY3"
     }
 
@@ -1416,7 +1416,7 @@ function addEvents() {
             vikramDeboostOneInfo,
             vikramDeboostTwoInfo,
             vikramLandingInfo,
-	    */
+        */
             nowInfo,
             cy3EndInfo
         ];        
@@ -1456,7 +1456,7 @@ function initConfig() {
         svgWidth = window.innerWidth;
         svgHeight = window.innerHeight - $("#footer_wrapper").outerHeight(true);
         offsetx = svgWidth * (1 / 2) - SVG_ORIGIN_X;
-        offsety = svgHeight * (2 / 3) - SVG_ORIGIN_Y;
+        offsety = svgHeight * (1 / 2) - SVG_ORIGIN_Y;
 
         PIXELS_PER_AU = Math.min(svgWidth, svgHeight) / (1.2 * (2 * EARTH_MOON_DISTANCE_MEAN_AU)); 
         // The smaller dimension of the screen should fit 120% of the whole Moon orbit around Earth
@@ -1465,14 +1465,14 @@ function initConfig() {
 
         trackWidth = 0.6;
 
-	    earthRadius = (EARTH_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU;
-    	moonRadius = (MOON_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU;
+        earthRadius = (EARTH_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU;
+        moonRadius = (MOON_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU;
         
         primaryBody = "EARTH";
         primaryBodyRadius = earthRadius;
 
         secondaryBody = "MOON";
-    	secondaryBodyRadius = moonRadius;
+        secondaryBodyRadius = moonRadius;
 
         planetsForOrbits = ["MOON", "CY3"]; // TODO Add Vikram later
         planetsForLocations = ["MOON", "CY3"]; // TODO Add Vikram later
@@ -1517,8 +1517,8 @@ function initConfig() {
 
         trackWidth = 0.6;
 
-	    earthRadius = (EARTH_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU;
-    	moonRadius = (MOON_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU;        
+        earthRadius = (EARTH_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU;
+        moonRadius = (MOON_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU;        
 
         primaryBody = "MOON";
         primaryBodyRadius = moonRadius;
@@ -1766,7 +1766,7 @@ function setLocation() {
 
     now = startTime + timelineIndex * stepDurationInMilliSeconds;
     var nowDate = new Date(now);
-    animDate.html(nowDate);
+    animDate.html(nowDate); // TODO add custom formatting 
 
     var ephemYear = nowDate.getUTCFullYear();
     var ephemMonth = nowDate.getUTCMonth() + 1;
@@ -1776,27 +1776,27 @@ function setLocation() {
     var ephemSeconds = nowDate.getUTCSeconds();
     var ephemDate = {'year': ephemYear, 'month': ephemMonth, 'day': ephemDay, 'hours': ephemHours, 'minutes': ephemMinutes, 'seconds': ephemSeconds};
     // console.log(ephemDate);
-	$const.tlong = 0.0; // longitude
-	$const.glat = 0.0; // latitude
-	$processor.init(); // TODO not sure whether this needs to be called every time or just once
-	var ephemSun = $moshier.body.sun;
-	$processor.calc(ephemDate, ephemSun);
-	// console.log(ephemSun.position);
-	sunLongitude = ephemSun.position.apparentLongitude * Math.PI / 180.0;
-	// console.log("Sun longitude: " + sunLongitude * 180.0 / Math.PI);
+    $const.tlong = 0.0; // longitude
+    $const.glat = 0.0; // latitude
+    $processor.init(); // TODO not sure whether this needs to be called every time or just once
+    var ephemSun = $moshier.body.sun;
+    $processor.calc(ephemDate, ephemSun);
+    // console.log(ephemSun.position);
+    sunLongitude = ephemSun.position.apparentLongitude * Math.PI / 180.0;
+    // console.log("Sun longitude: " + sunLongitude * 180.0 / Math.PI);
 
-	// var ephemMoon = $moshier.body.moon;
-	// $processor.calc(ephemDate, ephemMoon);
-	// console.log(ephemMoon.position);
+    // var ephemMoon = $moshier.body.moon;
+    // $processor.calc(ephemDate, ephemMoon);
+    // console.log(ephemMoon.position);
 
-	if (animationScenes[config] && animationScenes[config].initialized3D) {
+    if (animationScenes[config] && animationScenes[config].initialized3D) {
 
         var animationScene = animationScenes[config];
-		animationScene.light.position.set(Math.cos(sunLongitude), Math.sin(sunLongitude), 0).normalize();
+        animationScene.light.position.set(Math.cos(sunLongitude), Math.sin(sunLongitude), 0).normalize();
         animationScene.rotateEarth();
         animationScene.rotateMoon();
-	}
-	
+    }
+    
     // console.log("now = " + now);
     // console.log("helioCentricPhaseStartTime = " + helioCentricPhaseStartTime);
     // console.log("lunarPhaseStartTime = " + lunarPhaseStartTime);
@@ -1953,14 +1953,14 @@ function setLocation() {
                 var vx = vectors[index][vxVariable];
                 var vy = vectors[index][vyVariable];
 
-		/*
+        /*
                 // show burn
                 vikramData["angle"] = Math.atan2(vy, vx) * 180.0 / Math.PI + 90;
                 var transformString = "translate (" + newx + ", " + newy + ") ";
                 transformString += "rotate(" + vikramData["angle"] + " 0 0) ";
                 transformString += "scale (" + 1/zoomFactor + " " + 1/zoomFactor + ") ";
                 d3.select("#burng-vikram").attr("transform", transformString);
-		*/
+        */
 
             }
 
@@ -2196,6 +2196,7 @@ function init(callback) {
     }
 
     $("#control-panel").dialog({
+        dialogClass: "dialog",
         modal: false,
         position: {
             my: "left top",
@@ -2221,6 +2222,7 @@ function init(callback) {
         .css({'background': 'transparent', 'background-image': 'none', 'border': '0'});
 
     $("#zoom-panel").dialog({
+        dialogClass: "dialog desktoponly",
         modal: false,
         position: {
             my: "left top",
@@ -2242,6 +2244,7 @@ function init(callback) {
         .css({'background': 'transparent', 'background-image': 'none', 'border': '0'});
 
     $("#stats").dialog({
+        dialogClass: "dialog desktoponly",
         modal: false,
         position: {
             my: "left top",
@@ -2711,7 +2714,7 @@ function faster() {
     if (ticksPerAnimationStep > 1) {
         ticksPerAnimationStep /= SPEED_CHANGE_FACTOR;
     } else {
-    	timelineIndexStep *= SPEED_CHANGE_FACTOR;	
+        timelineIndexStep *= SPEED_CHANGE_FACTOR;	
     }
     // console.log("ticksPerAnimationStep = " + ticksPerAnimationStep + ", timelineIndexStep = " + timelineIndexStep);
 }
@@ -2864,17 +2867,17 @@ function toggleLockEarth() {
 }
 
 function toggleCameraPos() {
-	var val = $('input[name=camera]:checked').val();
-	if (animationScenes[config] && animationScenes[config].initialized3D) {
-		animationScenes[config].toggleCameraPos(val);
-	}
+    var val = $('input[name=camera]:checked').val();
+    if (animationScenes[config] && animationScenes[config].initialized3D) {
+        animationScenes[config].toggleCameraPos(val);
+    }
 }
 
 function toggleCameraLook() {
-	var val = $('input[name=look]:checked').val();
-	if (animationScenes[config] && animationScenes[config].initialized3D) {
-		animationScenes[config].toggleCameraLook(val);
-	}
+    var val = $('input[name=look]:checked').val();
+    if (animationScenes[config] && animationScenes[config].initialized3D) {
+        animationScenes[config].toggleCameraLook(val);
+    }
 }
 
 function togglePlane() {
