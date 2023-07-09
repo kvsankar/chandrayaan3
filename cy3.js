@@ -119,8 +119,10 @@ var vikramData = {};
 //
 
 var PIXELS_PER_AU;
-var svgWidth;
-var svgHeight;
+var svgX = 0;
+var svgY = 0;
+var svgWidth = 0;
+var svgHeight = 0;
 var offsetx = 0;
 var offsety = 0;
 var trackWidth;
@@ -227,7 +229,7 @@ class SceneHandler {
         }
 
         var width = window.innerWidth;
-        var height = window.innerHeight - $("#footer_wrapper").outerHeight(true) - 40; // TODO fix this
+        var height = window.innerHeight - $("#footer-wrapper").outerHeight(true); // - 40; // TODO fix this
 
         // add renderer
         this.renderer = new THREE.WebGLRenderer({antialias: true});
@@ -235,9 +237,36 @@ class SceneHandler {
         this.renderer.setSize(width, height);
 
         // document.body.appendChild(renderer.domElement);
-        this.canvasNode = d3.select("#canvas-wrapper")[0][0].appendChild(this.renderer.domElement); // TODO find a better D3 way to do this         
+        // this.canvasNode = d3.select("#canvas-wrapper")[0][0].appendChild(this.renderer.domElement); // TODO find a better D3 way to do this
+        console.log("Adding rendererer ...");
+        this.canvasNode = d3.select("#canvas-wrapper").node().appendChild(this.renderer.domElement); // TODO find a better D3 way to do this
 
         window.addEventListener('resize', onWindowResize, {passive: false}); // TODO verify 
+
+        $("#settings-panel-button").on("click", function() {
+            $("#settings-panel").dialog({
+                dialogClass: "dialog desktoponly",
+                modal: false,
+                position: {
+                    my: "right top",
+                    at: "right top",
+                    of: "#blurb",
+                    collision: "fit flip"},
+                title: "Settings",
+                closeOnEscape: false
+                }).dialogExtend({
+                    closable: true,
+                    "dblclick" : "collapse",
+                    minimizable: false,
+                    minimizeLocation: 'right',
+                    collapsable: true,
+                    })/* .dialogExtend("collapse") */;
+            $("#settings-panel")
+                .closest('.ui-dialog')
+                .addClass("transparent-panel")
+                .css({'background': 'transparent', 'background-image': 'none', 'border': '0'});
+
+                });
 
         this.initialized = true;
     }
@@ -496,7 +525,7 @@ class AnimationScene {
         // console.log("init3dRest() called");
 
         var width = window.innerWidth;
-        var height = window.innerHeight - $("#footer_wrapper").outerHeight(true) - 40; // TODO fix this
+        var height = window.innerHeight - $("#footer-wrapper").outerHeight(true); // - 40; // TODO fix this
 
         this.scene = new THREE.Scene();
 
@@ -1104,6 +1133,8 @@ function animateLoop() {
 
     (function() {
 
+        // console.log("animateLoopCount = " + animateLoopCount, ", ticksPerAnimationStep = " + ticksPerAnimationStep);
+
         ++animateLoopCount;
         if (animateLoopCount % ticksPerAnimationStep < 0.1) {
             
@@ -1438,10 +1469,10 @@ function initConfig() {
 
     addEvents();
 
-    timeTransLunarInjection = Date.UTC(2023, 9-1, 13, 20, 51, 0, 0); 
+    timeTransLunarInjection = Date.UTC(2023, 8-1, 01,  0,  0, 0, 0); // TODO Update for CY3
     /* The next maneuver is Trans Lunar Insertion (TLI), which is scheduled on August 14, 2019, between 0300 – 0400 hrs (IST).*/ 
     
-    timeLunarOrbitInsertion = Date.UTC(2023, 8-1, 21, 0, 0, 0, 0);
+    timeLunarOrbitInsertion = Date.UTC(2023, 8-1, 05, 14, 30, 0, 0); // TODO Update for CY3
 
     if (!theSceneHandler) {
         theSceneHandler = new SceneHandler();
@@ -1452,12 +1483,9 @@ function initConfig() {
         if (!animationScenes[config]) {
             animationScenes[config] = new AnimationScene(config);    
         }
-        
-        svgWidth = window.innerWidth;
-        svgHeight = window.innerHeight - $("#footer_wrapper").outerHeight(true);
-        offsetx = svgWidth * (1 / 2) - SVG_ORIGIN_X;
-        offsety = svgHeight * (1 / 2) - SVG_ORIGIN_Y;
 
+        computeSVGDimensions();
+    
         PIXELS_PER_AU = Math.min(svgWidth, svgHeight) / (1.2 * (2 * EARTH_MOON_DISTANCE_MEAN_AU)); 
         // The smaller dimension of the screen should fit 120% of the whole Moon orbit around Earth
 
@@ -1504,12 +1532,8 @@ function initConfig() {
             animationScenes[config] = new AnimationScene(config);    
         }
 
-        svgWidth = window.innerWidth;
-        svgHeight = window.innerHeight - $("#footer_wrapper").outerHeight(true);
-
-        offsetx = svgWidth * (1 / 2) - SVG_ORIGIN_X;
-        offsety = svgHeight * (2 / 3) - SVG_ORIGIN_Y;
-
+        computeSVGDimensions();
+    
         PIXELS_PER_AU = Math.min(svgWidth, svgHeight) / (1.2 * (2 * EARTH_MOON_DISTANCE_MEAN_AU)); 
         // The smaller dimension of the screen should fit 120% of the whole Moon orbit around Earth
         
@@ -1556,11 +1580,7 @@ function initConfig() {
             animationScenes[config] = new AnimationScene(config);    
         }
 
-        svgWidth = window.innerWidth;
-        svgHeight = window.innerHeight - $("#footer_wrapper").outerHeight(true);
-
-        offsetx = svgWidth * (1 / 2) - SVG_ORIGIN_X;
-        offsety = svgHeight * (2 / 3) - SVG_ORIGIN_Y;
+        computeSVGDimensions();
 
         PIXELS_PER_AU = Math.min(svgWidth, svgHeight) / (1.5 * (2 * MOON_RADIUS_KM / KM_PER_AU)); 
         // The smaller dimension of the screen should fit 120% of the whole Moon orbit around Earth
@@ -1657,6 +1677,7 @@ function toggleDimension() {
             // console.log("Initializing 3D for " + config);
             var msg = "Loading 3D data. This may take a while. Please wait ..."
             // d3.select("#eventinfo").text(msg);
+            $("#progressbar").progressbar();
             $("#progressbar").progressbar("option", "value", false);
             $("#progressbar").show();
             d3.select("#progressbar-label").html(msg);
@@ -2195,31 +2216,54 @@ function init(callback) {
         });
     }
 
-    $("#control-panel").dialog({
-        dialogClass: "dialog",
-        modal: false,
-        position: {
-            my: "left top",
-            at: "left bottom",
-            of: "#blurb",
-            collision: "fit flip"},
-        width: "100%",
-        /* height: '300', */
-        resizable: false,
-        // title: "Controls",
-        closeOnEscape: false
-    }).dialogExtend({
-        titlebar: 'none',
-        closable: false,
-        "dblclick" : "collapse",
-        minimizable: false,
-        minimizeLocation: 'right',
-        collapsable: true,
-    });
-    $("#control-panel")
-        .closest('.ui-dialog')
-        .addClass("transparent-panel")
-        .css({'background': 'transparent', 'background-image': 'none', 'border': '0'});
+    // $("#settings-panel").dialog({
+    //     dialogClass: "dialog desktoponly",
+    //     modal: false,
+    //     position: {
+    //         my: "right top",
+    //         at: "right top",
+    //         of: "#blurb",
+    //         collision: "fit flip"},
+    //     title: "Settings",
+    //     closeOnEscape: false
+    // }).dialogExtend({
+    //     closable: false,
+    //     "dblclick" : "collapse",
+    //     minimizable: false,
+    //     minimizeLocation: 'right',
+    //     collapsable: true,
+    // })/* .dialogExtend("collapse") */;
+    // $("#settings-panel")
+    //     .closest('.ui-dialog')
+    //     .addClass("transparent-panel")
+    //     .css({'background': 'transparent', 'background-image': 'none', 'border': '0'});
+
+    // $("#animation-control-panel").dialog({
+    //     dialogClass: "dialog",
+    //     modal: false,
+    //     position: {
+    //         my: "left top",
+    //         at: "left bottom",
+    //         of: "#settings-panel",
+    //         collision: "fit flip"},
+    //     width: "100%",
+    //     maxWidth: "100%",
+    //     /* height: '300', */
+    //     resizable: false,
+    //     // title: "Controls",
+    //     closeOnEscape: false
+    // }).dialogExtend({
+    //     titlebar: 'none',
+    //     closable: false,
+    //     "dblclick" : "collapse",
+    //     minimizable: false,
+    //     minimizeLocation: 'right',
+    //     collapsable: true,
+    // });
+    // $("#animation-control-panel")
+    //     .closest('.ui-dialog')
+    //     .addClass("transparent-panel")
+    //     .css({'background': 'transparent', 'background-image': 'none', 'border': '0'});
 
     $("#zoom-panel").dialog({
         dialogClass: "dialog desktoponly",
@@ -2227,7 +2271,7 @@ function init(callback) {
         position: {
             my: "left top",
             at: "left bottom",
-            of: "#control-panel",
+            of: "#animation-control-panel",
             collision: "fit flip"},
         title: "Pan/Zoom",
         closeOnEscape: false
@@ -2241,7 +2285,7 @@ function init(callback) {
     $("#zoom-panel")
         .closest('.ui-dialog')
         .addClass("transparent-panel")
-        .css({'background': 'transparent', 'background-image': 'none', 'border': '0'});
+        .css({'background': 'transparent', 'background-image': 'none', 'border': '0', 'margin-top': '20px'});
 
     $("#stats").dialog({
         dialogClass: "dialog desktoponly",
@@ -2282,6 +2326,11 @@ function processOrbitData(data) {
     if (config == "helio") processOrbitElementsData();
     processOrbitVectorsData();
 
+    // TODO d3v7 handling
+    // var zoom = d3.zoom().on("zoom", handleZoom).on("end", zoomEnd);
+
+    console.log("offsetx = " + offsetx + ", panx = " + panx + ", offsety = " + offsety + ", pany = " + pany);
+
     svgRect = d3.select("#svg")
         .append("rect")
             .attr("id", "svg-rect")
@@ -2295,8 +2344,46 @@ function processOrbitData(data) {
             .call(d3.behavior.zoom()
                 .translate([offsetx+panx, offsety+pany])
                 .scale(zoomFactor)
-                .on("zoom", zoom)
+                .on("zoom", handleZoom)
                 .on("zoomend", zoomEnd));
+
+    // TODO d3v7 way of zoom
+    // svgRect = d3.select("#svg")
+    //     .append("rect")
+    //         .attr("id", "svg-rect")
+    //         .attr("class", "overlay")
+    //         .attr("x", 0)
+    //         .attr("y", 0)
+    //         .attr("width", svgWidth)
+    //         .attr("height", svgHeight)
+    //         .attr("style", "fill:none;stroke:black;stroke-width:0;fill-opacity:0;stroke-opacity:0")
+    //         // .attr("class", "background");
+    //         .zoom(zoom);
+        
+    // TODO handle error with d3v7        
+    // d3.select("#svg-rect").call(zoom
+    //     .translateBy(offsetx+panx, offsety+pany)
+    //     .scaleBy(zoomFactor)
+    //     );
+
+    // svgRect = d3.select("#svg")
+    //     .append("rect")
+    //         .attr("id", "svg-rect")
+    //         .attr("class", "overlay")
+    //         .attr("x", 0)
+    //         .attr("y", 0)
+    //         .attr("width", svgWidth)
+    //         .attr("height", svgHeight)
+    //         .attr("style", "fill:none;stroke:black;stroke-width:0;fill-opacity:0;stroke-opacity:0")
+    //         // .attr("class", "background")
+    //         .call(zoom.transform,
+    //             d3.zoomIdentity
+    //             .translate([offsetx+panx, offsety+pany])
+    //             .call(zoom.transform,
+    //                 d3.zoomIdentity
+    //             .scale(zoomFactor)
+    //             .on("zoom", zoom)
+    //             .on("zoomend", zoomEnd)));
 
     if (!missionStartCalled) {
         missionStart();
@@ -2335,16 +2422,53 @@ function loadOrbitDataIfNeededAndProcess(callback) {
             })
             .get(function(error, data) {
                 if (error) {
+                    console.log("Orbit data load from " + orbitsJson + ": ERROR");
+                    console.log(error);
                     $("#progressbar").hide();
-                    d3.select("#progressbar-label").html("Error: failed to load orbit data.");
+                    d3.select("#progressbar-label").html("Error: failed to load orbit data.");    
                 } else {
+                    console.log("Orbit data load from " + orbitsJson + ": OK");
                     dataLoaded = true;
                     orbitDataLoaded[config] = true;
                     orbitData[config] = data;
-                    processOrbitData(data);
-                    callback();
+                    processOrbitData(data);    
+                    try {
+                        callback();
+                    } catch(error) {
+                        console.log("Error while processing read orbit data.");
+                    }                    
                 }
             });
+
+            // d3.json(orbitsJson)
+            // // .on("progress", function() {
+
+            // //     var progress = d3.event.loaded / orbitsJsonFileSizeInBytes;
+            // //     var msg = dataLoaded ? "" : ("Loading orbit data ... " + FORMAT_PERCENT(progress) + ".");
+            // //     // console.log(msg);
+            // //     $("#progressbar").progressbar({value: progress * 100});
+            // //     $("#progressbar").show();
+            // //     d3.select("#progressbar-label").html(msg);
+            // // })
+            // .then(function(data) {
+            //     console.log("Orbit data load from " + orbitsJson + ": OK");
+            //     dataLoaded = true;
+            //     orbitDataLoaded[config] = true;
+            //     orbitData[config] = data;
+            //     processOrbitData(data);
+
+            //     try {
+            //         callback();
+            //     } catch(error) {
+            //         console.log("Error while processing read orbit data.");
+            //     }                
+            // })
+            // .catch(function(error) {
+            //     console.log("Orbit data load from " + orbitsJson + ": ERROR");
+            //     console.log(error);
+            //     $("#progressbar").hide();
+            //     d3.select("#progressbar-label").html("Error: failed to load orbit data.");
+            // });
 
             /* DON'T PUT ANY CODE HERE */        
     } else {
@@ -2354,16 +2478,31 @@ function loadOrbitDataIfNeededAndProcess(callback) {
     }
 }
 
+function computeSVGDimensions() {
+    svgX = 0;
+    svgY = $("#svg-top-baseline").position().top;
+    svgWidth = window.innerWidth;
+    svgHeight = $("#footer-wrapper").position().top - svgY;
+    offsetx = svgWidth * (1 / 2) - SVG_ORIGIN_X;
+    offsety = svgHeight * (1 / 2) - SVG_ORIGIN_Y - (svgY);
+
+    console.log("svgX = " + svgX + ", svgY = " + svgY + ", svgWidth = " + svgWidth + ", svgHeight = " + svgHeight + 
+        ", offsetx = " + offsetx + ", offsety = " + offsety);
+}
+
 function initSVG() {
     d3.select("svg").remove();
 
-    svgWidth = window.innerWidth;
-    svgHeight = window.innerHeight - $("#footer_wrapper").outerHeight(true);
+    computeSVGDimensions();
 
     svgContainer = d3.select("#svg-wrapper")
         .attr("class", config + " dimension-2D")
         .append("svg")
             .attr("id", "svg")
+            .attr("x", svgX)
+            .attr("y", svgY)
+            .attr("width", svgWidth)
+            .attr("height", svgHeight)    
             .attr("overflow", "visible") // added for SVG elements to be visible in Chrome 36+; TODO side effects analysis
             .attr("class", "dimension-2D")
             .attr("display", "none")
@@ -2371,10 +2510,11 @@ function initSVG() {
         .append("g")
             .attr("transform", "translate(" + offsetx + ", " + offsety + ")");
 
-     // console.log("svgWidth = " + svgWidth + ", svgHeight = " + svgHeight);
      d3.select("svg")
-         .attr("width", svgWidth)
-         .attr("height", svgHeight);
+        .attr("x", svgX)
+        .attr("y", svgY)
+        .attr("width", svgWidth)
+        .attr("height", svgHeight);
 
     d3.select("#progressbar-label").html("Loading orbit data ...");
 
@@ -2393,11 +2533,22 @@ function initSVG() {
     */
 }
 
-function zoom() {
-    // console.log("zoom called: " + d3.event.translate[0] + ", " + d3.event.translate[1] + ", " + d3.event.scale);
+function handleZoom(event) {
+    x = d3.event.translate[0];
+    y = d3.event.translate[1];
     zoomFactor = d3.event.scale;
-    panx = d3.event.translate[0] - offsetx;
-    pany = d3.event.translate[1] - offsety;
+    panx = x - offsetx;
+    pany = y - offsety;
+    zoomChangeTransform();
+}
+
+function handleZoomNew(event) {
+    console.log(event);
+    x = event.transform.x || 0;
+    y = event.transform.y || 0;
+    zoomFactor = event.transform.k || 1;
+    panx = x - offsetx;
+    pany = y - offsety;
     zoomChangeTransform();
 }
 
@@ -2473,6 +2624,12 @@ function processOrbitVectorsData() {
                 .x(function(d) { return +1 * d[xVariable] / KM_PER_AU * PIXELS_PER_AU; } )
                 .y(function(d) { return -1 * d[yVariable] / KM_PER_AU *PIXELS_PER_AU; } )
                 .interpolate("cardinal-open");
+
+            // TODO d3v7
+            // var line = d3.line()
+            //     .x(function(d) { return +1 * d[xVariable] / KM_PER_AU * PIXELS_PER_AU; } )
+            //     .y(function(d) { return -1 * d[yVariable] / KM_PER_AU *PIXELS_PER_AU; } )
+            //     .curve(d3.curveCardinalOpen);
 
             svgContainer.select("#" + "orbit-" + planetKey)
                 .append("path")
@@ -2765,13 +2922,14 @@ function zoomChangeTransform(t) {
             + ")"
         );
 
-    // sychronize D3's state
-    svgRect
-        .call(d3.behavior.zoom()
-        .translate([offsetx+panx, offsety+pany])
-        .scale(zoomFactor)
-        .on("zoom", zoom)
-        .on("zoomend", adjustLabelLocations));
+    // var zoom = d3.zoom().on("zoom", handleZoom).on("end", adjustLabelLocations);
+
+    // sychronize D3's state // TODO
+    // svgRect && svgRect
+    //     .call(zoom.transform,
+    //         d3.zoomIdentity
+    //         .translate([offsetx+panx, offsety+pany])
+    //         .scale(zoomFactor));
 }
 
 function zoomChange(t) {
