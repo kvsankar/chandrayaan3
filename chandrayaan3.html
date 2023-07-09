@@ -2,30 +2,33 @@
 
 <!-- Copyright (c) 2013-2023 Sankaranarayanan Viswanathan. All rights reserved. -->
 
-<html>
+<html lang="en">
     <head>
-        <meta charset="UTF-8"/>
-        <meta name="description" content="ISRO's Chandrayaan 3 Mission - An Orbit Animation" />
-        <meta name="author" content="Sankaranarayanan Viswanathan" />
-        <meta name="keywords" content="chandrayaan, chandrayaan3, moon, isro, india, space, astronomy, animation" />
+        <meta charset="UTF-8">
+        <meta name="description" content="ISRO's Chandrayaan 3 Mission - An Orbit Animation">
+        <meta name="author" content="Sankaranarayanan Viswanathan">
+        <meta name="keywords" content="chandrayaan, chandrayaan3, moon, isro, india, space, astronomy, animation">
         
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        <script type="text/javascript" src="third-party/d3.v3.min.js" 					charset="utf-8"></script>
-        <script type="text/javascript" src="third-party/jquery-1.9.1.js"				charset="utf-8"></script>
-        <script type="text/javascript" src="third-party/jquery-ui-1.10.3.custom.min.js"	charset="utf-8"></script>
-        <script type="text/javascript" src="third-party/jquery.dialogextend.min.js"		charset="utf-8"></script>
-        <script type="text/javascript" src="third-party/three.min.js" 					charset="utf-8"></script>
-        <script type="text/javascript" src="third-party/threex.atmospherematerial.js"   charset="utf-8"></script>
-        <script type="text/javascript" src="third-party/TrackballControls.js"           charset="utf-8"></script>
-        <script type="text/javascript" src="third-party/ephemeris-0.1.0.min.js" 		charset="utf-8"></script>
+        <!-- <script src="https://d3js.org/d3.v7.min.js"></script> -->
+        <script src="third-party/d3.v3.min.js"></script>
+        <script src="third-party/jquery-1.9.1.js"></script>
+        <script src="third-party/jquery-ui-1.10.3.custom.min.js"></script>
+        <script src="third-party/jquery.dialogextend.min.js"></script>
+        <script src="third-party/three.min.js"></script>
+        <script src="third-party/threex.atmospherematerial.js"></script>
+        <script src="third-party/TrackballControls.js"></script>
+        <script src="third-party/ephemeris-0.1.0.min.js"></script>
 
-        <script type="text/javascript" src="astro.js"   charset="utf-8"></script>
-        <script type="text/javascript" src="cy3.js" 	charset="utf-8"></script>
-        <script type="text/javascript" src="ga.js" 		charset="utf-8"></script> 
+        <script src="astro.js"></script>
+        <script src="cy3.js"></script>
+        <script src="ga.js"></script> 
 
-        <link rel="stylesheet" href="css/ui-darkness/jquery-ui-1.10.3.custom.min.css" />
-        <link rel="stylesheet" type="text/css" href="cy3.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <link rel="stylesheet" href="css/ui-darkness/jquery-ui-1.10.3.custom.min.css">
+        <link rel="stylesheet" type="text/css" href="cy3.css">
+        <!-- <link rel="stylesheet" type="text/css" href="topnav.css"> -->
 
         <title>ISRO's Chandrayaan 3 Mission 2023 - An Orbit Animation</title>
     </head>
@@ -36,69 +39,87 @@
         <div id="content-wrapper" class="content-wrapper">
         <div id="content-inner-wrapper" class="content-inner-wrapper">
 
-        <div id="blurb" class="blurb desktoponly">
-            <a href="https://www.isro.gov.in/Chandrayaan3_New.html">Chandrayaan 3</a> orbit animation generated using 
-            NASA JPL <a href="https://ssd.jpl.nasa.gov/horizons/">HORIZONS</a> Ephemerides.
-            Works best in desktop screens right now.
+        <div class="navbar flex-container">
+
+            <button id="settings-panel-button">☰ Settings</button>
+            
+            <div id="blurb" class="blurb desktoponly">
+                <p><b><a href="https://www.isro.gov.in/Chandrayaan3_New.html">Chandrayaan 3</a> Orbit Animation.</b></p>
+                <p>Created by <a href="https://sankara.net/">Sankar Viswanathan</a> using NASA JPL <a href="https://ssd.jpl.nasa.gov/horizons/">HORIZONS</a> Ephemerides.
+                Source code available at <a href="https://github.com/kvsankar/chandrayaan3">Github</a>. Works best in desktop screens.</p>
+            </div>
+
         </div>
 
-        <div id="control-panel" class="control-panel">
+        <div id="settings-panel" class="settings-panel"> <!-- First row buttons -->
 
-            <div> <!-- First row buttons -->
-                <span class="config-label config-first-label">Origin/Phase:</span> 
-                <input type="radio" name="mode" value="geo"   onclick="toggleMode()" checked="checked">Earth</input>
-                <input type="radio" name="mode" value="lunar" onclick="toggleMode()">Moon</input>
-                <!-- <input type="radio" name="mode" value="lro"   onclick="toggleMode()">Moon/Post Vikram LOS</input> -->
+            <fieldset>
+                <legend>Settings</legend>
+                <fieldset>
+                    <legend class="config-label config-first-label">Origin/Phase:</legend>
+                    <input id="origin-earth" type="radio" name="mode" value="geo"   onclick="toggleMode()" checked="checked">
+                    <label for="origin-earth">Earth</label>
+                    <input id="origin-moon" type="radio" name="mode" value="lunar" onclick="toggleMode()">
+                    <label for="origin-moon">Moon</label>
+                    <!-- <input type="radio" name="mode" value="lro"   onclick="toggleMode()">Moon/Post Vikram LOS</input> -->
+                </fieldset>
 
-                <span class="hspace">|</span>
+                <fieldset>
+                    <legend class="config-label">Dimension:</legend>
+                    <input type ="radio" name="dimension" value="2D" id="dimension-2D" onclick="toggleDimension()" checked="checked">
+                    <label for="dimension-2D">2D</label>
+                    <input type ="radio" name="dimension" value="3D" id="dimension-3D" onclick="toggleDimension()">
+                    <label for="dimension-3D">3D</label>
+                </fieldset>
 
-                <span class="config-label">Dimension:</span>
-                <input type ="radio" name="dimension" value="2D" id="dimension-2D" onclick="toggleDimension()" checked="checked">2D</input>
-                <input type ="radio" name="dimension" value="3D" id="dimension-3D" onclick="toggleDimension()">3D</input>
+                <fieldset>
+                    <legend class="config-label">Camera:</legend>
+                    <input type="radio" name="camera" value="default" id="camera-default" onclick="toggleCamera()" checked="checked">
+                    <label for="camera-default">Default</label>
+                    <input type ="radio" name="camera" value="moon" id="camera-moon" onclick="toggleCamera()">
+                    <label for="camera-moon">Moon</label>
+                </fieldset>
 
-                <span class="hspace">|</span>
+                <fieldset>
+                    <legend class="config-label">Lock On:</legend>
+                    <input type="checkbox" id="checkbox-lock-cy3" onclick="toggleLockCY3()">
+                    <label for="checkbox-lock-cy3">Chandrayaan 3</label>
+                    <span class="geo"><input type="checkbox" id="checkbox-lock-moon" onclick="toggleLockMoon()"></span>
+                    <label class="geo" for="checkbox-lock-moon">Moon</label>
+                    <span class="lunar lro"><input type="checkbox" id="checkbox-lock-earth" onclick="toggleLockEarth()"></span>
+                    <label class="lunar lro" for="checkbox-lock-earth">Earth</label>
+                </fieldset>
 
-                <span class="config-label">Camera:</span>
-                <input type ="radio" name="camera" value="default" id="camera-default" onclick="toggleCamera()" checked="checked">Default</input>
-                <input type ="radio" name="camera" value="moon" id="camera-moon" onclick="toggleCamera()">Moon</input>
 
-                <span class="hspace">|</span>
+                <fieldset>
+                    <legend class="config-label">Plane</legend>
+                    <input type="radio" name="plane" value="XY" id="checkbox-lock-xy" onclick="togglePlane()" checked="checked">
+                    <label for="checkbox-lock-xy">XY</label>
+                    <input type="radio" name="plane" value="YZ" id="checkbox-lock-xz" onclick="togglePlane()">
+                    <label for="checkbox-lock-xy">YZ</label>
+                    <input type="radio" name="plane" value="ZX" id="checkbox-lock-yz" onclick="togglePlane()">
+                    <label for="checkbox-lock-xy">ZX</label>
+                </fieldset>
+                
+                <div class="dimension-3D">
+                    <input id="joyride" type="checkbox" onclick="toggleJoyRide()">
+                    <label for="joyride">Joy Ride!</label>
 
-                <span class="">
-                <span class="config-label">Lock On:</span> 
-                <input type="checkbox" id="checkbox-lock-cy3"                       onclick="toggleLockCY3()">Chandrayaan 3</input>
-                <span class="geo"  ><input type="checkbox" id="checkbox-lock-moon"  onclick="toggleLockMoon()">Moon</input></span>
-                <span class="lunar lro"><input type="checkbox" id="checkbox-lock-earth" onclick="toggleLockEarth()">Earth</input></span>
-                </span>
 
-                <span class="hspace">|</span>
-
-                <span class="config-label">Plane</span>
-
-                <input type="radio" name="plane" value="XY" id="checkbox-lock-xy" onclick="togglePlane()" checked="checked">XY</input>
-                <input type="radio" name="plane" value="YZ" id="checkbox-lock-xz" onclick="togglePlane()">YZ</input>
-                <input type="radio" name="plane" value="ZX" id="checkbox-lock-yz" onclick="togglePlane()">ZX</input>
-
-                <span class="hspace">|</span>
-
-                <span class="dimension-3D">
-
-                    <span class="hspace">|</span>
-
-                    <input id="joyride" type="checkbox" onclick="toggleJoyRide()">Joy Ride!</input>
-
-                    <span class="hspace">|</span>
-
-                    <span class="config-label">View</span>
-
-                    <input type="checkbox" name="view" value="orbit"        id="view-orbit"         onclick="toggleView()" checked="checked">CY3 Orbit</input>
-                    <!-- <input type="checkbox" name="view" value="orbit-vikram" id="view-orbit-vikram"  onclick="toggleView()" checked="checked">Vikram Orbit</input> -->
-                    <!-- <input type="checkbox" name="view" value="orbit-lro"    id="view-orbit-lro"     onclick="toggleView()" checked="checked">LRO Orbit</input> -->
-                    <!-- <input type="checkbox" name="view" value="craters"      id="view-craters"       onclick="toggleView()" checked="checked">Craters</input> -->
-                    <input type="checkbox" name="view" value="xyz"          id="view-xyz-axes"      onclick="toggleView()" checked="checked">XYZ Axes</input>
-                    <input type="checkbox" name="view" value="poles"        id="view-poles"         onclick="toggleView()" checked="checked">Poles</input>
-                    <input type="checkbox" name="view" value="polar-axes"   id="view-polar-axes"    onclick="toggleView()" checked="checked">Polar Axes</input>
-
+                    <fieldset>
+                        <legend class="config-label">View</legend>
+                        <input type="checkbox" name="view" value="orbit"        id="view-orbit"         onclick="toggleView()" checked="checked">
+                        <label for="view-orbit">CY3 Orbit</label>
+                        <!-- <input type="checkbox" name="view" value="orbit-vikram" id="view-orbit-vikram"  onclick="toggleView()" checked="checked">Vikram Orbit</input> -->
+                        <!-- <input type="checkbox" name="view" value="orbit-lro"    id="view-orbit-lro"     onclick="toggleView()" checked="checked">LRO Orbit</input> -->
+                        <!-- <input type="checkbox" name="view" value="craters"      id="view-craters"       onclick="toggleView()" checked="checked">Craters</input> -->
+                        <input type="checkbox" name="view" value="xyz" id="view-xyz-axes" onclick="toggleView()" checked="checked">
+                        <label for="view-xyz-axes">XYZ Axes</label>
+                        <input type="checkbox" name="view" value="poles" id="view-poles" onclick="toggleView()" checked="checked">
+                        <label for="view-poles">Poles</label>
+                        <input type="checkbox" name="view" value="polar-axes" id="view-polar-axes" onclick="toggleView()" checked="checked">
+                        <label for="view-polar-axes">Polar Axes</label>
+                    </fieldset>
                     <!--
                     <span class="config-label">Camera Placed At:</span>
                     <input type="radio" name="camera" value="AUTO"  id="camerapos-auto" onclick="toggleCameraPos()" checked="checked">Auto</input>
@@ -115,8 +136,14 @@
                     <input type="radio" name="look" value="MOON"  id="cameralook-moon"  onclick="toggleCameraLook()">Moon</input>
                     -->
 
-                </span>
+                </div>
+            </fieldset>
+        </div> <!-- settings panel -->
 
+        <div id="control-panel" class="control-panel">
+
+
+            <div id="animation-control-panel">
                 <div class="vspace"></div>
 
                 <span class="config-label config-first-label">Animation:</span> 
@@ -145,6 +172,8 @@
     
         </div> <!-- control panel -->
         
+        <div id="svg-top-baseline"></div>
+
         <div id="banner" class="banner" title="Some quick info before you start...">
         </div>
 
@@ -153,11 +182,11 @@
         </div>
 
         <div id="zoom-panel" class="zoom-panel dimension-2D desktoponly">
-            <table summary="Zoom and pan controls" class="desktoponly">
+            <table class="desktoponly">
             <tr>
-                <td/>
+                <td></td>
                 <td><button id="panup"      type="button" class="navbutton">&#x25B2;</button></td>
-                <td/>
+                <td></td>
             </tr>
             <tr>
                 <td><button id="panleft"    type="button" class="navbutton" title="Pan left">&#x25C0;</button></td>
@@ -165,20 +194,20 @@
                 <td><button id="panright"   type="button" class="navbutton" title="Pan right">&#x25B6;</button></td>
             </tr>
             <tr>
-                <td/>
+                <td></td>
                 <td><button id="pandown"    type="button" class="navbutton" title="Pan down">&#x25BC;</button></td>
-                <td/>
+                <td></td>
             </tr>
-            <tr/>
+            <tr><td></td><td></td><td></td></tr>
             <tr>
-                <td/>
+                <td></td>
                 <td><button id="zoomin"     type="button" class="navbutton" title="Zoom in"><b>+</b></button></td>
-                <td/>                        
+                <td></td>                     
             </tr>
             <tr>
-                <td/>
+                <td></td>
                 <td><button id="zoomout"    type="button" class="navbutton" title="Zoom out"><b>-</b></button></td>
-                <td/>                    
+                <td></td>                    
             </tr>
             </table>
         </div> <!-- zoom panel -->
@@ -188,9 +217,9 @@
             <div class="vspace"></div>
 
             <div> <!-- extended statistics / Relative to Earth -->
-                <table summary="CY3 distance and velocity data: relative to Earth">
+                <table>
                 <tr>
-                    <td><b>Relative to Earth</b></td>
+                    <th colspan="2"><b>Relative to Earth</b></th>
                 </tr>
                 <tr>
                     <td>Vehicle</td>
@@ -214,9 +243,9 @@
             <div class="vspace"></div>
 
             <div> <!-- extended statistics / Relative to Moon -->
-                <table summary="CY3 distance and velocity data: relative to Moon">
+                <table>
                 <tr>
-                    <td><b>Relative to Moon</b></td>
+                    <th colspan="2"><b>Relative to Moon</b></th>
                 </tr>
                 <tr>
                     <td>Vehicle</td>
@@ -252,9 +281,9 @@
         <div id="date" class="date"></div>
 
         <div class="info desktoponly">
-            <table summary="Orbit Data Epoch and Mission Phase Information">
+            <table>
             <tr>
-                <td>Orbit data epoch: JD = <label id="epochjd"></label> | UTC = <label id="epochdate"></label></td>
+                <!-- <td>Orbit data epoch: JD = <label id="epochjd"></label> | UTC = <label id="epochdate"></label></td> -->
                 <td>CY3 phase: 
                 <label id="phase-1"></label> | 
                 <label id="phase-2"></label> | 

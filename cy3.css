@@ -17,7 +17,7 @@
 
 body {
     z-index: 2;
-    pointer-events: all;
+    /* pointer-events: all; */
 
     background-color: black; 
     color: #B3B3B3;
@@ -36,21 +36,28 @@ body {
     justify-content: space-between;
     margin: 0px;
     padding: 0px;
-    /* min-height: 100%;
-    height: auto !important;
-    height: 100%;
-    margin: 0px 0px -41px 0px; */
 }
 
 .content-wrapper {
     width: 100%;
     padding: 0px;
     margin: 0px;
-    /* padding: 0px 0px 41px 0px; */
 }
 
-.blurb {
+.navbar {
+    display: flex;
+    flex-direction: row;
+}
+
+.navbar button { background-color: black; color: white; padding-right: 10px; margin-right: 10px; }
+.blurb p { font-size: 0.6vw; padding: 0px; margin: 0px; }
+
+.control-panel {
     z-index: 10;
+}
+
+.settings-panel {
+    display: none;
 }
 
 .canvas-wrapper {
@@ -65,8 +72,6 @@ body {
     color: #7F7F7F;
     padding: 0px;
     margin: 0px;
-    /* height: 41px; */ /* '.push' must be the same height as 'footer' */
-    /* height: 41px; */
 }
 
 .footer-inner-wrapper, .content-inner-wrapper {
@@ -126,6 +131,10 @@ a.down {
   pointer-events: all;
 }
 
+fieldset {
+    float: left;
+}
+
 .vspace {
   margin-bottom: 1em;
 }
@@ -166,7 +175,7 @@ a.down {
 
 @media screen and (max-width: 600px) {
     .date {
-        font-size: 0.8em;
+        font-size: 1.0em;
     }
 }
 
@@ -235,11 +244,7 @@ table {
 
 svg {
     position: absolute;
-    left: 0px;
-    top: 0px;
-    right: 100%;
-    bottom: 100%;
-    z-index: 1; 
+    z-index: 1;
 }
 
 canvas {
