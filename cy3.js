@@ -228,43 +228,43 @@ class SceneHandler {
             return;
         }
 
-        var width = window.innerWidth;
-        var height = window.innerHeight - $("#footer-wrapper").outerHeight(true); // - 40; // TODO fix this
+        computeSVGDimensions();
+        var width = svgWidth;
+        var height = svgHeight - $("#svg-top-baseline").position().top;
 
         // add renderer
         this.renderer = new THREE.WebGLRenderer({antialias: true});
         this.renderer.setPixelRatio(window.devicePixelRatio);
         this.renderer.setSize(width, height);
+        // this.renderer.domElement.style.display = "none";
 
         // document.body.appendChild(renderer.domElement);
-        // this.canvasNode = d3.select("#canvas-wrapper")[0][0].appendChild(this.renderer.domElement); // TODO find a better D3 way to do this
         console.log("Adding rendererer ...");
-        this.canvasNode = d3.select("#canvas-wrapper").node().appendChild(this.renderer.domElement); // TODO find a better D3 way to do this
+        this.canvasNode = d3.select("#canvas-wrapper")[0][0].appendChild(this.renderer.domElement); // TODO find a better D3 way to do this
+        // this.canvasNode = d3.select("#canvas-wrapper").node().appendChild(this.renderer.domElement); // TODO find a better D3 way to do this
 
         window.addEventListener('resize', onWindowResize, {passive: false}); // TODO verify 
 
         $("#settings-panel-button").on("click", function() {
             $("#settings-panel").dialog({
-                dialogClass: "dialog desktoponly",
+                dialogClass: "dialog",
                 modal: false,
                 position: {
-                    my: "right top",
-                    at: "right top",
-                    of: "#blurb",
+                    my: "left top",
+                    at: "left bottom",
+                    of: "#svg-top-baseline",
                     collision: "fit flip"},
                 title: "Settings",
                 closeOnEscape: false
                 }).dialogExtend({
                     closable: true,
-                    "dblclick" : "collapse",
                     minimizable: false,
-                    minimizeLocation: 'right',
-                    collapsable: true,
+                    collapsable: false,
                     })/* .dialogExtend("collapse") */;
             $("#settings-panel")
                 .closest('.ui-dialog')
-                .addClass("transparent-panel")
-                .css({'background': 'transparent', 'background-image': 'none', 'border': '0'});
+                // .addClass("transparent-panel")
+                .css({'background-image': 'none', 'border': '0', 'z-index': '9999'});
 
                 });
 
@@ -524,8 +524,9 @@ class AnimationScene {
 
         // console.log("init3dRest() called");
 
-        var width = window.innerWidth;
-        var height = window.innerHeight - $("#footer-wrapper").outerHeight(true); // - 40; // TODO fix this
+        computeSVGDimensions();
+        var width = svgWidth;
+        var height = svgHeight;
 
         this.scene = new THREE.Scene();
 
@@ -1149,7 +1150,7 @@ function animateLoop() {
                 if (timelineIndex >= timelineTotalSteps) {
                     timelineIndex = timelineTotalSteps - 1;
                     setLocation();
-                    d3.select("#animate").text("Start");
+                    d3.select("#animate").text("Play");
                     stopAnimationFlag = true;
                     animationRunning = false;
                 }
@@ -1219,7 +1220,15 @@ function handleDimensionSwitch(newDim) {
     d3.selectAll(".dimension-" + newDim).style("visibility", "visible");
     d3.selectAll(".dimension-" + newDim).attr("display", "block");
     d3.selectAll(".dimension-" + oldDim).style("visibility", "hidden");
-    d3.selectAll(".dimension-" + oldDim).attr("display", "none");    
+    d3.selectAll(".dimension-" + oldDim).attr("display", "none");
+
+    // if (newDim == "3D") {
+    //     $("#svg-wrapper").css("display", "none");
+    //     theSceneHandler.renderer.domElement.style.display = "block";
+    // } else {
+    //     $("#svg-wrapper").css("display", "block");
+    //     theSceneHandler.renderer.domElement.style.display = "none";
+    // }
 }
 
 function addEvents() {
@@ -1227,7 +1236,7 @@ function addEvents() {
     var missionStartInfo = {
         "startTime": new Date(Date.UTC(2023, 7-1, 14,  9, 23, 0, 0)),
         "durationSeconds": 0,
-        "label" : "Launch",
+        "label" : "🚀 Launch",
         "burnFlag": false,
         "infoText": "Launch:    13th Jul, 14:52 IST - Chandrayaan 3 placed in orbit",
         "body": "CY3"
@@ -1386,7 +1395,7 @@ function addEvents() {
     var nowInfo = {
         "startTime": new Date(),
         "durationSeconds": 0,
-        "label": "Now",
+        "label": "⏰ Now",
         "burnFlag": false,
         "infoText": "Now",
         "body": ""  
@@ -1404,7 +1413,7 @@ function addEvents() {
     var cy3EndInfo = {
         "startTime": new Date(Date.UTC(2023, 9-1, 13, 8, 58, 0, 0)),
         "durationSeconds": 0,
-        "label": "CY3 Data End",
+        "label": "🏁CY3 Data End",
         "burnFlag": false,
         "infoText": "Chandrayaan 3 Data End",
         "body": ""
@@ -2266,7 +2275,7 @@ function init(callback) {
     //     .css({'background': 'transparent', 'background-image': 'none', 'border': '0'});
 
     $("#zoom-panel").dialog({
-        dialogClass: "dialog desktoponly",
+        dialogClass: "dialog dimension-2D desktoponly",
         modal: false,
         position: {
             my: "left top",
@@ -2398,7 +2407,7 @@ function processOrbitData(data) {
     */
 
     if (!animationRunning) {
-        d3.select("#animate").text("Start");
+        d3.select("#animate").text("Play");
     }
 
     zoomChangeTransform(0);
@@ -2482,9 +2491,9 @@ function computeSVGDimensions() {
     svgX = 0;
     svgY = $("#svg-top-baseline").position().top;
     svgWidth = window.innerWidth;
-    svgHeight = $("#footer-wrapper").position().top - svgY;
+    svgHeight = window.innerHeight - (svgY + $("#footer-wrapper").outerHeight(true));
     offsetx = svgWidth * (1 / 2) - SVG_ORIGIN_X;
-    offsety = svgHeight * (1 / 2) - SVG_ORIGIN_Y - (svgY);
+    offsety = svgHeight * (1 / 2) - SVG_ORIGIN_Y;
 
     console.log("svgX = " + svgX + ", svgY = " + svgY + ", svgWidth = " + svgWidth + ", svgHeight = " + svgHeight + 
         ", offsetx = " + offsetx + ", offsety = " + offsety);
@@ -2775,7 +2784,7 @@ function changeLocation() {
             timeoutHandle = setTimeout(function() { changeLocation(); }, ticksPerAnimationStep);
         } else {
             timelineIndex = timelineTotalSteps - 1;
-            d3.select("#animate").text("Start");
+            d3.select("#animate").text("Play");
             animationRunning = false;
         }
     }
@@ -2790,7 +2799,7 @@ function cy3Animate() {
         stopAnimationFlag = false;
         if (timelineIndex >= timelineTotalSteps - 1) timelineIndex = 0;
         // changeLocation();
-        d3.select("#animate").text("Stop");
+        d3.select("#animate").text("Pause");
     }
 }
 
@@ -2810,7 +2819,7 @@ function stopAnimation() {
     animationRunning = false;
     stopAnimationFlag = true;
     clearTimeout(timeoutHandle);
-    d3.select("#animate").text("Start");
+    d3.select("#animate").text("Play");
 }
 
 function forward() {

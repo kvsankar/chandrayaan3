@@ -46,7 +46,7 @@
             <div id="blurb" class="blurb desktoponly">
                 <p><b><a href="https://www.isro.gov.in/Chandrayaan3_New.html">Chandrayaan 3</a> Orbit Animation.</b></p>
                 <p>Created by <a href="https://sankara.net/">Sankar Viswanathan</a> using NASA JPL <a href="https://ssd.jpl.nasa.gov/horizons/">HORIZONS</a> Ephemerides.
-                Source code available at <a href="https://github.com/kvsankar/chandrayaan3">Github</a>. Works best in desktop screens.</p>
+                Source code available at <a href="https://github.com/kvsankar/chandrayaan3">Github</a>. Works best in desktop screens. Chrome works better than Firefox.</p>
             </div>
 
         </div>
@@ -90,7 +90,6 @@
                     <label class="lunar lro" for="checkbox-lock-earth">Earth</label>
                 </fieldset>
 
-
                 <fieldset>
                     <legend class="config-label">Plane</legend>
                     <input type="radio" name="plane" value="XY" id="checkbox-lock-xy" onclick="togglePlane()" checked="checked">
@@ -101,14 +100,12 @@
                     <label for="checkbox-lock-xy">ZX</label>
                 </fieldset>
                 
-                <div class="dimension-3D">
-                    <input id="joyride" type="checkbox" onclick="toggleJoyRide()">
-                    <label for="joyride">Joy Ride!</label>
 
-
-                    <fieldset>
+                    <fieldset class="dimension-3D">
                         <legend class="config-label">View</legend>
-                        <input type="checkbox" name="view" value="orbit"        id="view-orbit"         onclick="toggleView()" checked="checked">
+                        <input id="joyride" type="checkbox" onclick="toggleJoyRide()">
+                        <label for="joyride">Joy Ride!</label>
+                        <input type="checkbox" name="view" value="orbit" id="view-orbit" onclick="toggleView()" checked="checked">
                         <label for="view-orbit">CY3 Orbit</label>
                         <!-- <input type="checkbox" name="view" value="orbit-vikram" id="view-orbit-vikram"  onclick="toggleView()" checked="checked">Vikram Orbit</input> -->
                         <!-- <input type="checkbox" name="view" value="orbit-lro"    id="view-orbit-lro"     onclick="toggleView()" checked="checked">LRO Orbit</input> -->
@@ -119,24 +116,22 @@
                         <label for="view-poles">Poles</label>
                         <input type="checkbox" name="view" value="polar-axes" id="view-polar-axes" onclick="toggleView()" checked="checked">
                         <label for="view-polar-axes">Polar Axes</label>
+                                            <!--
+                        <span class="config-label">Camera Placed At:</span>
+                        <input type="radio" name="camera" value="AUTO"  id="camerapos-auto" onclick="toggleCameraPos()" checked="checked">Auto</input>
+                        <input type="radio" name="camera" value="CY3"   id="camerapos-cy3"   onclick="toggleCameraPos()">CY3</input>
+                        <input type="radio" name="camera" value="EARTH" id="camerapos-earth" onclick="toggleCameraPos()">Earth</input>
+                        <input type="radio" name="camera" value="MOON"  id="camerapos-moon"  onclick="toggleCameraPos()">Moon</input>
+
+                        <span class="hspace">|</span>
+
+                        <span class="config-label">Camera Looking At:</span>
+                        <input type="radio" name="look" value="AUTO"  id="cameralook-auto" onclick="toggleCameraLook()" checked="checked">Auto</input>
+                        <input type="radio" name="look" value="CY3"   id="cameralook-cy3"   onclick="toggleCameraLook()">CY3</input>
+                        <input type="radio" name="look" value="EARTH" id="cameralook-earth" onclick="toggleCameraLook()">Earth</input>
+                        <input type="radio" name="look" value="MOON"  id="cameralook-moon"  onclick="toggleCameraLook()">Moon</input>
+                        -->
                     </fieldset>
-                    <!--
-                    <span class="config-label">Camera Placed At:</span>
-                    <input type="radio" name="camera" value="AUTO"  id="camerapos-auto" onclick="toggleCameraPos()" checked="checked">Auto</input>
-                    <input type="radio" name="camera" value="CY3"   id="camerapos-cy3"   onclick="toggleCameraPos()">CY3</input>
-                    <input type="radio" name="camera" value="EARTH" id="camerapos-earth" onclick="toggleCameraPos()">Earth</input>
-                    <input type="radio" name="camera" value="MOON"  id="camerapos-moon"  onclick="toggleCameraPos()">Moon</input>
-
-                    <span class="hspace">|</span>
-
-                    <span class="config-label">Camera Looking At:</span>
-                    <input type="radio" name="look" value="AUTO"  id="cameralook-auto" onclick="toggleCameraLook()" checked="checked">Auto</input>
-                    <input type="radio" name="look" value="CY3"   id="cameralook-cy3"   onclick="toggleCameraLook()">CY3</input>
-                    <input type="radio" name="look" value="EARTH" id="cameralook-earth" onclick="toggleCameraLook()">Earth</input>
-                    <input type="radio" name="look" value="MOON"  id="cameralook-moon"  onclick="toggleCameraLook()">Moon</input>
-                    -->
-
-                </div>
             </fieldset>
         </div> <!-- settings panel -->
 
@@ -146,7 +141,7 @@
             <div id="animation-control-panel">
                 <div class="vspace"></div>
 
-                <span class="config-label config-first-label">Animation:</span> 
+                <!-- <span class="config-label config-first-label">Animation:</span>  -->
                 <button id="animate"    type="button" class="button" onclick="cy3Animate()"></button>
                 <button id="slower"     type="button" class="button"> Slower </button>
                 <button id="faster"     type="button" class="button"> Faster </button>
@@ -160,9 +155,9 @@
 
                 <div class="vspace"></div>
                 
-                <span class="config-label config-first-label">Timeline:</span>
+                <!-- <span class="config-label config-first-label">Timeline:</span> -->
 
-                <span id="burnbuttons"></span>    
+                <div id="burnbuttons"></div>    
                 
                 <div class="vspace"></div>
 

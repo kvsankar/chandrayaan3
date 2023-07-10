@@ -17,8 +17,6 @@
 
 body {
     z-index: 2;
-    /* pointer-events: all; */
-
     background-color: black; 
     color: #B3B3B3;
     font-size: x-small;
@@ -196,7 +194,6 @@ fieldset {
 
 .dimension-3D {
   visibility: hidden;
-  display: none;
 }
 
 .eventinfo {
