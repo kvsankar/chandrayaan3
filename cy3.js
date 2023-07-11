@@ -2274,27 +2274,32 @@ function init(callback) {
     //     .addClass("transparent-panel")
     //     .css({'background': 'transparent', 'background-image': 'none', 'border': '0'});
 
-    $("#zoom-panel").dialog({
-        dialogClass: "dialog dimension-2D desktoponly",
-        modal: false,
-        position: {
-            my: "left top",
-            at: "left bottom",
-            of: "#animation-control-panel",
-            collision: "fit flip"},
-        title: "Pan/Zoom",
-        closeOnEscape: false
-    }).dialogExtend({
-        closable: false,
-        "dblclick" : "collapse",
-        minimizable: true,
-        minimizeLocation: 'right',
-        collapsable: true,
-    });
-    $("#zoom-panel")
-        .closest('.ui-dialog')
-        .addClass("transparent-panel")
-        .css({'background': 'transparent', 'background-image': 'none', 'border': '0', 'margin-top': '20px'});
+    let isMobile = window.matchMedia("only screen and (max-width: 600px)").matches;
+
+    if (!isMobile) {
+        $("#zoom-panel").dialog({
+            dialogClass: "dialog dimension-2D desktoponly",
+            modal: false,
+            position: {
+                my: "left top",
+                at: "left bottom",
+                of: "#animation-control-panel",
+                collision: "fit flip"},
+            title: "Pan/Zoom",
+            closeOnEscape: false
+        }).dialogExtend({
+            closable: false,
+            "dblclick" : "collapse",
+            minimizable: true,
+            minimizeLocation: 'right',
+            collapsable: true,
+        });
+        $("#zoom-panel")
+            .closest('.ui-dialog')
+            .addClass("transparent-panel")
+            .addClass("desktoponly")
+            .css({'background': 'transparent', 'background-image': 'none', 'border': '0', 'margin-top': '20px'});    
+    }
 
     $("#stats").dialog({
         dialogClass: "dialog desktoponly",

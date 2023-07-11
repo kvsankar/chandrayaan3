@@ -47,8 +47,8 @@ body {
     flex-direction: row;
 }
 
-.navbar button { background-color: black; color: white; padding-right: 10px; margin-right: 10px; }
-.blurb p { font-size: 0.6vw; padding: 0px; margin: 0px; }
+/* .navbar button { padding-right: 10px; margin-right: 10px; } */
+.blurb p { padding: 0px; margin: 0px; }
 
 .control-panel {
     z-index: 10;
@@ -56,6 +56,20 @@ body {
 
 .settings-panel {
     display: none;
+}
+
+#settings-panel-button {
+    background-color: black; 
+    color: white; 
+    margin: 0px;
+    padding: 0px;
+    padding-right: 10px;
+    border: none;
+}
+
+#settings-panel-fieldset {
+    display: flex;
+    flex-direction: column;
 }
 
 .canvas-wrapper {
@@ -172,15 +186,17 @@ fieldset {
 }
 
 @media screen and (max-width: 600px) {
-    .date {
-        font-size: 1.0em;
-    }
+    .blurb h1 { font-weight: bold; font-size: 0.8em; margin: 0px; padding: 0px; }
+    .blurb h2 { font-size: 0.8em; margin: 0px; padding: 0px; }
+    .blurb p { font-size:0.8em; }
+    .date { font-size: 0.8em; }
 }
 
 @media screen and (min-width: 601px) {
-    .date {
-        font-size: 1.5em;
-    }
+    .blurb h1 { font-weight: bold; font-size: 1.5em; margin: 0px; padding: 0px; }
+    .blurb h2 { font-size: 1.0em; margin: 0px; padding: 0px; }
+    .blurb p { font-size: 1.0em; }
+    .date { font-size: 1.0em; }
 }
 
 .date {

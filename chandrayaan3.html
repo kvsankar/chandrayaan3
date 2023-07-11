@@ -43,18 +43,19 @@
 
             <button id="settings-panel-button">☰ Settings</button>
             
-            <div id="blurb" class="blurb desktoponly">
-                <p><b><a href="https://www.isro.gov.in/Chandrayaan3_New.html">Chandrayaan 3</a> Orbit Animation.</b></p>
-                <p>Created by <a href="https://sankara.net/">Sankar Viswanathan</a> using NASA JPL <a href="https://ssd.jpl.nasa.gov/horizons/">HORIZONS</a> Ephemerides.
-                Source code available at <a href="https://github.com/kvsankar/chandrayaan3">Github</a>. Works best in desktop screens. Chrome works better than Firefox.</p>
+            <div id="blurb" class="blurb">
+                <h1><a href="https://www.isro.gov.in/Chandrayaan3_New.html">Chandrayaan 3</a> Orbit Animation.</h1>
+                <h2>Created by <a href="https://sankara.net/">Sankar Viswanathan</a> using NASA JPL <a href="https://ssd.jpl.nasa.gov/horizons/">HORIZONS</a> Ephemerides.</h2>
+                <p class="desktoponly">Source code available at <a href="https://github.com/kvsankar/chandrayaan3">Github</a>.
+                    Works best in desktop screens. Chrome works better than Firefox.</p>
             </div>
 
         </div>
 
         <div id="settings-panel" class="settings-panel"> <!-- First row buttons -->
 
-            <fieldset>
-                <legend>Settings</legend>
+            <div id="settings-panel-fieldset" class="flex-container">
+                <!-- <legend>Settings</legend> -->
                 <fieldset>
                     <legend class="config-label config-first-label">Origin/Phase:</legend>
                     <input id="origin-earth" type="radio" name="mode" value="geo"   onclick="toggleMode()" checked="checked">
@@ -99,40 +100,39 @@
                     <input type="radio" name="plane" value="ZX" id="checkbox-lock-yz" onclick="togglePlane()">
                     <label for="checkbox-lock-xy">ZX</label>
                 </fieldset>
-                
+            
+                <fieldset class="dimension-3D">
+                    <legend class="config-label">View</legend>
+                    <input id="joyride" type="checkbox" onclick="toggleJoyRide()">
+                    <label for="joyride">Joy Ride!</label>
+                    <input type="checkbox" name="view" value="orbit" id="view-orbit" onclick="toggleView()" checked="checked">
+                    <label for="view-orbit">CY3 Orbit</label>
+                    <!-- <input type="checkbox" name="view" value="orbit-vikram" id="view-orbit-vikram"  onclick="toggleView()" checked="checked">Vikram Orbit</input> -->
+                    <!-- <input type="checkbox" name="view" value="orbit-lro"    id="view-orbit-lro"     onclick="toggleView()" checked="checked">LRO Orbit</input> -->
+                    <!-- <input type="checkbox" name="view" value="craters"      id="view-craters"       onclick="toggleView()" checked="checked">Craters</input> -->
+                    <input type="checkbox" name="view" value="xyz" id="view-xyz-axes" onclick="toggleView()" checked="checked">
+                    <label for="view-xyz-axes">XYZ Axes</label>
+                    <input type="checkbox" name="view" value="poles" id="view-poles" onclick="toggleView()" checked="checked">
+                    <label for="view-poles">Poles</label>
+                    <input type="checkbox" name="view" value="polar-axes" id="view-polar-axes" onclick="toggleView()" checked="checked">
+                    <label for="view-polar-axes">Polar Axes</label>
+                                        <!--
+                    <span class="config-label">Camera Placed At:</span>
+                    <input type="radio" name="camera" value="AUTO"  id="camerapos-auto" onclick="toggleCameraPos()" checked="checked">Auto</input>
+                    <input type="radio" name="camera" value="CY3"   id="camerapos-cy3"   onclick="toggleCameraPos()">CY3</input>
+                    <input type="radio" name="camera" value="EARTH" id="camerapos-earth" onclick="toggleCameraPos()">Earth</input>
+                    <input type="radio" name="camera" value="MOON"  id="camerapos-moon"  onclick="toggleCameraPos()">Moon</input>
 
-                    <fieldset class="dimension-3D">
-                        <legend class="config-label">View</legend>
-                        <input id="joyride" type="checkbox" onclick="toggleJoyRide()">
-                        <label for="joyride">Joy Ride!</label>
-                        <input type="checkbox" name="view" value="orbit" id="view-orbit" onclick="toggleView()" checked="checked">
-                        <label for="view-orbit">CY3 Orbit</label>
-                        <!-- <input type="checkbox" name="view" value="orbit-vikram" id="view-orbit-vikram"  onclick="toggleView()" checked="checked">Vikram Orbit</input> -->
-                        <!-- <input type="checkbox" name="view" value="orbit-lro"    id="view-orbit-lro"     onclick="toggleView()" checked="checked">LRO Orbit</input> -->
-                        <!-- <input type="checkbox" name="view" value="craters"      id="view-craters"       onclick="toggleView()" checked="checked">Craters</input> -->
-                        <input type="checkbox" name="view" value="xyz" id="view-xyz-axes" onclick="toggleView()" checked="checked">
-                        <label for="view-xyz-axes">XYZ Axes</label>
-                        <input type="checkbox" name="view" value="poles" id="view-poles" onclick="toggleView()" checked="checked">
-                        <label for="view-poles">Poles</label>
-                        <input type="checkbox" name="view" value="polar-axes" id="view-polar-axes" onclick="toggleView()" checked="checked">
-                        <label for="view-polar-axes">Polar Axes</label>
-                                            <!--
-                        <span class="config-label">Camera Placed At:</span>
-                        <input type="radio" name="camera" value="AUTO"  id="camerapos-auto" onclick="toggleCameraPos()" checked="checked">Auto</input>
-                        <input type="radio" name="camera" value="CY3"   id="camerapos-cy3"   onclick="toggleCameraPos()">CY3</input>
-                        <input type="radio" name="camera" value="EARTH" id="camerapos-earth" onclick="toggleCameraPos()">Earth</input>
-                        <input type="radio" name="camera" value="MOON"  id="camerapos-moon"  onclick="toggleCameraPos()">Moon</input>
+                    <span class="hspace">|</span>
 
-                        <span class="hspace">|</span>
-
-                        <span class="config-label">Camera Looking At:</span>
-                        <input type="radio" name="look" value="AUTO"  id="cameralook-auto" onclick="toggleCameraLook()" checked="checked">Auto</input>
-                        <input type="radio" name="look" value="CY3"   id="cameralook-cy3"   onclick="toggleCameraLook()">CY3</input>
-                        <input type="radio" name="look" value="EARTH" id="cameralook-earth" onclick="toggleCameraLook()">Earth</input>
-                        <input type="radio" name="look" value="MOON"  id="cameralook-moon"  onclick="toggleCameraLook()">Moon</input>
-                        -->
-                    </fieldset>
-            </fieldset>
+                    <span class="config-label">Camera Looking At:</span>
+                    <input type="radio" name="look" value="AUTO"  id="cameralook-auto" onclick="toggleCameraLook()" checked="checked">Auto</input>
+                    <input type="radio" name="look" value="CY3"   id="cameralook-cy3"   onclick="toggleCameraLook()">CY3</input>
+                    <input type="radio" name="look" value="EARTH" id="cameralook-earth" onclick="toggleCameraLook()">Earth</input>
+                    <input type="radio" name="look" value="MOON"  id="cameralook-moon"  onclick="toggleCameraLook()">Moon</input>
+                    -->
+                </fieldset>
+            </div>
         </div> <!-- settings panel -->
 
         <div id="control-panel" class="control-panel">
