@@ -176,7 +176,7 @@ var eventInfos = [];
 
 // 3D rendering related variables
 
-var currentDimension = "2D"; 
+var currentDimension = "3D"; 
 var theSceneHandler = null;
 var animationScenes = {};
 var joyRideFlag = false;
@@ -264,7 +264,7 @@ class SceneHandler {
             $("#settings-panel")
                 .closest('.ui-dialog')
                 // .addClass("transparent-panel")
-                .css({'background-image': 'none', 'border': '0', 'z-index': '9999'});
+                .css({'background-image': 'none', 'border': '0', 'max-width': '80%', 'z-index': '9999'});
 
                 });
 
@@ -909,7 +909,8 @@ class AnimationScene {
             this.lroCraftVisible = false;
         } else {
             this.camera.fov = 50.0;
-            this.setCameraPosition(defaultCameraDistance, defaultCameraDistance, defaultCameraDistance);
+            this.setCameraPosition(-1*defaultCameraDistance/12, -1*defaultCameraDistance/12, defaultCameraDistance/6);
+            this.motherContainer.position.set(-1*defaultCameraDistance/24, 0, 0);
             this.camera.up.set(0, 0, 1);
             this.craftVisible = true;
             // this.vikramCraftVisible = true;
@@ -1515,7 +1516,7 @@ function initConfig() {
         planetsForLocations = ["MOON", "CY3"]; // TODO Add Vikram later
         stepDurationInMilliSeconds = STEP_DURATION_MS; // TODO add to and read from JSON
         orbitsJson = "geo-cy3.json";
-        orbitsJsonFileSizeInBytes = 29037 * 1024; // TODO
+        orbitsJsonFileSizeInBytes = 34793 * 1024; // TODO
         stepsPerHop = 4;
 
         startTime                  = getStartAndEndTimes("EARTH")[0];
@@ -1563,7 +1564,7 @@ function initConfig() {
         planetsForLocations = ["EARTH", "CY3"]; // TODO Vikram to be added later
         stepDurationInMilliSeconds = STEP_DURATION_MS; // TODO add to and read from JSON
         orbitsJson = "lunar-CY3.json";
-        orbitsJsonFileSizeInBytes = 29053 * 1024; // TODO
+        orbitsJsonFileSizeInBytes = 34800 * 1024; // TODO
         stepsPerHop = 4;
 
         startTime                  = getStartAndEndTimes("EARTH")[0];
@@ -2132,7 +2133,8 @@ function initRest(callback) {
 
 function onload() {
     initRest(function() {
-        handleDimensionSwitch(currentDimension);
+        toggleDimension();
+        // handleDimensionSwitch(currentDimension);
         animateLoop();
         // console.log("onload() -> initRest() completed");
     });

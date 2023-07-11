@@ -66,14 +66,6 @@
                 </fieldset>
 
                 <fieldset>
-                    <legend class="config-label">Dimension:</legend>
-                    <input type ="radio" name="dimension" value="2D" id="dimension-2D" onclick="toggleDimension()" checked="checked">
-                    <label for="dimension-2D">2D</label>
-                    <input type ="radio" name="dimension" value="3D" id="dimension-3D" onclick="toggleDimension()">
-                    <label for="dimension-3D">3D</label>
-                </fieldset>
-
-                <fieldset>
                     <legend class="config-label">Camera:</legend>
                     <input type="radio" name="camera" value="default" id="camera-default" onclick="toggleCamera()" checked="checked">
                     <label for="camera-default">Default</label>
@@ -132,6 +124,15 @@
                     <input type="radio" name="look" value="MOON"  id="cameralook-moon"  onclick="toggleCameraLook()">Moon</input>
                     -->
                 </fieldset>
+
+                <fieldset>
+                    <legend class="config-label">Dimension:</legend>
+                    <input type ="radio" name="dimension" value="2D" id="dimension-2D" onclick="toggleDimension()">
+                    <label for="dimension-2D">2D</label>
+                    <input type ="radio" name="dimension" value="3D" id="dimension-3D" onclick="toggleDimension()" checked="checked">
+                    <label for="dimension-3D">3D</label>
+                </fieldset>
+
             </div>
         </div> <!-- settings panel -->
 
