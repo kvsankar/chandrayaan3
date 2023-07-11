@@ -692,7 +692,8 @@ class AnimationScene {
         // this.plotMoonLocation(deg_to_rad(24.103513),  deg_to_rad(-71.365233), "#FF0000"); // Simpelius N - https://en.wikipedia.org/wiki/Simpelius_(crater) 
 
         // Moon landing location according to orbit data available with JPL
-        this.plotMoonLocation(deg_to_rad(22.77050), deg_to_rad(-70.89754), "#FF00FF");    
+        this.plotMoonLocation(deg_to_rad(22.77050), deg_to_rad(-70.89754), "#BB3F3F"); // CY2
+        this.plotMoonLocation(deg_to_rad(32.348126), deg_to_rad(-69.367621 ), "#FF00FF"); // CY3
 
         // Primary landing site as per https://www.reddit.com/r/ISRO/comments/d1b64p/submitting_this_as_post_but_for_anyone_looking/
         //
@@ -909,8 +910,12 @@ class AnimationScene {
             this.lroCraftVisible = false;
         } else {
             this.camera.fov = 50.0;
-            this.setCameraPosition(-1*defaultCameraDistance/12, -1*defaultCameraDistance/12, defaultCameraDistance/6);
-            this.motherContainer.position.set(-1*defaultCameraDistance/24, 0, 0);
+            if (config == "geo") {
+                this.setCameraPosition(-1*defaultCameraDistance/12, -1*defaultCameraDistance/12, defaultCameraDistance/6);
+                this.motherContainer.position.set(-1*defaultCameraDistance/24, 0, 0);    
+            } else {
+                this.setCameraPosition(defaultCameraDistance/12, defaultCameraDistance/12, defaultCameraDistance/12);    
+            }
             this.camera.up.set(0, 0, 1);
             this.craftVisible = true;
             // this.vikramCraftVisible = true;
