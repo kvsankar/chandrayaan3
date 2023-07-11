@@ -239,7 +239,7 @@ class SceneHandler {
         // this.renderer.domElement.style.display = "none";
 
         // document.body.appendChild(renderer.domElement);
-        console.log("Adding rendererer ...");
+        // console.log("Adding rendererer ...");
         this.canvasNode = d3.select("#canvas-wrapper")[0][0].appendChild(this.renderer.domElement); // TODO find a better D3 way to do this
         // this.canvasNode = d3.select("#canvas-wrapper").node().appendChild(this.renderer.domElement); // TODO find a better D3 way to do this
 
@@ -2350,7 +2350,7 @@ function processOrbitData(data) {
     // TODO d3v7 handling
     // var zoom = d3.zoom().on("zoom", handleZoom).on("end", zoomEnd);
 
-    console.log("offsetx = " + offsetx + ", panx = " + panx + ", offsety = " + offsety + ", pany = " + pany);
+    // console.log("offsetx = " + offsetx + ", panx = " + panx + ", offsety = " + offsety + ", pany = " + pany);
 
     svgRect = d3.select("#svg")
         .append("rect")
@@ -2443,12 +2443,12 @@ function loadOrbitDataIfNeededAndProcess(callback) {
             })
             .get(function(error, data) {
                 if (error) {
-                    console.log("Orbit data load from " + orbitsJson + ": ERROR");
-                    console.log(error);
+                    // console.log("Orbit data load from " + orbitsJson + ": ERROR");
+                    // console.log(error);
                     $("#progressbar").hide();
                     d3.select("#progressbar-label").html("Error: failed to load orbit data.");    
                 } else {
-                    console.log("Orbit data load from " + orbitsJson + ": OK");
+                    // console.log("Orbit data load from " + orbitsJson + ": OK");
                     dataLoaded = true;
                     orbitDataLoaded[config] = true;
                     orbitData[config] = data;
@@ -2456,7 +2456,7 @@ function loadOrbitDataIfNeededAndProcess(callback) {
                     try {
                         callback();
                     } catch(error) {
-                        console.log("Error while processing read orbit data.");
+                        // console.log("Error while processing read orbit data.");
                     }                    
                 }
             });
@@ -2507,8 +2507,8 @@ function computeSVGDimensions() {
     offsetx = svgWidth * (1 / 2) - SVG_ORIGIN_X;
     offsety = svgHeight * (1 / 2) - SVG_ORIGIN_Y;
 
-    console.log("svgX = " + svgX + ", svgY = " + svgY + ", svgWidth = " + svgWidth + ", svgHeight = " + svgHeight + 
-        ", offsetx = " + offsetx + ", offsety = " + offsety);
+    // console.log("svgX = " + svgX + ", svgY = " + svgY + ", svgWidth = " + svgWidth + ", svgHeight = " + svgHeight + 
+    //     ", offsetx = " + offsetx + ", offsety = " + offsety);
 }
 
 function initSVG() {
@@ -2564,7 +2564,7 @@ function handleZoom(event) {
 }
 
 function handleZoomNew(event) {
-    console.log(event);
+    // console.log(event);
     x = event.transform.x || 0;
     y = event.transform.y || 0;
     zoomFactor = event.transform.k || 1;
