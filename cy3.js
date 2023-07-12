@@ -302,21 +302,27 @@ class SceneHandler {
 
                 var craftEarthDistance = animationScene.craft.position.distanceTo(animationScene.earthContainer.position);
                 var craftMoonDistance = animationScene.craft.position.distanceTo(animationScene.moonContainer.position);
+                var earthAngleRads = Math.asin(earthRadius / craftEarthDistance);
+                var moonAngleRads = Math.asin(moonRadius / craftMoonDistance);
+                // console.log("earthAngleRads = " + earthAngleRads + ", moonAngleRads = " + moonAngleRads);
 
                 // console.log("craftEarthDistance = " + craftEarthDistance + ", craftMoonDistance = " + craftMoonDistance + ", moonRadius = " + moonRadius);
 
                 var closerBody;
+                var closerAngleRads;
                 var radius;
                 var distance;
                 if (craftEarthDistance < craftMoonDistance) {
 
                     closerBody = animationScene.earthContainer;
+                    closerAngleRads = earthAngleRads;
                     distance = craftEarthDistance;
                     radius = earthRadius;
 
                 } else {
 
                     closerBody = animationScene.moonContainer;
+                    closerAngleRads = moonAngleRads;
                     distance = craftMoonDistance;
                     radius = moonRadius;
                 }
@@ -331,6 +337,7 @@ class SceneHandler {
                 // var theta = Math.acos(radius/distance);
 
                 animationScene.craftCamera.lookAt(closerBody.position);                
+                animationScene.craftCamera.rotateX(closerAngleRads); // TODO doesn't seem to work
                 this.renderer.render(animationScene.scene, animationScene.craftCamera);
 
             } else {
@@ -3158,6 +3165,10 @@ function toggleJoyRide() {
     joyRideFlag = !joyRideFlag;
     animationScenes[config].craft.visible = !joyRideFlag;
     animationScenes[config].craftEdges.visible = !joyRideFlag;
+    $("#joyridebutton").toggleClass("down");
+    if (joyRideFlag) {
+        animationScenes[config].motherContainer.position.set(0, 0, 0);    
+    }
     render();
 }
 
