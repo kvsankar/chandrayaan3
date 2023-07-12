@@ -1251,75 +1251,59 @@ function addEvents() {
         "durationSeconds": 0,
         "label" : "🚀 Launch",
         "burnFlag": false,
-        "infoText": "Launch:    13th Jul, 14:52 IST - Chandrayaan 3 placed in orbit",
+        "infoText": "Launch:    14th Jul, 14:53 IST - Chandrayaan 3 placed in orbit",
         "body": "CY3"
     }
 
     /* TODO Need updates based on direct information from ISRO or reverse engineered information from orbit data. */
 
     var ebn1Info = {
-        // https://www.isro.gov.in/update/24-jul-2019/chandrayaan2-update-first-earth-bound-maneuver
-        // 1400 - 1530 IST || Actual: 1452 IST - 48 seconds
-        "startTime": new Date(Date.UTC(2019, 7-1, 24,  9, 22, 0, 0)),
-        "durationSeconds": 48,
-        "label": "EBN#1",
+        // TODO estimated from orbit data
+        "startTime": new Date(Date.UTC(2023, 7-1, 15,  6, 44, 30, 0)),
+        "durationSeconds": 5*60,
+        "label": "🔥EBN#1",
         "burnFlag": true,
-        "infoText": "EBN#1:     24th Jul, 14:52 IST - Target orbit: 230 x  45162, Achieved 230 X  45163",
+        "infoText": "EBN#1:     15th Jul, 11:12 IST",
         "body": "CY3"
     }
 
     var ebn2Info = {
-        // https://www.isro.gov.in/update/26-jul-2019/chandrayaan2-update-second-earth-bound-maneuver
-        // 0100 - 0200 IST || Actual: 0108 IST - 883 seconds
-        "startTime": new Date(Date.UTC(2019, 7-1, 25, 19, 38, 0, 0)),
-        "durationSeconds": 883,
-        "label": "EBN#2", 
+        // TODO estimated from orbit data
+        "startTime": new Date(Date.UTC(2023, 7-1, 18, 09, 29, 30, 0)),
+        "durationSeconds": 15*60,
+        "label": "🔥EBN#2", 
         "burnFlag": true,
-        "infoText": "EBN#2:     26th Jul, 01:08 IST - Target orbit: 250 x  54689, Achieved 251 X  54829",
+        "infoText": "EBN#2:     18th Jul, 14:52 IST",
         "body": "CY3"        
     }
 
     var ebn3Info = {
-        // https://www.isro.gov.in/update/29-jul-2019/chandrayaan2-update-third-earth-bound-maneuver
-        // 1430 - 1530 IST || Actual: 1512 IST - 989 seconds
-        "startTime": new Date(Date.UTC(2019, 7-1, 29,  9, 42, 0, 0)),
-        "durationSeconds": 989,
-        "label": "EBN#3", 
+        // TODO estimated from orbit data
+        "startTime": new Date(Date.UTC(2023, 7-1, 20, 09, 22, 0, 0)),
+        "durationSeconds": 20*60,
+        "label": "🔥EBN#3", 
         "burnFlag": true,
-        "infoText": "EBN#3:     29th Jul, 15:12 IST - Target orbit: 268 x  71558, Achieved 276 x  71792",
+        "infoText": "EBN#3:     12th Jul, 14:42 IST",
         "body": "CY3"    
     }
 
     var ebn4Info = {
-        // https://www.isro.gov.in/update/02-aug-2019/chandrayaan2-update-fourth-earth-bound-maneuver
-        // 1400 - 1500 IST || Actual: 1527 IST - 646 seconds
-        "startTime": new Date(Date.UTC(2019, 8-1,  2,  9, 57, 0, 0)),
-        "durationSeconds": 646,
-        "label": "EBN#4", 
+        // TODO estimated from orbit data
+        "startTime": new Date(Date.UTC(2023, 7-1, 25, 08, 54, 30, 0)),
+        "durationSeconds": 5*60,
+        "label": "🔥EBN#4", 
         "burnFlag": true,
-        "infoText": "EBN#4:      2nd Aug, 15:27 IST - Target orbit: 248 x  90229, Achived: 277 x  89472",
+        "infoText": "EBN#4:      25th Jul, 14:22 IST",
         "body": "CY3"        
     }
 
-    var ebn5Info = {
-        // https://www.isro.gov.in/update/06-aug-2019/chandrayaan2-update-fifth-earth-bound-maneuver
-        // 1430 - 1530 IST || Actual: 1504 IST - 1041 seconds
-        "startTime": new Date(Date.UTC(2019, 8-1,  6,  9, 34, 0, 0)),
-        "durationSeconds": 1041,
-        "label": "EBN#5", 
+    var tliInfo = {
+        // TODO estimated from orbit data
+        "startTime": new Date(Date.UTC(2023, 7-1, 31, 18, 49, 30, 0)),
+        "durationSeconds": 25*60,
+        "label": "🔥TLI", 
         "burnFlag": true,
-        "infoText": "EBN#5:      6th Aug, 15:04 IST - Target orbit: 221 x 143585, Achieved 276 x 142975",
-        "body": "CY3"        
-    }
-
-    var ebn6tliInfo = {
-        // https://www.isro.gov.in/update/14-aug-2019/chandrayaan-2-successfully-enters-lunar-transfer-trajectory
-        // 0300 - 0400 IST || Actual: 0221 IST - 1203 seconds
-        "startTime": new Date(Date.UTC(2019, 8-1, 13, 20, 51, 0, 0)),
-        "durationSeconds": 1203,
-        "label": "EBN#6/TLI",
-        "burnFlag": true,
-        "infoText": "EBN#6/TLI: 14th Aug, 02:21 IST - Target orbit: 266 x 413623, Completed",
+        "infoText": "TLI:         1st Aug, 00:19 IST",
         "body": "CY3"        
     }
 
@@ -1415,11 +1399,11 @@ function addEvents() {
     }
 
     var vikramLandingInfo = {
-        "startTime": new Date(Date.UTC(2019, 9-1,  6, 20, 26, 0, 0)), // 7th Sept 1:56 IST
+        "startTime": new Date(Date.UTC(2023, 8-1, 23, 15, 30, 0, 0)), // 7th Sept 1:56 IST
         "durationSeconds": 0,
         "label": "Vikram Landing",
         "burnFlag": true,
-        "infoText": "Vikram Landing planned for 6th September, 20:00-21:00 UTC",
+        "infoText": "Vikram Landing planned for 23rd August, 20:30 UTC",
         "body": "VIKRAM"        
     }
 
@@ -1453,23 +1437,20 @@ function addEvents() {
     if ((config == "geo") || (config == "lunar")) {
         eventInfos = [
             missionStartInfo,
-            /*
             ebn1Info,
             ebn2Info,
             ebn3Info,
             ebn4Info,
-            ebn5Info,
-            ebn6tliInfo,
-            lbn1loiInfo,
-            lbn2Info,
-            lbn3Info,
-            lbn4Info,
-            lbn5Info,
-            vikramSeparationInfo,
-            vikramDeboostOneInfo,
-            vikramDeboostTwoInfo,
+            tliInfo,
+            // lbn1loiInfo,
+            // lbn2Info,
+            // lbn3Info,
+            // lbn4Info,
+            // lbn5Info,
+            // vikramSeparationInfo,
+            // vikramDeboostOneInfo,
+            // vikramDeboostTwoInfo,
             vikramLandingInfo,
-        */
             nowInfo,
             cy3EndInfo
         ];        
@@ -1485,6 +1466,10 @@ function addEvents() {
             lroEndInfo
         ];
     }
+
+    eventInfos.sort(function(a, b) {
+        return a.startTime - b.startTime;
+    })
 }
 
 function initConfig() {
@@ -1516,7 +1501,7 @@ function initConfig() {
         trackWidth = 0.6;
 
         earthRadius = (EARTH_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU;
-        moonRadius = (MOON_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU;
+        moonRadius = (MOON_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU * 0.95;
         
         primaryBody = "EARTH";
         primaryBodyRadius = earthRadius;
@@ -1564,7 +1549,7 @@ function initConfig() {
         trackWidth = 0.6;
 
         earthRadius = (EARTH_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU;
-        moonRadius = (MOON_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU;        
+        moonRadius = (MOON_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU * 0.95;        
 
         primaryBody = "MOON";
         primaryBodyRadius = moonRadius;
@@ -1610,7 +1595,7 @@ function initConfig() {
         trackWidth = 0.6;
 
         earthRadius = (EARTH_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU;
-        moonRadius = (MOON_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU;        
+        moonRadius = (MOON_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU * 0.95;        
 
         defaultCameraDistance = 3 * moonRadius;
 
@@ -1653,7 +1638,7 @@ function initConfig() {
             .attr("id", "burn" + (i+1))
             .attr("type", "button")
             .attr("class", "button")
-            .attr("title", eventInfos[i]["label"])
+            .attr("title", eventInfos[i]["title"])
             .attr("onclick", "burnButtonHandler(" + i + ")")
             .html(eventInfos[i]["label"]);
     }
@@ -2102,7 +2087,7 @@ function adjustLabelLocations() {
         var planetProps = planetProperties[planetKey];
         
         if (planetKey == "MOON") {
-            var moonRadius = (MOON_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU;
+            var moonRadius = (MOON_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU * 0.95;
             d3.selectAll("#" + planetKey).attr("r", Math.max(moonRadius, (planetProps.r/zoomFactor)));
         } else {
             d3.selectAll("#" + planetKey).attr("r", (planetProps.r/zoomFactor));

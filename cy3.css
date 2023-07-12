@@ -132,6 +132,15 @@ a.down {
     border-right: solid 2px #eaeaea;
 }
 
+#burnbuttons {
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    max-width: 200%;
+    max-height: 20px;
+    -webkit-overflow-scrolling: touch;
+}
+
 .transparent-panel {
   background: transparent;
   background-image: none;
