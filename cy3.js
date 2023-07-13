@@ -1512,7 +1512,7 @@ function initConfig() {
         planetsForOrbits = ["MOON", "CY3"]; // TODO Add Vikram later
         planetsForLocations = ["MOON", "CY3"]; // TODO Add Vikram later
         stepDurationInMilliSeconds = STEP_DURATION_MS; // TODO add to and read from JSON
-        orbitsJson = "geo-cy3.json";
+        orbitsJson = "geo-CY3.json";
         orbitsJsonFileSizeInBytes = 34793 * 1024; // TODO
         stepsPerHop = 4;
 
