@@ -2,9 +2,9 @@
 ## Chandrayaan 3 orbit animation
 
 This project holds the source code for the 3D and 2D animations used
-in http://sankara.net/chandrayaan2.html. That page shows an animation
-of the orbit of the ISRO <a href="http://www.isro.org/mars/home.aspx">
-Chandrayaan 2</a> mission.
+in http://sankara.net/chandrayaan3.html. That page shows an animation
+of the orbit of the ISRO <a href="https://www.isro.gov.in/Chandrayaan3_New.html">
+Chandrayaan 3</a> mission.
 
 ![Screenshot](/screenshots/chandrayaan2.png?raw=true)
 
@@ -21,7 +21,7 @@ I created this animation for educational purposes. It has the following features
 * Realistic textures for Earth and Moon in 3D mode
 * Astronomically correct rendering of sunlight on Earth and Moon, poles, and polar axes
 * Various animation controls for education - camera controls (pan, zoom, rotate), timeline controls, visibility controls
-* A Joy Ride feature which lets you fly along with Chandrayaan 2 (video capture: https://www.youtube.com/watch?v=go-vquqMZdk)
+* A Joy Ride feature which lets you fly along with Chandrayaan 3
     
 ## Design
 
@@ -48,7 +48,7 @@ The Perl script orbits.pl is used to fetch orbit data during development time fr
 
 The script supports the following options:
 
-    --phase=[geo|lunar|lro]   # geocentric or selenocentric phase -- defaults to geo
+    --phase=[geo|lunar]       # geocentric or selenocentric phase -- defaults to geo
     --data-dir=<datadir>      # place to save orbit data files -- defaults to .
     --use-cache               # use orbit data retrieved and saved earlier -- optional
 
@@ -63,9 +63,9 @@ Orbital elements are also stored here (though they aren't used at present):
 
 Orbit data for use by the JavaScript is written in JSON format in a time-stamped directory under data-fetched:
 
-    geo-cy2.json                # contains all geocentric orbit data (elements and vectors) until about 2019-09-10
-    lunar-cy2.json              # contains all selenocentric orbit data (elements and vectors) until about 2019-09-10
-    lunar-lro.json              # contains all selenocentric orbit data for Sep and Oct 2019 - post Vikram Loss of Signal
+    geo-cy3.json                # contains all geocentric orbit data (elements and vectors) 
+    lunar-cy3.json              # contains all selenocentric orbit data (elements and vectors)
+    
 
 ### Web page
 
@@ -73,13 +73,13 @@ The site consists of the following three sets of files:
 
 #### Core project files
 
-    chandrayaan2.html         # HTML page
-    cy2.js                    # JavaScript handling animation
+    chandrayaan3.html         # HTML page
+    cy3.js                    # JavaScript handling animation
     astro.js                  # A few astronomy support functions
-    cy2.css                   # CSS for the web page
-    whatsnew-cy2.html         # What's new page
-    geo-cy2.json              # contains all geocentric orbit data
-    lunary-cy2.json           # contains all selenocentric orbit data
+    cy3.css                   # CSS for the web page
+    whatsnew-cy3.html         # What's new page
+    geo-cy3.json              # contains all geocentric orbit data
+    lunary-cy3.json           # contains all selenocentric orbit data
 
 #### Third party library files, style sheets, and images
 
@@ -109,7 +109,7 @@ like Mongoose to test the local site.
 * Jon D. Giorgini for helping with the JPL/HORIZONS interface and data. 
   He was very responsive whenever I mailed him my queries.
   He has been of great help since 2013 for the Mars Orbiter Mission until now
-  for the Chandrayaan 2 mission.
+  for the Chandrayaan 3 mission.
   
 * Members of the Bangalore Astronomy Society (http://bas.org.in/) for their valuable feedback
 
@@ -120,14 +120,16 @@ like Mongoose to test the local site.
 The code base needs a rewrite. The very first release was for the Mars Orbiter Mission launch in 2013. 
 Minor changes were made later to support MOM Mars orbit insertion and the Pluto flyby of New Horizons.
 
-After a gap of 6 years, this has been modified again in 2019 to support the Chandrayaan 2 mission. 
+After a gap of 6 years, this was been modified again in 2019 to support the Chandrayaan 2 mission. 
 The major changes were for 3D support. In that process, the code quality has degraded.
+
+After another gap of 4 years, it has now been prepped for Chandrayaan 3. 
 
 The rewrite will focus on present-day JavaScript tooling, better abstraction, 
 better separation of concerns (2D vs. 3D, model vs. rendering, etc.), extensibility
 (how does one extend the code for a new mission easily merely by changing configurations), 
 performance (decrease the load time; improve rendering smoothness; on-demand loading of high resolution
-LRO textures), and responsive UX. The current UX is almost unusable on mobile screens. 
+LRO textures), and responsive UX. The current UX is not too great mobile screens. 
 
 ## Inspirations
 
