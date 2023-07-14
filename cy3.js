@@ -230,7 +230,7 @@ class SceneHandler {
 
         computeSVGDimensions();
         var width = svgWidth;
-        var height = svgHeight - $("#svg-top-baseline").position().top;
+        var height = svgHeight; // - $("#svg-top-baseline").position().top;
 
         // add renderer
         this.renderer = new THREE.WebGLRenderer({antialias: true});
@@ -2347,6 +2347,7 @@ function processOrbitData(data) {
     svgRect = d3.select("#svg")
         .append("rect")
             .attr("id", "svg-rect")
+            .attr("point-events", "all")
             .attr("class", "overlay")
             .attr("x", 0)
             .attr("y", 0)
@@ -2495,7 +2496,7 @@ function computeSVGDimensions() {
     svgX = 0;
     svgY = $("#svg-top-baseline").position().top;
     svgWidth = window.innerWidth;
-    svgHeight = window.innerHeight - (svgY + $("#footer-wrapper").outerHeight(true));
+    svgHeight = window.innerHeight; // - (svgY + $("#footer-wrapper").outerHeight(true));
     offsetx = svgWidth * (1 / 2) - SVG_ORIGIN_X;
     offsety = svgHeight * (1 / 2) - SVG_ORIGIN_Y;
 
@@ -2512,10 +2513,10 @@ function initSVG() {
         .attr("class", config + " dimension-2D")
         .append("svg")
             .attr("id", "svg")
-            .attr("x", svgX)
-            .attr("y", svgY)
-            .attr("width", svgWidth)
-            .attr("height", svgHeight)    
+            // .attr("x", svgX)
+            // .attr("y", svgY)
+            // .attr("width", svgWidth)
+            // .attr("height", svgHeight)    
             .attr("overflow", "visible") // added for SVG elements to be visible in Chrome 36+; TODO side effects analysis
             .attr("class", "dimension-2D")
             .attr("display", "none")
@@ -2523,11 +2524,11 @@ function initSVG() {
         .append("g")
             .attr("transform", "translate(" + offsetx + ", " + offsety + ")");
 
-     d3.select("svg")
-        .attr("x", svgX)
-        .attr("y", svgY)
-        .attr("width", svgWidth)
-        .attr("height", svgHeight);
+    //  d3.select("svg")
+    //     // .attr("x", svgX)
+    //     // .attr("y", svgY)
+    //     .attr("width", svgWidth)
+    //     .attr("height", svgHeight);
 
     d3.select("#progressbar-label").html("Loading orbit data ...");
 
@@ -3152,7 +3153,10 @@ function toggleJoyRide() {
     animationScenes[config].craftEdges.visible = !joyRideFlag;
     $("#joyridebutton").toggleClass("down");
     if (joyRideFlag) {
+        // $("#joyridebutton").css({"border-style": "inset"});
         animationScenes[config].motherContainer.position.set(0, 0, 0);    
+    } else {
+        // $("#joyridebutton").css({"border-style": "outset"});
     }
     render();
 }

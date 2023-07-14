@@ -9,37 +9,42 @@
  * 
  */
 
- html, body {
+/*
+  Page structure:
+
+    wrapper
+        header
+            navbar
+            settings-panel
+            control-panel
+
+        content-wrapper 
+            banner
+            progressbar
+            zoom-panel
+            stats
+            svg-wrapper
+            canvas-wrapper
+                canvas
+        footer-wrapper
+            footer-inner-wrapper
+*/
+
+html, body {
     height: 100%;
     margin: 0px;
     padding: 0px;
 }
 
 body {
-    z-index: 2;
     background-color: black; 
     color: #B3B3B3;
     font-size: x-small;
     font-family: sans-serif;  
 }
 
-.wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: start;
-    max-height: 100vh;
-    min-height: 100%;
-    height: 100%;
-    width: 100%;
-    justify-content: space-between;
-    margin: 0px;
-    padding: 0px;
-}
-
-.content-wrapper {
-    width: 100%;
-    padding: 0px;
-    margin: 0px;
+.header {
+    z-index: 2;
 }
 
 .navbar {
@@ -49,10 +54,6 @@ body {
 
 /* .navbar button { padding-right: 10px; margin-right: 10px; } */
 .blurb p { padding: 0px; margin: 0px; }
-
-.control-panel {
-    z-index: 10;
-}
 
 .settings-panel {
     display: none;
@@ -72,14 +73,71 @@ body {
     flex-direction: column;
 }
 
-.canvas-wrapper {
+.wrapper {
+    position: absolute;
+    top: 0px;
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    max-height: 100vh;
+    min-height: 100%;    
+    height: 100vh;
+    width: 100%;
+    justify-content: space-between;
+    overflow: hidden;
+    margin: 0px;
+    padding: 0px;
+}
+
+.content-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    max-height: 100vh;
+    min-height: 100%;    
+    /* height: 100vh; */
+    width: 100%;
+    justify-content: space-between;
+    overflow: hidden;
+    margin: 0px;
+    padding: 0px;
+}
+
+.svg-wrapper {
+    position: fixed;
+    top: 0px;
     min-height: 0px;
 }
 
+svg {
+    overflow: visible;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    min-width: 100%;
+    min-height: 100%;
+    width: 100%;
+    height: 100%;
+    pointer-events: all;
+}
+
+.canvas-wrapper {
+    position: fixed;
+    top: 0px;
+    min-height: 0px;
+}
+
+canvas {
+    /* position: absolute; */
+    z-index: 1;
+}
+
 .footer-wrapper {
+    position: fixed;
+    bottom: 0;
     margin-top: auto;
     margin-left: auto;
-    bottom: 0;
     width: 100%;
     color: #7F7F7F;
     padding: 0px;
@@ -111,7 +169,7 @@ a:link { color: lightskyblue; }
 a:visited { color: lightpink; }
 a:hover { color: white; }
 
-a.up {
+button.up {
     color: black;
     background: #ccc;
     cursor: pointer;
@@ -123,7 +181,7 @@ a.up {
 
 }
 
-a.down {
+button.down {
     color: black;
     background: #bbb;
     border-top: solid 2px #777;
@@ -166,6 +224,7 @@ fieldset {
 }
 
 .progressbar {
+    z-index: 2;
     position: absolute;
     left: 10%;
     top: 50%;
@@ -179,7 +238,6 @@ fieldset {
     width: 100%;
     height: 2vh;
 }
-
 
 .config-first-label {
   display: inline-block;
@@ -262,16 +320,6 @@ table {
     border: none;
     border-spacing: 0;
     border-collapse: collapse;
-}
-
-
-svg {
-    position: absolute;
-    z-index: 1;
-}
-
-canvas {
-  z-index: 1;
 }
 
 /* end of file */

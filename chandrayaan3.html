@@ -5,11 +5,10 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <meta name="description" content="ISRO's Chandrayaan 3 Mission - An Orbit Animation">
+        
+        <meta name="description" content="Chandrayaan 3 Orbit Animation by Sankar Viswanathan">
         <meta name="author" content="Sankaranarayanan Viswanathan">
         <meta name="keywords" content="chandrayaan, chandrayaan3, moon, isro, india, space, astronomy, animation">
-
-        <meta name="description" content="Chandrayaan 3 Orbit Animation by Sankar Viswanathan" />
 
         <!-- Facebook Meta Tags -->
         <meta property="og:url" content="https://sankara.net/chandrayaan3.html">
@@ -58,142 +57,144 @@
     <body onload="onload()">
 
         <div id="wrapper" class="wrapper flex-container">
-        <div id="content-wrapper" class="content-wrapper">
-        <div id="content-inner-wrapper" class="content-inner-wrapper">
 
-        <div class="navbar flex-container">
+        <div id="header" class="header">
+            <div class="navbar flex-container">
 
-            <button id="settings-panel-button">☰ Settings</button>
-            
-            <div id="blurb" class="blurb">
-                <h1><a href="https://www.isro.gov.in/Chandrayaan3_New.html">Chandrayaan 3</a> Orbit Animation.</h1>
-                <h2>Created by <a href="https://sankara.net/">Sankar Viswanathan</a> using NASA JPL <a href="https://ssd.jpl.nasa.gov/horizons/">HORIZONS</a> Ephemerides.</h2>
-                <p class="desktoponly">Source code available at <a href="https://github.com/kvsankar/chandrayaan3">Github</a>.
-                    Works best in desktop screens. Chrome works better than Firefox.</p>
-            </div>
-
-        </div>
-
-        <div id="settings-panel" class="settings-panel"> <!-- First row buttons -->
-
-            <div id="settings-panel-fieldset" class="flex-container">
-                <!-- <legend>Settings</legend> -->
-                <fieldset>
-                    <legend class="config-label config-first-label">Origin/Phase:</legend>
-                    <input id="origin-earth" type="radio" name="mode" value="geo"   onclick="toggleMode()" checked="checked">
-                    <label for="origin-earth">Earth</label>
-                    <input id="origin-moon" type="radio" name="mode" value="lunar" onclick="toggleMode()">
-                    <label for="origin-moon">Moon</label>
-                    <!-- <input type="radio" name="mode" value="lro"   onclick="toggleMode()">Moon/Post Vikram LOS</input> -->
-                </fieldset>
-
-                <fieldset>
-                    <legend class="config-label">Camera:</legend>
-                    <input type="radio" name="camera" value="default" id="camera-default" onclick="toggleCamera()" checked="checked">
-                    <label for="camera-default">Default</label>
-                    <input type ="radio" name="camera" value="moon" id="camera-moon" onclick="toggleCamera()">
-                    <label for="camera-moon">Moon</label>
-                </fieldset>
-
-                <fieldset>
-                    <legend class="config-label">Lock On:</legend>
-                    <input type="checkbox" id="checkbox-lock-cy3" onclick="toggleLockCY3()">
-                    <label for="checkbox-lock-cy3">Chandrayaan 3</label>
-                    <span class="geo"><input type="checkbox" id="checkbox-lock-moon" onclick="toggleLockMoon()"></span>
-                    <label class="geo" for="checkbox-lock-moon">Moon</label>
-                    <span class="lunar lro"><input type="checkbox" id="checkbox-lock-earth" onclick="toggleLockEarth()"></span>
-                    <label class="lunar lro" for="checkbox-lock-earth">Earth</label>
-                </fieldset>
-
-                <fieldset>
-                    <legend class="config-label">Plane</legend>
-                    <input type="radio" name="plane" value="XY" id="checkbox-lock-xy" onclick="togglePlane()" checked="checked">
-                    <label for="checkbox-lock-xy">XY</label>
-                    <input type="radio" name="plane" value="YZ" id="checkbox-lock-xz" onclick="togglePlane()">
-                    <label for="checkbox-lock-xy">YZ</label>
-                    <input type="radio" name="plane" value="ZX" id="checkbox-lock-yz" onclick="togglePlane()">
-                    <label for="checkbox-lock-xy">ZX</label>
-                </fieldset>
-            
-                <fieldset class="dimension-3D">
-                    <legend class="config-label">View</legend>
-                    <input id="joyride" type="checkbox" onclick="toggleJoyRide()">
-                    <label for="joyride">Joy Ride!</label>
-                    <input type="checkbox" name="view" value="orbit" id="view-orbit" onclick="toggleView()" checked="checked">
-                    <label for="view-orbit">CY3 Orbit</label>
-                    <!-- <input type="checkbox" name="view" value="orbit-vikram" id="view-orbit-vikram"  onclick="toggleView()" checked="checked">Vikram Orbit</input> -->
-                    <!-- <input type="checkbox" name="view" value="orbit-lro"    id="view-orbit-lro"     onclick="toggleView()" checked="checked">LRO Orbit</input> -->
-                    <input type="checkbox" name="view" value="craters" id="view-craters"  onclick="toggleView()" checked="checked">
-                    <label for="view-craters">Locations</label>
-                    <input type="checkbox" name="view" value="xyz" id="view-xyz-axes" onclick="toggleView()" checked="checked">
-                    <label for="view-xyz-axes">XYZ Axes</label>
-                    <input type="checkbox" name="view" value="poles" id="view-poles" onclick="toggleView()" checked="checked">
-                    <label for="view-poles">Poles</label>
-                    <input type="checkbox" name="view" value="polar-axes" id="view-polar-axes" onclick="toggleView()" checked="checked">
-                    <label for="view-polar-axes">Polar Axes</label>
-                                        <!--
-                    <span class="config-label">Camera Placed At:</span>
-                    <input type="radio" name="camera" value="AUTO"  id="camerapos-auto" onclick="toggleCameraPos()" checked="checked">Auto</input>
-                    <input type="radio" name="camera" value="CY3"   id="camerapos-cy3"   onclick="toggleCameraPos()">CY3</input>
-                    <input type="radio" name="camera" value="EARTH" id="camerapos-earth" onclick="toggleCameraPos()">Earth</input>
-                    <input type="radio" name="camera" value="MOON"  id="camerapos-moon"  onclick="toggleCameraPos()">Moon</input>
-
-                    <span class="hspace">|</span>
-
-                    <span class="config-label">Camera Looking At:</span>
-                    <input type="radio" name="look" value="AUTO"  id="cameralook-auto" onclick="toggleCameraLook()" checked="checked">Auto</input>
-                    <input type="radio" name="look" value="CY3"   id="cameralook-cy3"   onclick="toggleCameraLook()">CY3</input>
-                    <input type="radio" name="look" value="EARTH" id="cameralook-earth" onclick="toggleCameraLook()">Earth</input>
-                    <input type="radio" name="look" value="MOON"  id="cameralook-moon"  onclick="toggleCameraLook()">Moon</input>
-                    -->
-                </fieldset>
-
-                <fieldset>
-                    <legend class="config-label">Dimension:</legend>
-                    <input type ="radio" name="dimension" value="2D" id="dimension-2D" onclick="toggleDimension()">
-                    <label for="dimension-2D">2D</label>
-                    <input type ="radio" name="dimension" value="3D" id="dimension-3D" onclick="toggleDimension()" checked="checked">
-                    <label for="dimension-3D">3D</label>
-                </fieldset>
-
-            </div>
-        </div> <!-- settings panel -->
-
-        <div id="control-panel" class="control-panel">
-
-
-            <div id="animation-control-panel">
-                <div class="vspace"></div>
-
-                <!-- <span class="config-label config-first-label">Animation:</span>  -->
-                <button id="animate"    type="button" class="button" onclick="cy3Animate()"></button>
-                <button id="slower"     type="button" class="button"> Slower </button>
-                <button id="faster"     type="button" class="button"> Faster </button>
-
-                <span class="hspace">|</span>
-
-                <button id="fastbackward"       type="button" class="button" title="Fast rewind">&lt;&lt;</button> <!-- &#x25C1; --> 
-                <button id="backward"           type="button" class="button" title="Rewind">&lt;</button> <!-- &#x25C3; --> 
-                <button id="forward"            type="button" class="button" title="Forward">&gt;</button> <!-- &#x25B9; -->  
-                <button id="fastforward"        type="button" class="button" title="Fast forward">&gt;&gt;</button> <!-- &#x25B7; --> 
-
-                <span class="hspace">|</span>
-
-                <a id="joyridebutton" type="button" class="button" title="🎢 Joy Ride!" onclick="toggleJoyRide()">🎢 Joy Ride!</a> 
-
-                <div class="vspace"></div>
+                <button id="settings-panel-button">☰ Settings</button>
                 
-                <!-- <span class="config-label config-first-label">Timeline:</span> -->
-
-                <span id="burnbuttons"></span>    
-                
-                <div class="vspace"></div>
-
-                <div id="eventinfo" class="eventinfo"></div>
-
-            </div> <!-- First row buttons -->
+                <div id="blurb" class="blurb">
+                    <h1><a href="https://www.isro.gov.in/Chandrayaan3_New.html">Chandrayaan 3</a> Orbit Animation.</h1>
+                    <h2>Created by <a href="https://sankara.net/">Sankar Viswanathan</a> using NASA JPL <a href="https://ssd.jpl.nasa.gov/horizons/">HORIZONS</a> Ephemerides.</h2>
+                    <p class="desktoponly">Source code available at <a href="https://github.com/kvsankar/chandrayaan3">Github</a>.
+                        Works best in desktop screens. Chrome works better than Firefox.</p>
+                </div>
     
-        </div> <!-- control panel -->
+            </div>
+    
+            <div id="settings-panel" class="settings-panel"> <!-- First row buttons -->
+    
+                <div id="settings-panel-fieldset" class="flex-container">
+                    <!-- <legend>Settings</legend> -->
+                    <fieldset>
+                        <legend class="config-label config-first-label">Origin/Phase:</legend>
+                        <input id="origin-earth" type="radio" name="mode" value="geo"   onclick="toggleMode()" checked="checked">
+                        <label for="origin-earth">Earth</label>
+                        <input id="origin-moon" type="radio" name="mode" value="lunar" onclick="toggleMode()">
+                        <label for="origin-moon">Moon</label>
+                        <!-- <input type="radio" name="mode" value="lro"   onclick="toggleMode()">Moon/Post Vikram LOS</input> -->
+                    </fieldset>
+    
+                    <fieldset>
+                        <legend class="config-label">Camera:</legend>
+                        <input type="radio" name="camera" value="default" id="camera-default" onclick="toggleCamera()" checked="checked">
+                        <label for="camera-default">Default</label>
+                        <input type ="radio" name="camera" value="moon" id="camera-moon" onclick="toggleCamera()">
+                        <label for="camera-moon">Moon</label>
+                    </fieldset>
+    
+                    <fieldset>
+                        <legend class="config-label">Lock On:</legend>
+                        <input type="checkbox" id="checkbox-lock-cy3" onclick="toggleLockCY3()">
+                        <label for="checkbox-lock-cy3">Chandrayaan 3</label>
+                        <span class="geo"><input type="checkbox" id="checkbox-lock-moon" onclick="toggleLockMoon()"></span>
+                        <label class="geo" for="checkbox-lock-moon">Moon</label>
+                        <span class="lunar lro"><input type="checkbox" id="checkbox-lock-earth" onclick="toggleLockEarth()"></span>
+                        <label class="lunar lro" for="checkbox-lock-earth">Earth</label>
+                    </fieldset>
+    
+                    <fieldset>
+                        <legend class="config-label">Plane</legend>
+                        <input type="radio" name="plane" value="XY" id="checkbox-lock-xy" onclick="togglePlane()" checked="checked">
+                        <label for="checkbox-lock-xy">XY</label>
+                        <input type="radio" name="plane" value="YZ" id="checkbox-lock-xz" onclick="togglePlane()">
+                        <label for="checkbox-lock-xy">YZ</label>
+                        <input type="radio" name="plane" value="ZX" id="checkbox-lock-yz" onclick="togglePlane()">
+                        <label for="checkbox-lock-xy">ZX</label>
+                    </fieldset>
+                
+                    <fieldset class="dimension-3D">
+                        <legend class="config-label">View</legend>
+                        <input id="joyride" type="checkbox" onclick="toggleJoyRide()">
+                        <label for="joyride">Joy Ride!</label>
+                        <input type="checkbox" name="view" value="orbit" id="view-orbit" onclick="toggleView()" checked="checked">
+                        <label for="view-orbit">CY3 Orbit</label>
+                        <!-- <input type="checkbox" name="view" value="orbit-vikram" id="view-orbit-vikram"  onclick="toggleView()" checked="checked">Vikram Orbit</input> -->
+                        <!-- <input type="checkbox" name="view" value="orbit-lro"    id="view-orbit-lro"     onclick="toggleView()" checked="checked">LRO Orbit</input> -->
+                        <input type="checkbox" name="view" value="craters" id="view-craters"  onclick="toggleView()" checked="checked">
+                        <label for="view-craters">Locations</label>
+                        <input type="checkbox" name="view" value="xyz" id="view-xyz-axes" onclick="toggleView()" checked="checked">
+                        <label for="view-xyz-axes">XYZ Axes</label>
+                        <input type="checkbox" name="view" value="poles" id="view-poles" onclick="toggleView()" checked="checked">
+                        <label for="view-poles">Poles</label>
+                        <input type="checkbox" name="view" value="polar-axes" id="view-polar-axes" onclick="toggleView()" checked="checked">
+                        <label for="view-polar-axes">Polar Axes</label>
+                                            <!--
+                        <span class="config-label">Camera Placed At:</span>
+                        <input type="radio" name="camera" value="AUTO"  id="camerapos-auto" onclick="toggleCameraPos()" checked="checked">Auto</input>
+                        <input type="radio" name="camera" value="CY3"   id="camerapos-cy3"   onclick="toggleCameraPos()">CY3</input>
+                        <input type="radio" name="camera" value="EARTH" id="camerapos-earth" onclick="toggleCameraPos()">Earth</input>
+                        <input type="radio" name="camera" value="MOON"  id="camerapos-moon"  onclick="toggleCameraPos()">Moon</input>
+    
+                        <span class="hspace">|</span>
+    
+                        <span class="config-label">Camera Looking At:</span>
+                        <input type="radio" name="look" value="AUTO"  id="cameralook-auto" onclick="toggleCameraLook()" checked="checked">Auto</input>
+                        <input type="radio" name="look" value="CY3"   id="cameralook-cy3"   onclick="toggleCameraLook()">CY3</input>
+                        <input type="radio" name="look" value="EARTH" id="cameralook-earth" onclick="toggleCameraLook()">Earth</input>
+                        <input type="radio" name="look" value="MOON"  id="cameralook-moon"  onclick="toggleCameraLook()">Moon</input>
+                        -->
+                    </fieldset>
+    
+                    <fieldset>
+                        <legend class="config-label">Dimension:</legend>
+                        <input type ="radio" name="dimension" value="2D" id="dimension-2D" onclick="toggleDimension()">
+                        <label for="dimension-2D">2D</label>
+                        <input type ="radio" name="dimension" value="3D" id="dimension-3D" onclick="toggleDimension()" checked="checked">
+                        <label for="dimension-3D">3D</label>
+                    </fieldset>
+    
+                </div>
+            </div> <!-- settings panel -->
+    
+            <div id="control-panel" class="control-panel">
+    
+    
+                <div id="animation-control-panel">
+                    <div class="vspace"></div>
+    
+                    <!-- <span class="config-label config-first-label">Animation:</span>  -->
+                    <button id="animate"    type="button" class="button" onclick="cy3Animate()"></button>
+                    <button id="slower"     type="button" class="button"> Slower </button>
+                    <button id="faster"     type="button" class="button"> Faster </button>
+    
+                    <span class="hspace">|</span>
+    
+                    <button id="fastbackward"       type="button" class="button" title="Fast rewind">&lt;&lt;</button> <!-- &#x25C1; --> 
+                    <button id="backward"           type="button" class="button" title="Rewind">&lt;</button> <!-- &#x25C3; --> 
+                    <button id="forward"            type="button" class="button" title="Forward">&gt;</button> <!-- &#x25B9; -->  
+                    <button id="fastforward"        type="button" class="button" title="Fast forward">&gt;&gt;</button> <!-- &#x25B7; --> 
+    
+                    <span class="hspace">|</span>
+    
+                    <button id="joyridebutton" type="button" class="button" title="🎢 Joy Ride!" onclick="toggleJoyRide()">🎢 Joy Ride!</button> 
+    
+                    <div class="vspace"></div>
+                    
+                    <!-- <span class="config-label config-first-label">Timeline:</span> -->
+    
+                    <span id="burnbuttons"></span>    
+                    
+                    <div class="vspace"></div>
+    
+                    <div id="eventinfo" class="eventinfo"></div>
+    
+                </div> <!-- First row buttons -->
+        
+            </div> <!-- control panel -->
+        </div>        
+
+        <div id="content-wrapper" class="content-wrapper flex-container">
         
         <div id="svg-top-baseline"></div>
 
@@ -295,11 +296,9 @@
         <div id="canvas-wrapper" class="canvas-wrapper dimension-3D">
         </div>
 
-        </div> <!-- content-inner-wrapper -->
         </div> <!-- content-wrapper -->
 
         <div id="footer-wrapper" class="footer-wrapper">
-        <div id="footer-inner-wrapper" class="footer-wrapper">
 
         <div id="date" class="date"></div>
 
@@ -320,10 +319,8 @@
             Copyright &copy; 2013-2023 Sankaranarayanan Viswanathan. All rights reserved.
         </div> <!-- copyright -->
 
-        </div> <!-- footer-inner-wrapper -->
         </div> <!-- footer-wrapper -->
-        </div> <!-- wrapper -->
-
+    </div> <!-- wrapper -->
     </body>
 </html>
 
