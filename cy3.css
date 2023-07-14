@@ -40,7 +40,8 @@ body {
     background-color: black; 
     color: #B3B3B3;
     font-size: x-small;
-    font-family: sans-serif;  
+    font-family: sans-serif;
+    touch-action: pan-x pan-y;
 }
 
 .header {
