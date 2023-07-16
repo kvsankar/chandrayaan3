@@ -254,22 +254,38 @@ fieldset {
     font-size: 0.8em;
 }
 
+/* .notitledialog { z-index: 0;} */
+
 @media screen and (max-width: 600px) {
     .blurb h1 { font-weight: bold; font-size: 0.8em; margin: 0px; padding: 0px; }
     .blurb h2 { font-size: 0.8em; margin: 0px; padding: 0px; }
     .blurb p { font-size:0.8em; }
-    .date { font-size: 0.8em; }
+    .date { font-size: 1.0em; }
+    .stats { font-size: 0.8em; }
+    .notitledialog .ui-dialog-titlebar {display:none}
 }
 
 @media screen and (min-width: 601px) {
     .blurb h1 { font-weight: bold; font-size: 1.5em; margin: 0px; padding: 0px; }
     .blurb h2 { font-size: 1.0em; margin: 0px; padding: 0px; }
     .blurb p { font-size: 1.0em; }
-    .date { font-size: 1.0em; }
+    .date { font-size: 1.2em; }
 }
 
+.cy3 { font-family: "Lucida Console", monospace; text-align: right; }
+
+.stats {
+    background: transparent;
+    margin-bottom: 10px;
+    z-index: 2;
+    color: grey; 
+    pointer-events: none;
+}
+
+.stats td { text-align: right; }
+
 .date {
-  color: darkgrey;
+  color: grey;
   font-family: "Lucida Console", monospace;
 }
 

@@ -236,61 +236,6 @@
             </table>
         </div> <!-- zoom panel -->
 
-        <div id="stats" class="stats desktoponly">
-
-            <div class="vspace"></div>
-
-            <div> <!-- extended statistics / Relative to Earth -->
-                <table>
-                <tr>
-                    <th colspan="2"><b>Relative to Earth</b></th>
-                </tr>
-                <tr>
-                    <td>Vehicle</td>
-                    <td><label class="cy3">Chandrayaan 3</label></td>
-                </tr>
-                <tr>
-                    <td>Distance (km): </td>
-                    <td><label id="distance-CY3-EARTH" class="cy3"></label></td>
-                </tr>
-                <tr>
-                    <td>Altitude (km): </td>
-                    <td><label id="altitude-CY3-EARTH" class="cy3"></label></td>
-                </tr>
-                <tr>
-                    <td>Velocity (km/s): </td>
-                    <td><label id="velocity-CY3-EARTH" class="cy3"></label></td>
-                </tr>
-                </table>
-            </div>
-
-            <div class="vspace"></div>
-
-            <div> <!-- extended statistics / Relative to Moon -->
-                <table>
-                <tr>
-                    <th colspan="2"><b>Relative to Moon</b></th>
-                </tr>
-                <tr>
-                    <td>Vehicle</td>
-                    <td><label class="cy3">Chandrayaan 3</label></td>
-                </tr>
-                <tr>
-                    <td>Distance (km): </td>
-                    <td><label id="distance-CY3-MOON" class="cy3"></label></td>
-                </tr>
-                <tr>
-                    <td>Altitude (km): </td>
-                    <td><label id="altitude-CY3-MOON" class="cy3"></label></td>
-                </tr>
-                <tr>
-                    <td>Velocity (km/s): </td>
-                    <td><label id="velocity-CY3-MOON" class="cy3"></label></td>
-                </tr>
-                </table>
-            </div>
-        </div> <!-- stats wrapper -->
-
         <div id="svg-wrapper" class="svg-wrapper dimension-2D">
         </div>
         <div id="canvas-wrapper" class="canvas-wrapper dimension-3D">
@@ -300,25 +245,79 @@
 
         <div id="footer-wrapper" class="footer-wrapper">
 
-        <div id="date" class="date"></div>
+            <div id="stats" class="stats">
 
-        <div class="info desktoponly">
-            <table>
-            <tr>
-                <!-- <td>Orbit data epoch: JD = <label id="epochjd"></label> | UTC = <label id="epochdate"></label></td> -->
-                <td>CY3 phase: 
-                <label id="phase-1"></label> | 
-                <label id="phase-2"></label> | 
-                <label id="phase-3"></label>
-                </td>
-            </tr>
-            </table>
-        </div> <!-- info -->
+                <div class="vspace"></div>
 
-        <div class="copyright desktoponly">
-            Copyright &copy; 2013-2023 Sankaranarayanan Viswanathan. All rights reserved.
-        </div> <!-- copyright -->
+                <div> <!-- extended statistics / Relative to Earth -->
+                    <table>
+                    <tr>
+                        <th colspan="2"><b>Relative to Earth</b></th>
+                    </tr>
+                    <!-- <tr>
+                        <td>Vehicle</td>
+                        <td><label class="cy3">Chandrayaan 3</label></td>
+                    </tr> -->
+                    <tr>
+                        <td>Distance (km): </td>
+                        <td><label id="distance-CY3-EARTH" class="cy3"></label></td>
+                    </tr>
+                    <tr>
+                        <td>Altitude (km): </td>
+                        <td><label id="altitude-CY3-EARTH" class="cy3"></label></td>
+                    </tr>
+                    <tr>
+                        <td>Velocity (km/s): </td>
+                        <td><label id="velocity-CY3-EARTH" class="cy3"></label></td>
+                    </tr>
+                    </table>
+                </div>
 
+                <div class="vspace"></div>
+
+                <div> <!-- extended statistics / Relative to Moon -->
+                    <table>
+                    <tr>
+                        <th colspan="2"><b>Relative to Moon</b></th>
+                    </tr>
+                    <!-- <tr>
+                        <td>Vehicle</td>
+                        <td><label class="cy3">Chandrayaan 3</label></td>
+                    </tr> -->
+                    <tr>
+                        <td>Distance (km): </td>
+                        <td><label id="distance-CY3-MOON" class="cy3"></label></td>
+                    </tr>
+                    <tr>
+                        <td>Altitude (km): </td>
+                        <td><label id="altitude-CY3-MOON" class="cy3"></label></td>
+                    </tr>
+                    <tr>
+                        <td>Velocity (km/s): </td>
+                        <td><label id="velocity-CY3-MOON" class="cy3"></label></td>
+                    </tr>
+                    </table>
+                </div>
+            </div> <!-- stats wrapper -->
+    
+            <div id="date" class="date"></div>
+
+            <div class="info desktoponly">
+                <table>
+                <tr>
+                    <!-- <td>Orbit data epoch: JD = <label id="epochjd"></label> | UTC = <label id="epochdate"></label></td> -->
+                    <td>CY3 phase: 
+                    <label id="phase-1"></label> | 
+                    <label id="phase-2"></label> | 
+                    <label id="phase-3"></label>
+                    </td>
+                </tr>
+                </table>
+            </div> <!-- info -->
+
+            <div class="copyright desktoponly">
+                Copyright &copy; 2013-2023 Sankaranarayanan Viswanathan. All rights reserved.
+            </div> <!-- copyright -->
         </div> <!-- footer-wrapper -->
     </div> <!-- wrapper -->
     </body>

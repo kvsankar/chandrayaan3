@@ -2300,29 +2300,29 @@ function init(callback) {
             .css({'background': 'transparent', 'background-image': 'none', 'border': '0', 'margin-top': '20px'});    
     }
 
-    $("#stats").dialog({
-        dialogClass: "dialog desktoponly",
-        modal: false,
-        position: {
-            my: "left top",
-            at: "left bottom",
-            of: "#zoom-panel",
-            collision: "fit flip"},
-            title: "Information",
-            minimizable: true,
-            collapsable: true,
-            closeOnEscape: false
-        }).dialogExtend({
-            closable: false,
-            "dblclick" : "collapse",
-            minimizable: true,
-            minimizeLocation: 'right',
-            collapsable: true,
-    });
-    $("#stats")
-        .closest('.ui-dialog')
-        .addClass("transparent-panel")
-        .css({'background': 'transparent', 'background-image': 'none', 'border': '0'});
+    // $("#stats").dialog({
+    //     dialogClass: "dialog notitledialog",
+    //     modal: false,
+    //     position: {
+    //         my: "left bottom",
+    //         at: "left bottom-50",
+    //         of: window,
+    //         collision: "fit flip"},
+    //         title: "Information",
+    //         minimizable: true,
+    //         collapsable: true,
+    //         closeOnEscape: false
+    //     }).dialogExtend({
+    //         closable: false,
+    //         "dblclick" : "collapse",
+    //         minimizable: true,
+    //         minimizeLocation: 'right',
+    //         collapsable: true,
+    // });
+    // $("#stats")
+    //     .closest('.ui-dialog')
+    //     .addClass("transparent-panel")
+    //     .css({'background': 'transparent', 'background-image': 'none', 'border': '0'});
 
     animDate = d3.select("#date");
 
