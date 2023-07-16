@@ -2993,6 +2993,10 @@ function reset() {
     zoomEnd();
 }
 
+function toggleInfo() {
+    $("#stats").toggle();
+}
+
 function toggleLockCY3() {
     previousLockOnCY3 = lockOnCY3;
     lockOnCY3 = !lockOnCY3;

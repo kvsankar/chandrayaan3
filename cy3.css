@@ -282,6 +282,12 @@ fieldset {
     pointer-events: none;
 }
 
+#info-button {
+    pointer-events: all;
+    margin: 0px;
+    margin-top: 10px;
+}
+
 .stats td { text-align: right; }
 
 .date {
