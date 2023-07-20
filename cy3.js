@@ -70,10 +70,12 @@ var FORMAT_METRIC = d3.format(" >10,.2f");
 // General state variables
 //
 
+var animationState = { "geo": "start", "lunar": "start", "lro": "start" };
 var craftId = "CY3";
 var config = "geo";
 var missionStartCalled = false;
 var orbitDataLoaded = { "geo": false, "lunar": false, "lro": false };
+var orbitDataProcessed = { "geo": false, "lunar": false, "lro": false };
 var orbitData = {};
 var nOrbitPoints = 0;
 var nOrbitPointsVikram = 0;
@@ -181,6 +183,9 @@ var theSceneHandler = null;
 var animationScenes = {};
 var joyRideFlag = false;
 var moonPhaseCamera = false;
+
+let wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+async function sleep() { return new Promise(requestAnimationFrame); } // The Promise resolves after the next frame is painted
 
 function getStartAndEndTimes(id) {
 
@@ -488,7 +493,7 @@ class AnimationScene {
           ].map(filename=>loader.load(filename));
         });
 
-        getTextures().then(result=>{
+        getTextures().then(async result=>{
 
             // console.log("Loaded textures: ", result);
 
@@ -503,7 +508,7 @@ class AnimationScene {
             scene.moonMap               = result[mapIndex++];
             scene.moonMap.minFilter = THREE.LinearFilter;
 
-            scene.init3dRest();
+            await scene.init3dRest(); // We can't call callback until we are done
             callback();
 
         });
@@ -519,7 +524,7 @@ class AnimationScene {
 
         //         // console.log("Loaded texture.");
         //         scene.earthTexture = texture;
-        //         scene.init3dRest();
+        //         await scene.init3dRest();
         //         callback();
 
         //     });
@@ -527,18 +532,36 @@ class AnimationScene {
         /* DON'T PUT ANY CODE HERE */
     }
 
-    init3dRest() {
-
-        // console.log("init3dRest() called");
-
+    computeDimensions() {
         computeSVGDimensions();
-        var width = svgWidth;
-        var height = svgHeight;
+        this.width = svgWidth;
+        this.height = svgHeight;
+    }
 
-        this.scene = new THREE.Scene();
+    async addCurve() {
 
-        // console.log(primaryBodyRadius + ", " + secondaryBodyRadius);
+        var scene = this;
 
+        do {
+            var nPoints = Math.min(scene.leftOrbitPoints, scene.pointsPerSlice);
+            var arr = scene.curve.slice(scene.startingIndex, scene.startingIndex + nPoints);
+            var curves = new THREE.CatmullRomCurve3(arr);
+            scene.startingIndex += nPoints;
+            scene.leftOrbitPoints -= nPoints;
+        
+            var orbitGeometry = new THREE.Geometry();
+            orbitGeometry.vertices = curves.getSpacedPoints(nPoints * 40);
+            var orbitLine = new THREE.Line(orbitGeometry, scene.orbitMaterial);
+            scene.orbitLines.push(orbitLine);
+            scene.motherContainer.add(orbitLine);
+            render();
+            await wait(20);
+        } while (scene.leftOrbitPoints > 0)
+
+        // timeoutHandler();
+    }
+
+    addEarth() {
         // add Earth
 
         this.earthContainer = new THREE.Group();
@@ -575,6 +598,34 @@ class AnimationScene {
         // this.earthGlow.scale.multiplyScalar(1.02);
         // this.earth.add(this.earthGlow);
 
+        // add axes to Earth and Moon
+
+        var earthPoleScale = 1.2;
+        var earthNorthPolePoint = new THREE.Vector3(0, 0, +1 * earthRadius * earthPoleScale);
+        var earthSouthPolePoint = new THREE.Vector3(0, 0, -1 * earthRadius * earthPoleScale);
+        var earthAxisGeometry = new THREE.Geometry();
+        earthAxisGeometry.vertices.push(earthNorthPolePoint, earthSouthPolePoint);
+        var earthAxisMaterial = new THREE.LineBasicMaterial({color: earthAxisColor});
+        this.earthAxis = new THREE.Line(earthAxisGeometry, earthAxisMaterial);
+
+        var earthNorthPoleGeometry = new THREE.SphereGeometry(earthRadius/50, 100, 100);
+        var earthNorthPoleMaterial = new THREE.MeshPhysicalMaterial({color: blackColor, emissive: northPoleColor, reflectivity: 0.0});
+        this.earthNorthPoleSphere = new THREE.Mesh(earthNorthPoleGeometry, earthNorthPoleMaterial);
+        this.earthNorthPoleSphere.castShadow = false;
+        this.earthNorthPoleSphere.receiveShadow = false;
+        this.earthNorthPoleSphere.position.set(0, 0, 0.985 * earthRadius);
+
+        var earthSouthPoleGeometry = new THREE.SphereGeometry(earthRadius/50, 100, 100);
+        var earthSouthPoleMaterial = new THREE.MeshPhysicalMaterial({color: blackColor, emissive: southPoleColor, reflectivity: 0.0}); 
+        this.earthSouthPoleSphere = new THREE.Mesh(earthSouthPoleGeometry, earthSouthPoleMaterial);
+        this.earthSouthPoleSphere.castShadow = false;
+        this.earthSouthPoleSphere.receiveShadow = false;
+        this.earthSouthPoleSphere.position.set(0, 0, -0.985* earthRadius);
+
+        render();
+    }
+
+    addMoon() {
         // add Moon
 
         // var today = new Date();
@@ -630,31 +681,6 @@ class AnimationScene {
 
         this.rotateMoon();
 
-        // add axes to Earth and Moon
-
-        var earthPoleScale = 1.2;
-        var earthNorthPolePoint = new THREE.Vector3(0, 0, +1 * earthRadius * earthPoleScale);
-        var earthSouthPolePoint = new THREE.Vector3(0, 0, -1 * earthRadius * earthPoleScale);
-        var earthAxisGeometry = new THREE.Geometry();
-        earthAxisGeometry.vertices.push(earthNorthPolePoint, earthSouthPolePoint);
-        var earthAxisMaterial = new THREE.LineBasicMaterial({color: earthAxisColor});
-        this.earthAxis = new THREE.Line(earthAxisGeometry, earthAxisMaterial);
-
-        var earthNorthPoleGeometry = new THREE.SphereGeometry(earthRadius/50, 100, 100);
-        var earthNorthPoleMaterial = new THREE.MeshPhysicalMaterial({color: blackColor, emissive: northPoleColor, reflectivity: 0.0});
-        this.earthNorthPoleSphere = new THREE.Mesh(earthNorthPoleGeometry, earthNorthPoleMaterial);
-        this.earthNorthPoleSphere.castShadow = false;
-        this.earthNorthPoleSphere.receiveShadow = false;
-        this.earthNorthPoleSphere.position.set(0, 0, 0.985 * earthRadius);
-
-        var earthSouthPoleGeometry = new THREE.SphereGeometry(earthRadius/50, 100, 100);
-        var earthSouthPoleMaterial = new THREE.MeshPhysicalMaterial({color: blackColor, emissive: southPoleColor, reflectivity: 0.0}); 
-        this.earthSouthPoleSphere = new THREE.Mesh(earthSouthPoleGeometry, earthSouthPoleMaterial);
-        this.earthSouthPoleSphere.castShadow = false;
-        this.earthSouthPoleSphere.receiveShadow = false;
-        this.earthSouthPoleSphere.position.set(0, 0, -0.985* earthRadius);
-
-
         var moonPoleScale = 1.5;
         var moonNorthPolePoint = new THREE.Vector3(0, 0, +1 * moonRadius * moonPoleScale);
         var moonSouthPolePoint = new THREE.Vector3(0, 0, -1 * moonRadius * moonPoleScale);
@@ -678,9 +704,15 @@ class AnimationScene {
         this.moonSouthPoleSphere.receiveShadow = false;
         this.moonSouthPoleSphere.position.set(0, 0, -0.985 * moonRadius);
 
+        render();
+    }
+
+    addEarthLocations() {
         this.dwingeloo = this.plotEarthLocation(deg_to_rad(6.39616944444), deg_to_rad(52.8120194444), "#FF0000");
         this.chennai = this.plotEarthLocation(deg_to_rad(80.2707), deg_to_rad(13.0827), "#FF0000");
+    }
 
+    addMoonLocations() {
         // Moon selenographic origin (Prime Meridian = 0 degrees, Equator = 0 degrees) for reference
         this.plotMoonLocation(deg_to_rad(0), deg_to_rad(0), "#FF00FF"); // TODO 2021 - for testing - (0deg longitude == Prime Meridian, 0deg latitude)
 
@@ -707,8 +739,9 @@ class AnimationScene {
         // this.plotMoonLocation(deg_to_rad(22.78110), deg_to_rad(-70.902670), "#0000FF"); // primary 
         // this.plotMoonLocation(deg_to_rad(18.46947), deg_to_rad(-68.749153), "#FFFF00"); // secondary
         // this.plotMoonLocation(deg_to_rad(22.78110), deg_to_rad(-70.899920), "#00FFFF"); // chosen one?
+    }
 
-        
+    setPrimaryAndSecondaryBodies() {
         // set primary and secondary bodies
                 
         if (config == "geo") {
@@ -739,46 +772,51 @@ class AnimationScene {
             this.earthContainer.add(this.earthSouthPoleSphere);
         
         }
-        
-        this.motherContainer = new THREE.Group();
 
         this.motherContainer.add(this.primaryBody3D);
-
         if (this.name != "lro") {
             this.motherContainer.add(this.secondaryBody3D);    
-        }
-        
+        }    
+    }
 
+    addChandrayaanCurve() {
         // add Chandrayaan 3 orbiter orbit
-        var curves = new THREE.CatmullRomCurve3(this.curve);
-        var orbitGeometry = new THREE.Geometry();
-        orbitGeometry.vertices = curves.getSpacedPoints(nOrbitPoints * 100);
+        this.orbitLines = [];
+        this.pointsPerSlice = 100;
+        this.startingIndex = 0;
+        this.leftOrbitPoints = nOrbitPoints;
+
         var craftOrbitColor = planetProperties[craftId]["orbitcolor"];
-        var orbitMaterial = new THREE.LineBasicMaterial({color: craftOrbitColor, linewidth: 0.2});
-        this.orbitLine = new THREE.Line(orbitGeometry, orbitMaterial);
-        this.motherContainer.add(this.orbitLine);
+        this.orbitMaterial = new THREE.LineBasicMaterial({color: craftOrbitColor, linewidth: 0.2});
+
+        this.addCurve(); // TODO should we prefix await here?
 
         /*
         // add Chandrayaan 3 lander orbit
         var vikramCurves = new THREE.CatmullRomCurve3(this.vikramCurve);
         var vikramOrbitGeometry = new THREE.Geometry();
-        vikramOrbitGeometry.vertices = vikramCurves.getSpacedPoints(nOrbitPointsVikram * 100);
+        vikramOrbitGeometry.vertices = vikramCurves.getSpacedPoints(nOrbitPointsVikram * 40);
         var vikramOrbitColor = planetProperties["VIKRAM"]["orbitcolor"];
         var vikramOrbitMaterial = new THREE.LineBasicMaterial({color: vikramOrbitColor, linewidth: 0.2});
         this.vikramOrbitLine = new THREE.Line(vikramOrbitGeometry, vikramOrbitMaterial);
         this.motherContainer.add(this.vikramOrbitLine);
-    */
+        */
+    }
 
+    addLROOrbit() {
         if (this.name == "lro") {
             // add LRO orbit
             var lroCurves = new THREE.CatmullRomCurve3(this.lroCurve);
             var lroOrbitGeometry = new THREE.Geometry();
-            lroOrbitGeometry.vertices = lroCurves.getSpacedPoints(nOrbitPointsLRO * 100);
+            lroOrbitGeometry.vertices = lroCurves.getSpacedPoints(nOrbitPointsLRO * 40);
             var lroOrbitColor = planetProperties["LRO"]["orbitcolor"];
             var lroOrbitMaterial = new THREE.LineBasicMaterial({color: lroOrbitColor, linewidth: 0.2});
             this.lroOrbitLine = new THREE.Line(lroOrbitGeometry, lroOrbitMaterial);
             this.motherContainer.add(this.lroOrbitLine);            
         }
+    }
+
+    addChandrayaan() {
 
         var craftColor = planetProperties["CY3"]["color"];
         var craftEdgeColor = 0xFF8000;
@@ -826,7 +864,9 @@ class AnimationScene {
 
         this.motherContainer.add(this.vikramCraft);
         */
+    }
 
+    addLRO() {
         if (this.name == "lro") {
             // add LRO
 
@@ -849,7 +889,9 @@ class AnimationScene {
             this.lroLine.frustumCulled = false;
             this.motherContainer.add(this.lroLine);            
         }
+    }
 
+    addLineOfSight() {
         // this.losLineGeometry = new THREE.Geometry();
         // this.losLineGeometry.vertices.push(this.dwingeloo.position, this.vikramCraft.position);
         // var losLineMaterial = new THREE.LineBasicMaterial({color: vikramCraftColor});
@@ -857,11 +899,15 @@ class AnimationScene {
         // this.losLine.frustumCulled = false;
         // this.motherContainer.add(this.losLine);        
         // this.losLine.visible = false; // TODO add a control flag for this
+    }
 
+    addAxesHelper() {
         // add axes helper
         this.axesHelper = new THREE.AxesHelper(2*PIXELS_PER_AU*EARTH_MOON_DISTANCE_MEAN_AU);
         this.motherContainer.add(this.axesHelper);
+    }
 
+    addLight() {
         // add light
         this.light = new THREE.DirectionalLight(primaryLightColor, primaryLightIntensity);
         this.scene.add(this.light); // TODO attempt to fix lighting direction problem when piovoting on non-centered objects
@@ -870,15 +916,17 @@ class AnimationScene {
         this.motherContainer.add(ambientLight);
 
         this.scene.add(this.motherContainer);
+    }
 
+    addCamera() {
         // add camera
         var angle = 50.0;
-        this.camera = new THREE.PerspectiveCamera(angle, width/height, 0.001, 10000);
+        this.camera = new THREE.PerspectiveCamera(angle, this.width/this.height, 0.001, 10000);
         // console.log(`defaultCameraDistance=${defaultCameraDistance}`);
         this.setCameraPosition(defaultCameraDistance, defaultCameraDistance, defaultCameraDistance);
         this.camera.up.set(0, 0, 1);
 
-        this.craftCamera = new THREE.PerspectiveCamera(50, width/height, 0.001, 10000);
+        this.craftCamera = new THREE.PerspectiveCamera(50, this.width/this.height, 0.001, 10000);
         this.craft.add(this.craftCamera);
         this.craftCamera.up.set(0, 0, 1);
 
@@ -899,10 +947,34 @@ class AnimationScene {
         }
 
         this.setCameraParameters();
+    }
+
+    async init3dRest() {
+
+        // console.log("init3dRest() called");
+
+        this.scene = new THREE.Scene();
+        this.motherContainer = new THREE.Group();
+
+        this.computeDimensions(); render(); await wait(20);
+        this.addLight(); render(); await wait(20);
+        this.addEarth(); render(); await wait(20);
+        this.addMoon(); render(); await wait(20);
+        this.setPrimaryAndSecondaryBodies(); render(); await wait(20);
+        this.addChandrayaan(); render(); await wait(20);
+        this.addCamera(); render(); await wait(20);
+        this.initialized3D = true; render(); await wait(20);
+
+        this.addEarthLocations(); render(); await wait(20);
+        this.addMoonLocations(); render(); await wait(20);   
+
+        this.addChandrayaanCurve(); render(); await wait(20);
+        this.addLROOrbit(); render(); await wait(20);
+        this.addLRO(); render(); await wait(20);
+        this.addLineOfSight(); render(); await wait(20);
+        this.addAxesHelper(); render(); await wait(20);
 
         d3.select("#eventinfo").text("");
-
-        this.initialized3D = true;
     }
 
     setCameraParameters() {
@@ -919,7 +991,7 @@ class AnimationScene {
             this.camera.fov = 50.0;
             if (config == "geo") {
                 this.setCameraPosition(-1*defaultCameraDistance/12, -1*defaultCameraDistance/12, defaultCameraDistance/6);
-                this.motherContainer.position.set(-1*defaultCameraDistance/24, 0, 0);    
+                // this.motherContainer.position.set(-1*defaultCameraDistance/24, 0, 0);    
             } else {
                 this.setCameraPosition(defaultCameraDistance/12, defaultCameraDistance/12, defaultCameraDistance/12);    
             }
@@ -1141,41 +1213,6 @@ function render() {
     // console.log("render() global function called");  
     var animationScene = animationScenes[config];
     theSceneHandler.render(animationScene);
-}
-
-function animateLoop() {
-
-    (function() {
-
-        // console.log("animateLoopCount = " + animateLoopCount, ", ticksPerAnimationStep = " + ticksPerAnimationStep);
-
-        ++animateLoopCount;
-        if (animateLoopCount % ticksPerAnimationStep < 0.1) {
-            
-            animateLoopCount = 0;
-
-            // console.log("timelineIndex = " + timelineIndex + ", timelineTotalSteps = " + timelineTotalSteps);
-
-            if (!stopAnimationFlag) {
-                // console.log("Running the next step of the animation");
-                setLocation();
-                timelineIndex += timelineIndexStep;
-                if (timelineIndex >= timelineTotalSteps) {
-                    timelineIndex = timelineTotalSteps - 1;
-                    setLocation();
-                    d3.select("#animate").text("Play");
-                    stopAnimationFlag = true;
-                    animationRunning = false;
-                }
-            }
-        }
-    })();
-
-    requestAnimationFrame(animateLoop);
-
-    if (animationScenes[config] && animationScenes[config].initialized3D && animationScenes[config].cameraControlsEnabled) {
-        animationScenes[config].cameraControls.update();
-    }
 }
 
 function handleGeoInit() {
@@ -1472,14 +1509,18 @@ function addEvents() {
     })
 }
 
-function initConfig() {
+async function initConfig() {
+
+    // console.log("initConfig() called");
+
+    animationState[config] = "running_initConfig";
 
     addEvents();
 
-    timeTransLunarInjection = Date.UTC(2023, 8-1, 01,  0,  0, 0, 0); // TODO Update for CY3
+    timeTransLunarInjection = Date.UTC(2023, 8-1, 1,  0,  0, 0, 0); // TODO Update for CY3
     /* The next maneuver is Trans Lunar Insertion (TLI), which is scheduled on August 14, 2019, between 0300 – 0400 hrs (IST).*/ 
     
-    timeLunarOrbitInsertion = Date.UTC(2023, 8-1, 05, 14, 30, 0, 0); // TODO Update for CY3
+    timeLunarOrbitInsertion = Date.UTC(2023, 8-1, 5, 14, 30, 0, 0); // TODO Update for CY3
 
     if (!theSceneHandler) {
         theSceneHandler = new SceneHandler();
@@ -1501,7 +1542,7 @@ function initConfig() {
         trackWidth = 0.6;
 
         earthRadius = (EARTH_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU;
-        moonRadius = (MOON_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU * 0.95;
+        moonRadius = (MOON_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU;
         
         primaryBody = "EARTH";
         primaryBodyRadius = earthRadius;
@@ -1529,7 +1570,7 @@ function initConfig() {
         epochJD = "N/A";
         epochDate = "N/A";
 
-        timelineIndex = 0;
+        // timelineIndex = 0; // Don't reset in case we are switching between modes
 
         handleModeSwitchToGeo();
 
@@ -1549,7 +1590,7 @@ function initConfig() {
         trackWidth = 0.6;
 
         earthRadius = (EARTH_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU;
-        moonRadius = (MOON_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU * 0.95;        
+        moonRadius = (MOON_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU;        
 
         primaryBody = "MOON";
         primaryBodyRadius = moonRadius;
@@ -1577,7 +1618,7 @@ function initConfig() {
         epochJD = "N/A";
         epochDate = "N/A";
 
-        timelineIndex = 0;
+        // timelineIndex = 0; // Don't reset in case we are switching between modes
 
         handleModeSwitchToLunar();
 
@@ -1595,7 +1636,7 @@ function initConfig() {
         trackWidth = 0.6;
 
         earthRadius = (EARTH_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU;
-        moonRadius = (MOON_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU * 0.95;        
+        moonRadius = (MOON_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU;        
 
         defaultCameraDistance = 3 * moonRadius;
 
@@ -1625,7 +1666,7 @@ function initConfig() {
         epochJD = "N/A";
         epochDate = "N/A";
 
-        timelineIndex = 0;
+        // timelineIndex = 0; // Don't reset in case we are switching between modes
 
         handleModeSwitchToLRO();
     }
@@ -1643,6 +1684,9 @@ function initConfig() {
             .html(eventInfos[i]["label"]);
     }
 
+    animationState = "done_initConfig";
+
+    // console.log("initConfig() returning");
 }
 
 function toggleMode() {
@@ -1652,19 +1696,9 @@ function toggleMode() {
 
     if (config != val) {
 
-        stopAnimation();
         config = val;
-
-        handleModeSwitch(config);
-        
-        initRest(function() {
-
-            toggleDimension();
-            handleDimensionSwitch(currentDimension);
-            // TODO can we do this better?
-            handleModeSwitch(config);
-            render();
-        });
+        orbitDataProcessed[config] = false;
+        initAnimation();
     }
 }
 
@@ -1672,9 +1706,9 @@ function onWindowResize() {
     render(); // TODO is this the right thing to do here?
 }
 
-function toggleDimension() {
+async function setDimension() {
     var val = $('input[name=dimension]:checked').val();
-    // console.log(`toggleDimension() called with value ${val}`);
+    // console.log(`setDimension() called with value ${val}`);
     currentDimension = val;
 
     if (val == "3D") {
@@ -1689,7 +1723,7 @@ function toggleDimension() {
             $("#progressbar").show();
             d3.select("#progressbar-label").html(msg);
 
-            animationScenes[config].processOrbitVectorsData3D();
+            animationScenes[config].processOrbitVectorsData3D();            
             
             animationScenes[config].init3d(function() {
 
@@ -1789,6 +1823,10 @@ function setLabelLocation(planetKey) {
 }
 
 function setLocation() {
+
+    if (!orbitDataProcessed[config]) {
+        return;
+    }
 
     // console.log("setLocation(): timelineIndex = " + timelineIndex + ", timelineTotalSteps = " + timelineTotalSteps);
 
@@ -2087,7 +2125,7 @@ function adjustLabelLocations() {
         var planetProps = planetProperties[planetKey];
         
         if (planetKey == "MOON") {
-            var moonRadius = (MOON_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU * 0.95;
+            var moonRadius = (MOON_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU;
             d3.selectAll("#" + planetKey).attr("r", Math.max(moonRadius, (planetProps.r/zoomFactor)));
         } else {
             d3.selectAll("#" + planetKey).attr("r", (planetProps.r/zoomFactor));
@@ -2123,18 +2161,67 @@ function adjustLabelLocations() {
     }
 }
 
-function initRest(callback) {
-    initConfig();
-    init(callback);
+async function initAnimation() {
+    
+    try {
+        await initConfig();
+        await init(function() {});
+    
+        await (async function waitUntilOrbitDataProcessed() {
+            if (!orbitDataProcessed[config]) {
+                setTimeout(waitUntilOrbitDataProcessed, 50);
+            } else {
+                await setDimension();
+                await setView();
+            }
+        })();    
+    } catch (error) {
+        d3.select("#eventinfo").text("Failed to load the aninmation. Please restart the browser and try again.");
+        console.log("Error: exception in initAnimation(): " + error);
+        d3.selectAll("button").attr("disabled", true);
+        return;
+    }
+
+    render();
+    requestAnimationFrame(animateLoop);
+}
+
+function animateLoop() {
+       
+    ++animateLoopCount;
+    if (animateLoopCount % ticksPerAnimationStep < 0.1) {
+        
+        animateLoopCount = 0;
+
+        // console.log("timelineIndex = " + timelineIndex + ", timelineTotalSteps = " + timelineTotalSteps);
+
+        if (!stopAnimationFlag) {
+            // console.log("Running the next step of the animation");
+            setLocation();
+            timelineIndex += timelineIndexStep;
+            if (timelineIndex >= timelineTotalSteps) {
+                timelineIndex = timelineTotalSteps - 1;
+                setLocation();
+                d3.select("#animate").text("Play");
+                stopAnimationFlag = true;
+                animationRunning = false;
+            }
+        }
+    }
+
+    if (animationScenes[config] && animationScenes[config].initialized3D && animationScenes[config].cameraControlsEnabled) {
+        animationScenes[config].cameraControls.update();
+    }
+
+    requestAnimationFrame(animateLoop);
+ 
 }
 
 function onload() {
-    initRest(function() {
-        toggleDimension();
-        // handleDimensionSwitch(currentDimension);
-        animateLoop();
-        // console.log("onload() -> initRest() completed");
-    });
+    const onloadStartTime = performance.now();
+    initAnimation(); // no need to await here - we are just kickstarting the setup 
+    const onloadEndTime = performance.now() - onloadStartTime;
+    // console.log("onload() took " + onloadEndTime + " ms");
 }
 
 // TODO - find a better way to handle the following
@@ -2158,7 +2245,11 @@ function zoomFunction(f) {
     timeoutHandleZoom = setTimeout(f, ZOOM_TIMEOUT);
 }
 
-function init(callback) {
+async function init(callback) {
+    const fnStartTime = performance.now();
+    animationState[config] = "running_init";
+    // console.log("init() called");
+
     zoomFactor = 1;
     panx = 0;
     pany = 0;
@@ -2223,6 +2314,8 @@ function init(callback) {
             // TODO - would there be a case where mousedown is not called?
         });
     }
+
+    await sleep();
 
     // $("#settings-panel").dialog({
     //     dialogClass: "dialog desktoponly",
@@ -2326,18 +2419,26 @@ function init(callback) {
 
     animDate = d3.select("#date");
 
-    initSVG();    
-    loadOrbitDataIfNeededAndProcess(callback);
+    await sleep();
+    await initSVG();
+
+    await sleep();
+    await loadOrbitDataIfNeededAndProcess(callback);
+
+    const fnDuration = performance.now() - fnStartTime;
+    animationState[config] = "done_init";
+    // console.log("init() returning: took " + fnDuration + " ms");
 }
 
-function processOrbitData(data) {
+async function processOrbitData(data) {
     // console.log("processOrbitData() called");
 
     $("#progressbar").hide();
     d3.select("#progressbar-label").html("");
     orbits = data;
     if (config == "helio") processOrbitElementsData();
-    processOrbitVectorsData();
+    await processOrbitVectorsData();
+    await sleep();
 
     // TODO d3v7 handling
     // var zoom = d3.zoom().on("zoom", handleZoom).on("end", zoomEnd);
@@ -2416,16 +2517,20 @@ function processOrbitData(data) {
     }
 
     zoomChangeTransform(0);
+
+    orbitDataProcessed[config] = true;
+
+    // console.log("processOrbitData() returning");
 }
 
-function loadOrbitDataIfNeededAndProcess(callback) {
+async function loadOrbitDataIfNeededAndProcess(callback) {
 
     if (!orbitDataLoaded[config]) {
 
         // console.log("Loading orbit data for " + config);
 
-        d3.json(orbitsJson)
-            .on("progress", function() {
+        await d3.json(orbitsJson)
+            .on("progress", async function() {
 
                 var progress = d3.event.loaded / orbitsJsonFileSizeInBytes;
                 var msg = dataLoaded ? "" : ("Loading orbit data ... " + FORMAT_PERCENT(progress) + ".");
@@ -2433,8 +2538,9 @@ function loadOrbitDataIfNeededAndProcess(callback) {
                 $("#progressbar").progressbar({value: progress * 100});
                 $("#progressbar").show();
                 d3.select("#progressbar-label").html(msg);
+                await sleep();
             })
-            .get(function(error, data) {
+            .get(async function(error, data) {
                 if (error) {
                     // console.log("Orbit data load from " + orbitsJson + ": ERROR");
                     // console.log(error);
@@ -2445,11 +2551,14 @@ function loadOrbitDataIfNeededAndProcess(callback) {
                     dataLoaded = true;
                     orbitDataLoaded[config] = true;
                     orbitData[config] = data;
-                    processOrbitData(data);    
+                    await processOrbitData(data);
+                    await sleep();
                     try {
+                        // console.log("Calling callback() from loadOrbitDataIfNeededAndProcess() ...");
                         callback();
+                        // console.log("Called callback() from loadOrbitDataIfNeededAndProcess() ...");
                     } catch(error) {
-                        // console.log("Error while processing read orbit data.");
+                        console.log("Error: loadOrbitDataIfNeededAndProces(): " + error);
                     }                    
                 }
             });
@@ -2487,7 +2596,8 @@ function loadOrbitDataIfNeededAndProcess(callback) {
             /* DON'T PUT ANY CODE HERE */        
     } else {
         // console.log("Orbit data already loaded for " + config);
-        processOrbitData(orbitData[config]);
+        await processOrbitData(orbitData[config]);
+        await sleep();
         callback();
     }
 }
@@ -2617,7 +2727,7 @@ function processOrbitElementsData() {
 }
 
 
-function processOrbitVectorsData() {
+async function processOrbitVectorsData() {
     // Add spacecraft orbits
 
     for (var i = 0; i < planetsForLocations.length; ++i) {
@@ -2653,6 +2763,8 @@ function processOrbitVectorsData() {
         }
     }
 
+    await sleep();
+
     // Add center planet - Sun/Earth/Mars/Moon
 
     svgContainer.append("circle")
@@ -2664,6 +2776,8 @@ function processOrbitVectorsData() {
         .attr("stroke", "none")
         .attr("stroke-width", 0)
         .attr("fill", planetProperties[primaryBody].color);
+
+    await sleep();
 
     if ((config == "geo") || (config == "helio")) {
 
@@ -2679,6 +2793,8 @@ function processOrbitVectorsData() {
                 .text(planetProperties[primaryBody].name);
     }
 
+    await sleep();
+
     if (config == "martian") {
            var r = 3390/KM_PER_AU*PIXELS_PER_AU/zoomFactor;
            svgContainer.append("image")
@@ -2689,6 +2805,8 @@ function processOrbitVectorsData() {
                .attr("height", 2*r)
                .attr("width", 2*r);
     }
+
+    await sleep();
 
     // Add planetary positions
 
@@ -2718,6 +2836,8 @@ function processOrbitVectorsData() {
 
     }
 
+    await sleep();
+
     // Add fire
 
     svgContainer.append("g")
@@ -2735,6 +2855,8 @@ function processOrbitVectorsData() {
             .attr("id", "burn")
             .attr("points", "3 9 3 -9 45 0")
             .attr("fill", "#CC0000");
+
+    await sleep();
 
     // Add labels
 
@@ -2761,6 +2883,8 @@ function processOrbitVectorsData() {
         d3.select("#label-"+planetKey).text(planetProps.name);
     }
 
+    await sleep();
+
     if (config == "geo") {
 
         // Add Greenwich longitude
@@ -2776,6 +2900,8 @@ function processOrbitVectorsData() {
             .attr("visibility", "inherit");
     }
 
+    await sleep();
+
     d3.select("#epochjd").html(epochJD);
     d3.select("#epochdate").html(epochDate);
 }
@@ -2786,7 +2912,7 @@ function changeLocation() {
         setLocation();
         timelineIndex += timelineIndexStep;
         if (timelineIndex < timelineTotalSteps) {
-            timeoutHandle = setTimeout(function() { changeLocation(); }, ticksPerAnimationStep);
+            // timeoutHandle = setTimeout(function() { changeLocation(); }, ticksPerAnimationStep);
         } else {
             timelineIndex = timelineTotalSteps - 1;
             d3.select("#animate").text("Play");
@@ -3146,8 +3272,11 @@ function togglePlane() {
 
     } else if (currentDimension == "3D") {
 
-        handleDimensionSwitch(currentDimension);
-        setLocation();
+        // TODO check logic
+        loadOrbitDataIfNeededAndProcess(function() {
+            handleDimensionSwitch(currentDimension);
+            setLocation();    
+        })
     }
 }
 
@@ -3156,6 +3285,7 @@ function toggleJoyRide() {
     animationScenes[config].craft.visible = !joyRideFlag;
     animationScenes[config].craftEdges.visible = !joyRideFlag;
     $("#joyridebutton").toggleClass("down");
+    $("#joyride").prop("checked", joyRideFlag);
     if (joyRideFlag) {
         // $("#joyridebutton").css({"border-style": "inset"});
         animationScenes[config].motherContainer.position.set(0, 0, 0);    
@@ -3165,7 +3295,9 @@ function toggleJoyRide() {
     render();
 }
 
-function toggleView() {
+async function setView() {
+    // console.log("setView() called");
+
     var viewOrbit = $("#view-orbit").is(":checked"); 
     var viewOrbitVikram = $("#view-orbit-vikram").is(":checked"); 
     var viewOrbitLRO = $("#view-orbit-lro").is(":checked"); 
@@ -3174,24 +3306,26 @@ function toggleView() {
     var viewPoles = $("#view-poles").is(":checked"); 
     var viewPolarAxes = $("#view-polar-axes").is(":checked"); 
 
-    animationScenes[config].orbitLine.visible = viewOrbit;
-    // animationScenes[config].vikramOrbitLine.visible = viewOrbitVikram;
-
-    if (config == "lro") {
-        animationScenes[config].lroOrbitLine.visible = viewOrbitLRO;    
-    }
+    if (animationScenes[config] && animationScenes[config].initialized) {
+        animationScenes[config].orbitLines.map((orbitLine) => {orbitLine.visible = viewOrbit;});
+        // animationScenes[config].vikramOrbitLine.visible = viewOrbitVikram;
     
-    animationScenes[config].locations.map(x => x.visible = viewCraters);
-
-    animationScenes[config].axesHelper.visible = viewXYZAxes;
-
-    animationScenes[config].earthNorthPoleSphere.visible = viewPoles;
-    animationScenes[config].earthSouthPoleSphere.visible = viewPoles;
-    animationScenes[config].moonNorthPoleSphere.visible = viewPoles;
-    animationScenes[config].moonSouthPoleSphere.visible = viewPoles;
-
-    animationScenes[config].earthAxis.visible = viewPolarAxes;
-    animationScenes[config].moonAxis.visible = viewPolarAxes;
+        if (config == "lro") {
+            animationScenes[config].lroOrbitLine.visible = viewOrbitLRO;    
+        }
+        
+        animationScenes[config].locations.map(x => x.visible = viewCraters);
+    
+        animationScenes[config].axesHelper.visible = viewXYZAxes;
+    
+        animationScenes[config].earthNorthPoleSphere.visible = viewPoles;
+        animationScenes[config].earthSouthPoleSphere.visible = viewPoles;
+        animationScenes[config].moonNorthPoleSphere.visible = viewPoles;
+        animationScenes[config].moonSouthPoleSphere.visible = viewPoles;
+    
+        animationScenes[config].earthAxis.visible = viewPolarAxes;
+        animationScenes[config].moonAxis.visible = viewPolarAxes;    
+    }
 
     render();
 }
