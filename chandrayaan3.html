@@ -76,7 +76,7 @@
     
                 <div id="settings-panel-fieldset" class="flex-container">
                     <!-- <legend>Settings</legend> -->
-                    <fieldset>
+                    <fieldset autocomplete="off">
                         <legend class="config-label config-first-label">Origin/Phase:</legend>
                         <input id="origin-earth" type="radio" name="mode" value="geo"   onclick="toggleMode()" checked="checked">
                         <label for="origin-earth">Earth</label>
@@ -85,7 +85,7 @@
                         <!-- <input type="radio" name="mode" value="lro"   onclick="toggleMode()">Moon/Post Vikram LOS</input> -->
                     </fieldset>
     
-                    <fieldset>
+                    <fieldset autocomplete="off">
                         <legend class="config-label">Camera:</legend>
                         <input type="radio" name="camera" value="default" id="camera-default" onclick="toggleCamera()" checked="checked">
                         <label for="camera-default">Default</label>
@@ -93,7 +93,7 @@
                         <label for="camera-moon">Moon</label>
                     </fieldset>
     
-                    <fieldset>
+                    <fieldset autocomplete="off">
                         <legend class="config-label">Lock On:</legend>
                         <input type="checkbox" id="checkbox-lock-cy3" onclick="toggleLockCY3()">
                         <label for="checkbox-lock-cy3">Chandrayaan 3</label>
@@ -103,7 +103,7 @@
                         <label class="lunar lro" for="checkbox-lock-earth">Earth</label>
                     </fieldset>
     
-                    <fieldset>
+                    <fieldset autocomplete="off">
                         <legend class="config-label">Plane</legend>
                         <input type="radio" name="plane" value="XY" id="checkbox-lock-xy" onclick="togglePlane()" checked="checked">
                         <label for="checkbox-lock-xy">XY</label>
@@ -113,21 +113,21 @@
                         <label for="checkbox-lock-xy">ZX</label>
                     </fieldset>
                 
-                    <fieldset class="dimension-3D">
+                    <fieldset autocomplete="off" class="dimension-3D">
                         <legend class="config-label">View</legend>
                         <input id="joyride" type="checkbox" onclick="toggleJoyRide()">
                         <label for="joyride">Joy Ride!</label>
-                        <input type="checkbox" name="view" value="orbit" id="view-orbit" onclick="toggleView()" checked="checked">
+                        <input type="checkbox" name="view" value="orbit" id="view-orbit" onclick="setView()" checked="checked">
                         <label for="view-orbit">CY3 Orbit</label>
-                        <!-- <input type="checkbox" name="view" value="orbit-vikram" id="view-orbit-vikram"  onclick="toggleView()" checked="checked">Vikram Orbit</input> -->
-                        <!-- <input type="checkbox" name="view" value="orbit-lro"    id="view-orbit-lro"     onclick="toggleView()" checked="checked">LRO Orbit</input> -->
-                        <input type="checkbox" name="view" value="craters" id="view-craters"  onclick="toggleView()" checked="checked">
+                        <!-- <input type="checkbox" name="view" value="orbit-vikram" id="view-orbit-vikram"  onclick="setView()" checked="checked">Vikram Orbit</input> -->
+                        <!-- <input type="checkbox" name="view" value="orbit-lro"    id="view-orbit-lro"     onclick="setView()" checked="checked">LRO Orbit</input> -->
+                        <input type="checkbox" name="view" value="craters" id="view-craters"  onclick="setView()" checked="checked">
                         <label for="view-craters">Locations</label>
-                        <input type="checkbox" name="view" value="xyz" id="view-xyz-axes" onclick="toggleView()" checked="checked">
+                        <input type="checkbox" name="view" value="xyz" id="view-xyz-axes" onclick="setView()" checked="checked">
                         <label for="view-xyz-axes">XYZ Axes</label>
-                        <input type="checkbox" name="view" value="poles" id="view-poles" onclick="toggleView()" checked="checked">
+                        <input type="checkbox" name="view" value="poles" id="view-poles" onclick="setView()" checked="checked">
                         <label for="view-poles">Poles</label>
-                        <input type="checkbox" name="view" value="polar-axes" id="view-polar-axes" onclick="toggleView()" checked="checked">
+                        <input type="checkbox" name="view" value="polar-axes" id="view-polar-axes" onclick="setView()" checked="checked">
                         <label for="view-polar-axes">Polar Axes</label>
                                             <!--
                         <span class="config-label">Camera Placed At:</span>
@@ -146,11 +146,11 @@
                         -->
                     </fieldset>
     
-                    <fieldset>
+                    <fieldset autocomplete="off">
                         <legend class="config-label">Dimension:</legend>
-                        <input type ="radio" name="dimension" value="2D" id="dimension-2D" onclick="toggleDimension()">
+                        <input type ="radio" name="dimension" value="2D" id="dimension-2D" onclick="setDimension()">
                         <label for="dimension-2D">2D</label>
-                        <input type ="radio" name="dimension" value="3D" id="dimension-3D" onclick="toggleDimension()" checked="checked">
+                        <input type ="radio" name="dimension" value="3D" id="dimension-3D" onclick="setDimension()" checked="checked">
                         <label for="dimension-3D">3D</label>
                     </fieldset>
     
@@ -164,9 +164,9 @@
                     <div class="vspace"></div>
     
                     <!-- <span class="config-label config-first-label">Animation:</span>  -->
-                    <button id="animate"    type="button" class="button" onclick="cy3Animate()"></button>
-                    <button id="slower"     type="button" class="button"> Slower </button>
-                    <button id="faster"     type="button" class="button"> Faster </button>
+                    <button id="animate"    type="button" class="button" onclick="cy3Animate()">Play</button>
+                    <button id="slower"     type="button" class="button">Slower</button>
+                    <button id="faster"     type="button" class="button">Faster</button>
     
                     <span class="hspace">|</span>
     
@@ -245,7 +245,7 @@
 
         <div id="footer-wrapper" class="footer-wrapper">
 
-            <div id="stats" class="stats">
+            <div id="stats" class="stats prevent-select">
 
                 <div> <!-- extended statistics / Relative to Earth -->
                     <table>
