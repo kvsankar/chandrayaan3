@@ -170,7 +170,6 @@ var dataLoaded = false;
 var ticksPerAnimationStep;
 var mousedownTimeout = ZOOM_TIMEOUT;
 
-
 // Chandrayaan 3 specific times and information
 var timeTransLunarInjection;
 var timeLunarOrbitInsertion;
@@ -183,6 +182,16 @@ var theSceneHandler = null;
 var animationScenes = {};
 var joyRideFlag = false;
 var moonPhaseCamera = false;
+
+// View variables
+
+var viewOrbit = $("#view-orbit").is(":checked"); 
+var viewOrbitVikram = $("#view-orbit-vikram").is(":checked"); 
+var viewOrbitLRO = $("#view-orbit-lro").is(":checked"); 
+var viewCraters = $("#view-craters").is(":checked"); 
+var viewXYZAxes = $("#view-xyz-axes").is(":checked"); 
+var viewPoles = $("#view-poles").is(":checked"); 
+var viewPolarAxes = $("#view-polar-axes").is(":checked"); 
 
 let wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 let wait20 = () => wait(20);
@@ -565,6 +574,7 @@ class AnimationScene {
             var orbitGeometry = new THREE.Geometry();
             orbitGeometry.vertices = curves.getSpacedPoints(nPoints * 40);
             var orbitLine = new THREE.Line(orbitGeometry, scene.orbitMaterial);
+            orbitLine.visible = viewOrbit;
             scene.orbitLines.push(orbitLine);
             scene.motherContainer.add(orbitLine);
             render();
@@ -620,6 +630,7 @@ class AnimationScene {
         earthAxisGeometry.vertices.push(earthNorthPolePoint, earthSouthPolePoint);
         var earthAxisMaterial = new THREE.LineBasicMaterial({color: earthAxisColor});
         this.earthAxis = new THREE.Line(earthAxisGeometry, earthAxisMaterial);
+        this.earthAxis.visible = viewPolarAxes;
 
         var earthNorthPoleGeometry = new THREE.SphereGeometry(earthRadius/50, 100, 100);
         var earthNorthPoleMaterial = new THREE.MeshPhysicalMaterial({color: blackColor, emissive: northPoleColor, reflectivity: 0.0});
@@ -635,6 +646,9 @@ class AnimationScene {
         this.earthSouthPoleSphere.receiveShadow = false;
         this.earthSouthPoleSphere.position.set(0, 0, -0.985* earthRadius);
 
+        this.earthNorthPoleSphere.visible = viewPoles;
+        this.earthSouthPoleSphere.visible = viewPoles;
+        
         render();
     }
 
@@ -702,6 +716,7 @@ class AnimationScene {
         moonAxisGeometry.vertices.push(moonNorthPolePoint, moonSouthPolePoint);
         var moonAxisMaterial = new THREE.LineBasicMaterial({color: moonAxisColor});
         this.moonAxis = new THREE.Line(moonAxisGeometry, moonAxisMaterial);
+        this.moonAxis.visible = viewPolarAxes;
 
         var moonNorthPoleGeometry = new THREE.SphereGeometry(moonRadius/50, 100, 100);
         var moonNorthPoleMaterial = new THREE.MeshPhysicalMaterial({color: blackColor, emissive: northPoleColor, reflectivity: 0.0});
@@ -717,12 +732,17 @@ class AnimationScene {
         this.moonSouthPoleSphere.receiveShadow = false;
         this.moonSouthPoleSphere.position.set(0, 0, -0.985 * moonRadius);
 
+        this.moonNorthPoleSphere.visible = viewPoles;
+        this.moonSouthPoleSphere.visible = viewPoles;
+
         render();
     }
 
     addEarthLocations() {
         this.dwingeloo = this.plotEarthLocation(deg_to_rad(6.39616944444), deg_to_rad(52.8120194444), "#FF0000");
         this.chennai = this.plotEarthLocation(deg_to_rad(80.2707), deg_to_rad(13.0827), "#FF0000");
+
+        this.locations.map(x => x.visible = viewCraters);
     }
 
     addMoonLocations() {
@@ -752,6 +772,8 @@ class AnimationScene {
         // this.plotMoonLocation(deg_to_rad(22.78110), deg_to_rad(-70.902670), "#0000FF"); // primary 
         // this.plotMoonLocation(deg_to_rad(18.46947), deg_to_rad(-68.749153), "#FFFF00"); // secondary
         // this.plotMoonLocation(deg_to_rad(22.78110), deg_to_rad(-70.899920), "#00FFFF"); // chosen one?
+
+        this.locations.map(x => x.visible = viewCraters);
     }
 
     setPrimaryAndSecondaryBodies() {
@@ -918,6 +940,7 @@ class AnimationScene {
         // add axes helper
         this.axesHelper = new THREE.AxesHelper(2*PIXELS_PER_AU*EARTH_MOON_DISTANCE_MEAN_AU);
         this.motherContainer.add(this.axesHelper);
+        this.axesHelper.visible = viewXYZAxes;
     }
 
     addLight() {
@@ -3310,34 +3333,39 @@ function toggleJoyRide() {
 async function setView() {
     // console.log("setView() called");
 
-    var viewOrbit = $("#view-orbit").is(":checked"); 
-    var viewOrbitVikram = $("#view-orbit-vikram").is(":checked"); 
-    var viewOrbitLRO = $("#view-orbit-lro").is(":checked"); 
-    var viewCraters = $("#view-craters").is(":checked"); 
-    var viewXYZAxes = $("#view-xyz-axes").is(":checked"); 
-    var viewPoles = $("#view-poles").is(":checked"); 
-    var viewPolarAxes = $("#view-polar-axes").is(":checked"); 
+    viewOrbit = $("#view-orbit").is(":checked"); 
+    viewOrbitVikram = $("#view-orbit-vikram").is(":checked"); 
+    viewOrbitLRO = $("#view-orbit-lro").is(":checked"); 
+    viewCraters = $("#view-craters").is(":checked"); 
+    viewXYZAxes = $("#view-xyz-axes").is(":checked"); 
+    viewPoles = $("#view-poles").is(":checked"); 
+    viewPolarAxes = $("#view-polar-axes").is(":checked"); 
 
-    if (animationScenes[config] && animationScenes[config].initialized) {
-        animationScenes[config].orbitLines.map((orbitLine) => {orbitLine.visible = viewOrbit;});
-        // animationScenes[config].vikramOrbitLine.visible = viewOrbitVikram;
-    
-        if (config == "lro") {
-            animationScenes[config].lroOrbitLine.visible = viewOrbitLRO;    
-        }
+    ["geo", "lunar", "lro"].map(function(cfg) {
+        // console.log("Setting view for config: " + cfg);
+
+        if (animationScenes[cfg] && animationScenes[cfg].initialized3D) {
+            animationScenes[cfg].orbitLines.map((orbitLine) => {orbitLine.visible = viewOrbit;});
+            // animationScenes[cfg].vikramOrbitLine.visible = viewOrbitVikram;
         
-        animationScenes[config].locations.map(x => x.visible = viewCraters);
+            if (cfg == "lro") {
+                animationScenes[cfg].lroOrbitLine.visible = viewOrbitLRO;    
+            }
+            
+            animationScenes[cfg].locations.map(x => x.visible = viewCraters);
+        
+            animationScenes[cfg].axesHelper.visible = viewXYZAxes;
+        
+            animationScenes[cfg].earthNorthPoleSphere.visible = viewPoles;
+            animationScenes[cfg].earthSouthPoleSphere.visible = viewPoles;
+            animationScenes[cfg].moonNorthPoleSphere.visible = viewPoles;
+            animationScenes[cfg].moonSouthPoleSphere.visible = viewPoles;
+        
+            animationScenes[cfg].earthAxis.visible = viewPolarAxes;
+            animationScenes[cfg].moonAxis.visible = viewPolarAxes;    
+        }
     
-        animationScenes[config].axesHelper.visible = viewXYZAxes;
-    
-        animationScenes[config].earthNorthPoleSphere.visible = viewPoles;
-        animationScenes[config].earthSouthPoleSphere.visible = viewPoles;
-        animationScenes[config].moonNorthPoleSphere.visible = viewPoles;
-        animationScenes[config].moonSouthPoleSphere.visible = viewPoles;
-    
-        animationScenes[config].earthAxis.visible = viewPolarAxes;
-        animationScenes[config].moonAxis.visible = viewPolarAxes;    
-    }
+    });
 
     render();
 }
