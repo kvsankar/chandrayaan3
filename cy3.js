@@ -185,7 +185,20 @@ var joyRideFlag = false;
 var moonPhaseCamera = false;
 
 let wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+let wait20 = () => wait(20);
+let wait50 = () => wait(50);
 async function sleep() { return new Promise(requestAnimationFrame); } // The Promise resolves after the next frame is painted
+
+function fetchJson(url, callback = null, callbackError = null) {
+    fetch(url, { headers: { 'accept': 'application/json; charset=utf8;' } }) 
+      .then(r => { return r.json(); })  
+      .then(r => {
+        if (callback !== null) callback(r);
+      })  
+      .catch(err => {
+        if (callbackError !== null) callbackError(err);
+    }); 
+};  
 
 function getStartAndEndTimes(id) {
 
@@ -555,7 +568,7 @@ class AnimationScene {
             scene.orbitLines.push(orbitLine);
             scene.motherContainer.add(orbitLine);
             render();
-            await wait(20);
+            await wait20();
         } while (scene.leftOrbitPoints > 0)
 
         // timeoutHandler();
@@ -956,23 +969,23 @@ class AnimationScene {
         this.scene = new THREE.Scene();
         this.motherContainer = new THREE.Group();
 
-        this.computeDimensions(); render(); await wait(20);
-        this.addLight(); render(); await wait(20);
-        this.addEarth(); render(); await wait(20);
-        this.addMoon(); render(); await wait(20);
-        this.setPrimaryAndSecondaryBodies(); render(); await wait(20);
-        this.addChandrayaan(); render(); await wait(20);
-        this.addCamera(); render(); await wait(20);
-        this.initialized3D = true; render(); await wait(20);
+        this.computeDimensions(); render(); await wait20();
+        this.addLight(); render(); await wait20();
+        this.addEarth(); render(); await wait20();
+        this.addMoon(); render(); await wait20();
+        this.setPrimaryAndSecondaryBodies(); render(); await wait20();
+        this.addChandrayaan(); render(); await wait20();
+        this.addCamera(); render(); await wait20();
+        this.initialized3D = true; render(); await wait20();
 
-        this.addEarthLocations(); render(); await wait(20);
-        this.addMoonLocations(); render(); await wait(20);   
+        this.addEarthLocations(); render(); await wait20();
+        this.addMoonLocations(); render(); await wait20();   
 
-        this.addChandrayaanCurve(); render(); await wait(20);
-        this.addLROOrbit(); render(); await wait(20);
-        this.addLRO(); render(); await wait(20);
-        this.addLineOfSight(); render(); await wait(20);
-        this.addAxesHelper(); render(); await wait(20);
+        this.addChandrayaanCurve(); render(); await wait20();
+        this.addLROOrbit(); render(); await wait20();
+        this.addLRO(); render(); await wait20();
+        this.addLineOfSight(); render(); await wait20();
+        this.addAxesHelper(); render(); await wait20();
 
         d3.select("#eventinfo").text("");
     }
@@ -2527,41 +2540,40 @@ async function loadOrbitDataIfNeededAndProcess(callback) {
 
     if (!orbitDataLoaded[config]) {
 
-        // console.log("Loading orbit data for " + config);
+        console.log("Loading orbit data for " + config);
 
-        await d3.json(orbitsJson)
-            .on("progress", async function() {
+        var msg = dataLoaded ? "" : ("Loading orbit data ... ");
+        $("#progressbar").progressbar();
+        $("#progressbar").progressbar("option", "value", false);
+        $("#progressbar").show();
+        d3.select("#progressbar-label").html(msg);
+        await sleep();
 
-                var progress = d3.event.loaded / orbitsJsonFileSizeInBytes;
-                var msg = dataLoaded ? "" : ("Loading orbit data ... " + FORMAT_PERCENT(progress) + ".");
-                // console.log(msg);
-                $("#progressbar").progressbar({value: progress * 100});
-                $("#progressbar").show();
-                d3.select("#progressbar-label").html(msg);
+        fetchJson(orbitsJson, async function(data) {
+
+            console.log("Orbit data load from " + orbitsJson + ": OK");
+            dataLoaded = true;
+            orbitDataLoaded[config] = true;
+            orbitData[config] = data;
+            try {
+                $("#progressbar").hide();
+                await processOrbitData(data);
                 await sleep();
-            })
-            .get(async function(error, data) {
-                if (error) {
-                    // console.log("Orbit data load from " + orbitsJson + ": ERROR");
-                    // console.log(error);
-                    $("#progressbar").hide();
-                    d3.select("#progressbar-label").html("Error: failed to load orbit data.");    
-                } else {
-                    // console.log("Orbit data load from " + orbitsJson + ": OK");
-                    dataLoaded = true;
-                    orbitDataLoaded[config] = true;
-                    orbitData[config] = data;
-                    await processOrbitData(data);
-                    await sleep();
-                    try {
-                        // console.log("Calling callback() from loadOrbitDataIfNeededAndProcess() ...");
-                        callback();
-                        // console.log("Called callback() from loadOrbitDataIfNeededAndProcess() ...");
-                    } catch(error) {
-                        console.log("Error: loadOrbitDataIfNeededAndProces(): " + error);
-                    }                    
-                }
-            });
+                // console.log("Calling callback() from loadOrbitDataIfNeededAndProcess() ...");
+                callback();
+                // console.log("Called callback() from loadOrbitDataIfNeededAndProcess() ...");
+            } catch(error) {
+                $("#progressbar").hide();
+                console.log("Error: Orbit data load from " + orbitsJson + ": " + error);
+            }                    
+
+        }, async function(error) {
+            $("#progressbar").hide();
+            var msg = "Error: Orbit data load from " + orbitsJson + ": " + error;
+            console.log(msg);
+            d3.select("#eventinfo").text(msg);
+        });
+
 
             // d3.json(orbitsJson)
             // // .on("progress", function() {
