@@ -129,6 +129,7 @@ var offsetx = 0;
 var offsety = 0;
 var trackWidth;
 var earthRadius;
+var skyRadius;
 var moonRadius;
 var primaryBody;
 var primaryBodyRadius;
@@ -192,6 +193,7 @@ var viewCraters = $("#view-craters").is(":checked");
 var viewXYZAxes = $("#view-xyz-axes").is(":checked"); 
 var viewPoles = $("#view-poles").is(":checked"); 
 var viewPolarAxes = $("#view-polar-axes").is(":checked"); 
+var viewSky = $("#view-sky").is(":checked"); 
 
 let wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 let wait20 = () => wait(20);
@@ -345,6 +347,7 @@ class SceneHandler {
                     closerAngleRads = earthAngleRads;
                     distance = craftEarthDistance;
                     radius = earthRadius;
+                    animationScene.craftCamera.up.set(0, 0, 1);
 
                 } else {
 
@@ -352,6 +355,7 @@ class SceneHandler {
                     closerAngleRads = moonAngleRads;
                     distance = craftMoonDistance;
                     radius = moonRadius;
+                    animationScene.craftCamera.up.set(1, 0, 0);
                 }
                 
                 // var v1 = new THREE.Vector3();
@@ -363,7 +367,8 @@ class SceneHandler {
                 // v2.add(animationScene.craft.position);
                 // var theta = Math.acos(radius/distance);
 
-                animationScene.craftCamera.lookAt(closerBody.position);                
+                animationScene.craftCamera.lookAt(closerBody.position);    
+
                 animationScene.craftCamera.rotateX(closerAngleRads); // TODO doesn't seem to work
                 this.renderer.render(animationScene.scene, animationScene.craftCamera);
 
@@ -511,6 +516,8 @@ class AnimationScene {
             "images/earth/2_no_clouds_8k.jpg",
             "images/earth/earthspec1k.jpg",
             "images/moon/moon_8k_color_brim16.jpg",
+            "images/sky/starmap_4k.jpg",
+            "images/sky/constellation_figures.jpg"
 
           ].map(filename=>loader.load(filename));
         });
@@ -521,18 +528,28 @@ class AnimationScene {
 
             var mapIndex = 0;
 
-            scene.earthTexture          = result[mapIndex++];
+            scene.earthTexture           = result[mapIndex++];
             scene.earthTexture.minFilter = THREE.LinearFilter;
 
-            scene.earthSpecularTexture  = result[mapIndex++];
+            scene.earthSpecularTexture           = result[mapIndex++];
             scene.earthSpecularTexture.minFilter = THREE.LinearFilter;
 
-            scene.moonMap               = result[mapIndex++];
+            scene.moonMap           = result[mapIndex++];
             scene.moonMap.minFilter = THREE.LinearFilter;
 
+            scene.skyTexture           = result[mapIndex++];
+            scene.skyTexture.minFilter = THREE.LinearFilter;
+            // scene.skyTexture.flipY = false;
+
+            scene.skyConstellationTexture           = result[mapIndex++];
+            scene.skyConstellationTexture.minFilter = THREE.LinearFilter;
+            // scene.skyConstellationTexture.flipY = false;
+            
             await scene.init3dRest(); // We can't call callback until we are done
             callback();
 
+        }, (error) => {
+            console.log("Error: couldn't load textures: " + erorr);
         });
 
         // var loader = new THREE.TextureLoader();
@@ -584,6 +601,45 @@ class AnimationScene {
         // timeoutHandler();
     }
 
+    addSky() {
+        // add Sky
+
+        this.skyContainer = new THREE.Group();
+        this.skyContainer.lookAt(0, Math.sin(EARTH_AXIS_INCLINATION_RADS), Math.cos(EARTH_AXIS_INCLINATION_RADS));
+
+        // console.log("Creating Sky...");
+
+        skyRadius = 200 * earthRadius;
+
+        var skyGeometry = new THREE.SphereGeometry(skyRadius);
+
+        var skyMaterial = new THREE.MeshBasicMaterial({ blending: THREE.AdditiveBlending, map: this.skyTexture, opacity: 0.8 });
+        skyMaterial.side = THREE.BackSide;
+        var skyConstellationMaterial = new THREE.MeshBasicMaterial({ blending: THREE.AdditiveBlending, map: this.skyConstellationTexture, opacity: 0.1 });
+        skyConstellationMaterial.side = THREE.BackSide;
+
+        this.sky = new THREE.Mesh(skyGeometry, skyMaterial);
+        this.sky.receiveShadow = false;
+        this.sky.castShadow = false;
+        this.sky.rotateX(Math.PI/2); // this is to get the orientation of the texture correct
+        this.skyContainer.add(this.sky);
+
+        this.skyConstellation = new THREE.Mesh(skyGeometry, skyConstellationMaterial);
+        this.skyConstellation.receiveShadow = false;
+        this.skyConstellation.castShadow = false;
+        this.skyConstellation.rotateX(Math.PI/2); // this is to get the orientation of the texture correct
+        this.skyContainer.add(this.skyConstellation);
+
+        this.skyContainer.scale.set(-1, 1, 1);
+        this.skyContainer.rotateZ(Math.PI);
+
+        // console.log("Created Sky");
+        
+        this.motherContainer.add(this.skyContainer);
+
+        render();
+    }
+
     addEarth() {
         // add Earth
 
@@ -605,8 +661,8 @@ class AnimationScene {
             // side: THREE.DoubleSide
         });
         this.earth = new THREE.Mesh(earthGeometry, earthMaterial);
-        this.earth.receiveShadow = true;
-        this.earth.castShadow = true;
+        this.earth.receiveShadow = false;
+        this.earth.castShadow = false;
         this.earth.rotateX(Math.PI/2); // this is to get the orientation of the texture correct
         this.earthContainer.add(this.earth);
         // console.log("Created Earth");
@@ -994,6 +1050,7 @@ class AnimationScene {
 
         this.computeDimensions(); render(); await wait20();
         this.addLight(); render(); await wait20();
+        this.addSky(); render(); await wait20();
         this.addEarth(); render(); await wait20();
         this.addMoon(); render(); await wait20();
         this.setPrimaryAndSecondaryBodies(); render(); await wait20();
@@ -2246,6 +2303,7 @@ function animateLoop() {
     }
 
     if (animationScenes[config] && animationScenes[config].initialized3D && animationScenes[config].cameraControlsEnabled) {
+        animationScenes[config].skyContainer.position.setFromMatrixPosition(animationScenes[config].camera.matrixWorld);
         animationScenes[config].cameraControls.update();
     }
 
@@ -3322,10 +3380,28 @@ function toggleJoyRide() {
     $("#joyridebutton").toggleClass("down");
     $("#joyride").prop("checked", joyRideFlag);
     if (joyRideFlag) {
-        // $("#joyridebutton").css({"border-style": "inset"});
         animationScenes[config].motherContainer.position.set(0, 0, 0);    
+        
+        $("#view-orbit").prop("checked", false); 
+        $("#view-orbit-vikram").prop("checked", false); 
+        $("#view-orbit-lro").prop("checked", false); 
+        $("#view-craters").prop("checked", false); 
+        $("#view-xyz-axes").prop("checked", false); 
+        $("#view-poles").prop("checked", false); 
+        $("#view-polar-axes").prop("checked", false); 
+        $("#view-sky").prop("checked", true); 
+        setView();
+
     } else {
-        // $("#joyridebutton").css({"border-style": "outset"});
+        $("#view-orbit").prop("checked", true); 
+        $("#view-orbit-vikram").prop("checked", true); 
+        $("#view-orbit-lro").prop("checked", true); 
+        $("#view-craters").prop("checked", true); 
+        $("#view-xyz-axes").prop("checked", true); 
+        $("#view-poles").prop("checked", true); 
+        $("#view-polar-axes").prop("checked", true);
+        $("#view-sky").prop("checked", true); 
+        setView();
     }
     render();
 }
@@ -3340,6 +3416,7 @@ async function setView() {
     viewXYZAxes = $("#view-xyz-axes").is(":checked"); 
     viewPoles = $("#view-poles").is(":checked"); 
     viewPolarAxes = $("#view-polar-axes").is(":checked"); 
+    viewSky = $("#view-sky").is(":checked"); 
 
     ["geo", "lunar", "lro"].map(function(cfg) {
         // console.log("Setting view for config: " + cfg);
@@ -3362,7 +3439,9 @@ async function setView() {
             animationScenes[cfg].moonSouthPoleSphere.visible = viewPoles;
         
             animationScenes[cfg].earthAxis.visible = viewPolarAxes;
-            animationScenes[cfg].moonAxis.visible = viewPolarAxes;    
+            animationScenes[cfg].moonAxis.visible = viewPolarAxes;  
+            
+            animationScenes[cfg].skyContainer.visible = viewSky;  
         }
     
     });
@@ -3382,6 +3461,7 @@ function toggleCamera() {
 
     if (animationScenes[config] && animationScenes[config].initialized3D) {
         animationScenes[config].setCameraParameters();
+        animationScenes[config].skyContainer.visible = !moonPhaseCamera;
     }
 
     render();
