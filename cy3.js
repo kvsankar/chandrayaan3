@@ -214,10 +214,10 @@ function fetchJson(url, callback = null, callbackError = null) {
 function getStartAndEndTimes(id) {
 
     var startTime                  = Date.UTC(2023, 7-1, 14,  9, 23, 0, 0);
-    var endTime                    = Date.UTC(2023, 9-1, 13,  8, 58, 0, 0);
-    var endTimeCY3                 = Date.UTC(2023, 9-1, 13,  8, 58, 0, 0);
-    var startTimeVikram            = Date.UTC(2023, 9-1,  2,  7, 46, 0, 0); // TODO Update
-    var endTimeVikram              = Date.UTC(2023, 9-1,  6, 20, 26, 0, 0); // TODO Update
+    var endTime                    = Date.UTC(2023, 8-1,  8,  0,  6, 0, 0);
+    var endTimeCY3                 = Date.UTC(2023, 8-1,  8,  0,  6, 0, 0);
+    var startTimeVikram            = Date.UTC(2023, 8-1,  2,  7, 46, 0, 0); // TODO Update
+    var endTimeVikram              = Date.UTC(2023, 8-1,  6, 20, 26, 0, 0); // TODO Update
 
     if (config == "lro") { // TODO Not needed for CY3 mission (at least for now); Will disable in HTML
 
@@ -1389,7 +1389,7 @@ function addEvents() {
 
     var ebn1Info = {
         // TODO estimated from orbit data
-        "startTime": new Date(Date.UTC(2023, 7-1, 15,  6, 44, 30, 0)),
+        "startTime": new Date(Date.UTC(2023, 7-1, 15,  6, 41, 0, 0)),
         "durationSeconds": 5*60,
         "label": "🔥EBN#1",
         "burnFlag": true,
@@ -1399,7 +1399,7 @@ function addEvents() {
 
     var ebn2Info = {
         // TODO estimated from orbit data
-        "startTime": new Date(Date.UTC(2023, 7-1, 18, 09, 29, 30, 0)),
+        "startTime": new Date(Date.UTC(2023, 7-1, 18,  9, 24, 0, 0)),
         "durationSeconds": 15*60,
         "label": "🔥EBN#2", 
         "burnFlag": true,
@@ -1409,7 +1409,7 @@ function addEvents() {
 
     var ebn3Info = {
         // TODO estimated from orbit data
-        "startTime": new Date(Date.UTC(2023, 7-1, 20, 09, 22, 0, 0)),
+        "startTime": new Date(Date.UTC(2023, 7-1, 20,  9, 16, 0, 0)),
         "durationSeconds": 20*60,
         "label": "🔥EBN#3", 
         "burnFlag": true,
@@ -1419,7 +1419,7 @@ function addEvents() {
 
     var ebn4Info = {
         // TODO estimated from orbit data
-        "startTime": new Date(Date.UTC(2023, 7-1, 25, 08, 54, 30, 0)),
+        "startTime": new Date(Date.UTC(2023, 7-1, 25,  9,  0, 0, 0)),
         "durationSeconds": 5*60,
         "label": "🔥EBN#4", 
         "burnFlag": true,
@@ -1429,7 +1429,7 @@ function addEvents() {
 
     var tliInfo = {
         // TODO estimated from orbit data
-        "startTime": new Date(Date.UTC(2023, 7-1, 31, 18, 49, 30, 0)),
+        "startTime": new Date(Date.UTC(2023, 7-1, 31, 18, 43, 30, 0)),
         "durationSeconds": 25*60,
         "label": "🔥TLI", 
         "burnFlag": true,
@@ -1538,7 +1538,7 @@ function addEvents() {
     }
 
     var cy3EndInfo = {
-        "startTime": new Date(Date.UTC(2023, 9-1, 13, 8, 58, 0, 0)),
+        "startTime": new Date(Date.UTC(2023, 8-1,  8, 0,  6, 0, 0)),
         "durationSeconds": 0,
         "label": "🏁CY3 Data End",
         "burnFlag": false,
@@ -2152,7 +2152,8 @@ function setLocation() {
     showGreenwichLongitude();
 
     for (var i = 0; i < eventInfos.length; ++i) {
-        var burnTime = new Date(eventInfos[i]["startTime"].getTime() + (eventInfos[i]["durationSeconds"] * 1000 / 2));
+        // var burnTime = new Date(eventInfos[i]["startTime"].getTime() + (eventInfos[i]["durationSeconds"] * 1000 / 2));
+        var burnTime = new Date(eventInfos[i]["startTime"].getTime());
         var burnFlag = eventInfos[i]["burnFlag"];
         if (!burnFlag) {
             continue;
@@ -3473,7 +3474,8 @@ function burnButtonHandler(index) {
     if (eventInfos[index]["label"] == "Now") {
         now = new Date();
     } else {
-        now = new Date(eventInfos[index]["startTime"].getTime() + (eventInfos[index]["durationSeconds"] * 1000 / 2));    
+        // now = new Date(eventInfos[index]["startTime"].getTime() + (eventInfos[index]["durationSeconds"] * 1000 / 2));    
+        now = new Date(eventInfos[index]["startTime"].getTime());
     }
     
     missionSetTime();
