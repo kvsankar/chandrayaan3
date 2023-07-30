@@ -39,8 +39,8 @@ var southPoleColor = 0x6a5acd; // steel blue
 var primaryLightColor = 0xFFFFFF; // white
 var ambientLightColor = 0x222222; // 
 
-var primaryLightIntensity = 1.3;
-var ambientLightIntensity = 1.0;
+var primaryLightIntensity = 2.5;
+var ambientLightIntensity = 1.5;
 
 var planetProperties = {
     "CY3":      { "id": CY3,        "name": "CY3",              "color": "#ffa000",     "orbitcolor": "orange",     "stroke-width": 1.0, "r": 3.2, "labelOffsetX": -30, "labelOffsetY": -10 },
@@ -499,6 +499,10 @@ class AnimationScene {
         this.camera.position.x = x;
         this.camera.position.y = y;
         this.camera.position.z = z;
+
+        this.skyContainer.position.setFromMatrixPosition(this.camera.matrixWorld);
+        this.camera.updateProjectionMatrix();
+        if (this.cameraControls) { this.cameraControls.update(); }
     }
 
     init3d(callback) {
@@ -588,8 +592,11 @@ class AnimationScene {
             scene.startingIndex += nPoints;
             scene.leftOrbitPoints -= nPoints;
         
-            var orbitGeometry = new THREE.Geometry();
-            orbitGeometry.vertices = curves.getSpacedPoints(nPoints * 40);
+            var orbitGeometry = new THREE.BufferGeometry();
+            const vertexVectors = curves.getSpacedPoints(nPoints * 40);
+            const vertices = [];
+            vertexVectors.forEach(function(elem) { vertices.push(elem.x, elem.y, elem.z); }); 
+            orbitGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
             var orbitLine = new THREE.Line(orbitGeometry, scene.orbitMaterial);
             orbitLine.visible = viewOrbit;
             scene.orbitLines.push(orbitLine);
@@ -613,7 +620,7 @@ class AnimationScene {
 
         var skyGeometry = new THREE.SphereGeometry(skyRadius);
 
-        var skyMaterial = new THREE.MeshBasicMaterial({ blending: THREE.AdditiveBlending, map: this.skyTexture, opacity: 0.8 });
+        var skyMaterial = new THREE.MeshBasicMaterial({ blending: THREE.AdditiveBlending, map: this.skyTexture, opacity: 0.4 });
         skyMaterial.side = THREE.BackSide;
         var skyConstellationMaterial = new THREE.MeshBasicMaterial({ blending: THREE.AdditiveBlending, map: this.skyConstellationTexture, opacity: 0.1 });
         skyConstellationMaterial.side = THREE.BackSide;
@@ -682,8 +689,11 @@ class AnimationScene {
         var earthPoleScale = 1.2;
         var earthNorthPolePoint = new THREE.Vector3(0, 0, +1 * earthRadius * earthPoleScale);
         var earthSouthPolePoint = new THREE.Vector3(0, 0, -1 * earthRadius * earthPoleScale);
-        var earthAxisGeometry = new THREE.Geometry();
-        earthAxisGeometry.vertices.push(earthNorthPolePoint, earthSouthPolePoint);
+        var earthAxisGeometry = new THREE.BufferGeometry();
+        const vertices = [];
+        vertices.push(earthNorthPolePoint.x, earthNorthPolePoint.y, earthNorthPolePoint.z);
+        vertices.push(earthSouthPolePoint.x, earthSouthPolePoint.y, earthSouthPolePoint.z);
+        earthAxisGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
         var earthAxisMaterial = new THREE.LineBasicMaterial({color: earthAxisColor});
         this.earthAxis = new THREE.Line(earthAxisGeometry, earthAxisMaterial);
         this.earthAxis.visible = viewPolarAxes;
@@ -768,8 +778,11 @@ class AnimationScene {
         var moonNorthPolePoint = new THREE.Vector3(0, 0, +1 * moonRadius * moonPoleScale);
         var moonSouthPolePoint = new THREE.Vector3(0, 0, -1 * moonRadius * moonPoleScale);
         this.moonAxisVector = moonNorthPolePoint.clone().normalize();
-        var moonAxisGeometry = new THREE.Geometry();
-        moonAxisGeometry.vertices.push(moonNorthPolePoint, moonSouthPolePoint);
+        var moonAxisGeometry = new THREE.BufferGeometry();
+        const vertices = [];
+        vertices.push(moonNorthPolePoint.x, moonNorthPolePoint.y, moonNorthPolePoint.z);
+        vertices.push(moonSouthPolePoint.x, moonSouthPolePoint.y, moonSouthPolePoint.z);
+        moonAxisGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
         var moonAxisMaterial = new THREE.LineBasicMaterial({color: moonAxisColor});
         this.moonAxis = new THREE.Line(moonAxisGeometry, moonAxisMaterial);
         this.moonAxis.visible = viewPolarAxes;
@@ -885,7 +898,7 @@ class AnimationScene {
         /*
         // add Chandrayaan 3 lander orbit
         var vikramCurves = new THREE.CatmullRomCurve3(this.vikramCurve);
-        var vikramOrbitGeometry = new THREE.Geometry();
+        var vikramOrbitGeometry = new THREE.BufferGeometry();
         vikramOrbitGeometry.vertices = vikramCurves.getSpacedPoints(nOrbitPointsVikram * 40);
         var vikramOrbitColor = planetProperties["VIKRAM"]["orbitcolor"];
         var vikramOrbitMaterial = new THREE.LineBasicMaterial({color: vikramOrbitColor, linewidth: 0.2});
@@ -898,7 +911,7 @@ class AnimationScene {
         if (this.name == "lro") {
             // add LRO orbit
             var lroCurves = new THREE.CatmullRomCurve3(this.lroCurve);
-            var lroOrbitGeometry = new THREE.Geometry();
+            var lroOrbitGeometry = new THREE.BufferGeometry();
             lroOrbitGeometry.vertices = lroCurves.getSpacedPoints(nOrbitPointsLRO * 40);
             var lroOrbitColor = planetProperties["LRO"]["orbitcolor"];
             var lroOrbitMaterial = new THREE.LineBasicMaterial({color: lroOrbitColor, linewidth: 0.2});
@@ -917,6 +930,9 @@ class AnimationScene {
         var craftEdgesGeometry = new THREE.EdgesGeometry(craftGeometry);
         this.craftEdges = new THREE.LineSegments(craftEdgesGeometry, new THREE.LineBasicMaterial({color: craftEdgeColor}));
         this.craft.add(this.craftEdges);
+
+        // this.creaft = new Rocket();
+
         this.craftVisible = true;
         this.craft.visible = this.craftVisible; 
 
@@ -973,7 +989,7 @@ class AnimationScene {
             this.lroCraftVisible = true;
             this.lroCraft.visible = this.lroCraftVisible;
 
-            this.lroLineGeometry = new THREE.Geometry();
+            this.lroLineGeometry = new THREE.BufferGeometry();
             this.lroLineGeometry.vertices.push(this.moonContainer.position, this.lroCraft.position);
             var lroLineMaterial = new THREE.LineBasicMaterial({color: lroCraftColor});
             this.lroLine = new THREE.Line(this.lroLineGeometry, lroLineMaterial);        
@@ -983,7 +999,7 @@ class AnimationScene {
     }
 
     addLineOfSight() {
-        // this.losLineGeometry = new THREE.Geometry();
+        // this.losLineGeometry = new THREE.BufferGeometry();
         // this.losLineGeometry.vertices.push(this.dwingeloo.position, this.vikramCraft.position);
         // var losLineMaterial = new THREE.LineBasicMaterial({color: vikramCraftColor});
         // this.losLine = new THREE.Line(this.losLineGeometry, losLineMaterial);        
@@ -1013,12 +1029,12 @@ class AnimationScene {
     addCamera() {
         // add camera
         var angle = 50.0;
-        this.camera = new THREE.PerspectiveCamera(angle, this.width/this.height, 0.001, 10000);
+        this.camera = new THREE.PerspectiveCamera(angle, this.width/this.height, 0.0001, 100000);
         // console.log(`defaultCameraDistance=${defaultCameraDistance}`);
         this.setCameraPosition(defaultCameraDistance, defaultCameraDistance, defaultCameraDistance);
         this.camera.up.set(0, 0, 1);
 
-        this.craftCamera = new THREE.PerspectiveCamera(50, this.width/this.height, 0.001, 10000);
+        this.craftCamera = new THREE.PerspectiveCamera(50, this.width/this.height, 0.0001, 100000);
         this.craft.add(this.craftCamera);
         this.craftCamera.up.set(0, 0, 1);
 
@@ -1954,6 +1970,11 @@ function setLocation() {
         animationScene.light.position.set(Math.cos(sunLongitude), Math.sin(sunLongitude), 0).normalize();
         animationScene.rotateEarth();
         animationScene.rotateMoon();
+
+        if (animationScenes[config].cameraControlsEnabled) {
+            animationScenes[config].skyContainer.position.setFromMatrixPosition(animationScenes[config].camera.matrixWorld);
+            animationScenes[config].cameraControls.update();
+        }    
     }
     
     // console.log("now = " + now);
