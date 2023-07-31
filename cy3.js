@@ -3492,7 +3492,7 @@ function toggleCamera() {
 function burnButtonHandler(index) {
     // console.log("burnButtonHandler() called for event index: " + index);
     // now = eventInfos[index]["startTime"];
-    if (eventInfos[index]["label"] == "Now") {
+    if (eventInfos[index]["label"] == "⏰ Now") {
         now = new Date();
     } else {
         // now = new Date(eventInfos[index]["startTime"].getTime() + (eventInfos[index]["durationSeconds"] * 1000 / 2));    
