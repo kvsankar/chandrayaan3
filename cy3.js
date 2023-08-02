@@ -214,8 +214,8 @@ function fetchJson(url, callback = null, callbackError = null) {
 function getStartAndEndTimes(id) {
 
     var startTime                  = Date.UTC(2023, 7-1, 14,  9, 23, 0, 0);
-    var endTime                    = Date.UTC(2023, 8-1,  8,  0,  6, 0, 0);
-    var endTimeCY3                 = Date.UTC(2023, 8-1,  8,  0,  6, 0, 0);
+    var endTime                    = Date.UTC(2023, 8-1,  7,  0,  1, 0, 0);
+    var endTimeCY3                 = Date.UTC(2023, 8-1,  7,  0,  1, 0, 0);
     var startTimeVikram            = Date.UTC(2023, 8-1,  2,  7, 46, 0, 0); // TODO Update
     var endTimeVikram              = Date.UTC(2023, 8-1,  6, 20, 26, 0, 0); // TODO Update
 
@@ -1409,7 +1409,7 @@ function addEvents() {
         "durationSeconds": 5*60,
         "label": "🔥EBN#1",
         "burnFlag": true,
-        "infoText": "EBN#1:     15th Jul, 11:12 IST",
+        "infoText": "EBN#1:     15th Jul, 11:11 IST",
         "body": "CY3"
     }
 
@@ -1419,7 +1419,7 @@ function addEvents() {
         "durationSeconds": 15*60,
         "label": "🔥EBN#2", 
         "burnFlag": true,
-        "infoText": "EBN#2:     18th Jul, 14:52 IST",
+        "infoText": "EBN#2:     18th Jul, 14:54 IST",
         "body": "CY3"        
     }
 
@@ -1429,7 +1429,7 @@ function addEvents() {
         "durationSeconds": 20*60,
         "label": "🔥EBN#3", 
         "burnFlag": true,
-        "infoText": "EBN#3:     12th Jul, 14:42 IST",
+        "infoText": "EBN#3:     12th Jul, 14:46 IST",
         "body": "CY3"    
     }
 
@@ -1439,28 +1439,28 @@ function addEvents() {
         "durationSeconds": 5*60,
         "label": "🔥EBN#4", 
         "burnFlag": true,
-        "infoText": "EBN#4:      25th Jul, 14:22 IST",
+        "infoText": "EBN#4:      25th Jul, 14:30 IST",
         "body": "CY3"        
     }
 
     var tliInfo = {
         // TODO estimated from orbit data
-        "startTime": new Date(Date.UTC(2023, 7-1, 31, 18, 43, 30, 0)),
+        "startTime": new Date(Date.UTC(2023, 7-1, 31, 18, 43, 0, 0)),
         "durationSeconds": 25*60,
         "label": "🔥TLI", 
         "burnFlag": true,
-        "infoText": "TLI:         1st Aug, 00:19 IST",
+        "infoText": "TLI:         1st Aug, 00:13 IST",
         "body": "CY3"        
     }
 
     var lbn1loiInfo = {
         // https://www.isro.gov.in/update/20-aug-2019/chandrayaan-2-update-lunar-orbit-insertion 
         //                 || Actual: 0902 IST - 1738 seconds - achieved 114 km x 18072 km
-        "startTime": new Date(Date.UTC(2019, 8-1, 20,  3, 32, 0, 0)),
-        "durationSeconds": 1738,
-        "label": "LBN#1/LOI", 
+        "startTime": new Date(Date.UTC(2023, 8-1, 5,  13, 49, 0, 0)),
+        "durationSeconds": 0,
+        "label": "🌖 LBN#1/LOI", 
         "burnFlag": true,
-        "infoText": "LBN#1/LOI: 20th Aug, 09:02 IST - Target orbit: 118 x  18078, Achieved 114 x  18072",
+        "infoText": "LBN#1/LOI: 5th Aug, 19:19 IST",
         "body": "CY3"        
     }
 
@@ -1554,7 +1554,7 @@ function addEvents() {
     }
 
     var cy3EndInfo = {
-        "startTime": new Date(Date.UTC(2023, 8-1,  8, 0,  6, 0, 0)),
+        "startTime": new Date(Date.UTC(2023, 8-1,  7, 0,  1, 0, 0)),
         "durationSeconds": 0,
         "label": "🏁CY3 Data End",
         "burnFlag": false,
@@ -1588,7 +1588,7 @@ function addEvents() {
             ebn3Info,
             ebn4Info,
             tliInfo,
-            // lbn1loiInfo,
+            lbn1loiInfo,
             // lbn2Info,
             // lbn3Info,
             // lbn4Info,
