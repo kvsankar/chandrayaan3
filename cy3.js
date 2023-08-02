@@ -410,13 +410,13 @@ function updateCraftScale() {
             // console.log(`CY3 location NOT avaialble: setting CY3 visibility to false`);
             animationScenes[config].craft.visible = false;
         }
-        if (isLocationAvaialable("VIKRAM", now)) {
+        // if (isLocationAvaialable("VIKRAM", now)) {
             // console.log(`Vikram location avaialble: setting Vikram visibility to ${animationScenes[config].vikramCraftVisible}`);
             // animationScenes[config].vikramCraft.visible = animationScenes[config].vikramCraftVisible;
-        } else {
+        // } else {
             // console.log(`Vikram location NOT avaialble: setting Vikram visibility to false`);
             // animationScenes[config].vikramCraft.visible = false;
-        }
+        // }
 
         if (config == "lro") {
             animationScenes[config].lroCraft.scale.set(scale, scale, scale); // we'll use the same scale for LRO too
@@ -1099,7 +1099,7 @@ class AnimationScene {
         } else {
             this.camera.fov = 50.0;
             if (config == "geo") {
-                this.setCameraPosition(-1*defaultCameraDistance/12, -1*defaultCameraDistance/12, defaultCameraDistance/6);
+                this.setCameraPosition(-1*defaultCameraDistance/6, -1*defaultCameraDistance/30, defaultCameraDistance/24);
                 // this.motherContainer.position.set(-1*defaultCameraDistance/24, 0, 0);    
             } else {
                 this.setCameraPosition(defaultCameraDistance/12, defaultCameraDistance/12, defaultCameraDistance/12);    
