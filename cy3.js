@@ -1468,11 +1468,11 @@ function addEvents() {
     var lbn1loiInfo = {
         // https://www.isro.gov.in/update/20-aug-2019/chandrayaan-2-update-lunar-orbit-insertion 
         //                 || Actual: 0902 IST - 1738 seconds - achieved 114 km x 18072 km
-        "startTime": new Date(Date.UTC(2023, 8-1, 5,  13, 49, 0, 0)),
+        "startTime": new Date(Date.UTC(2023, 8-1, 5,  13, 59, 0, 0)),
         "durationSeconds": 0,
         "label": "🌖 LBN#1/LOI", 
         "burnFlag": true,
-        "infoText": "LBN#1/LOI: 5th Aug, 19:19 IST",
+        "infoText": "LBN#1/LOI: 5th Aug, 19:29 IST",
         "body": "CY3"        
     }
 
