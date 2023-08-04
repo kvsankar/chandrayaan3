@@ -28,7 +28,7 @@ Date.prototype.getT = function() {
 }
 
 
-function deg_to_rad(deg) {
+export function deg_to_rad(deg) {
 	return deg * Math.PI / 180.0;
 }
 
@@ -107,7 +107,7 @@ function get_moon(nowDate) {
 	return ephemMoon.position;
 }
 
-function lunar_pole(dateArg) {
+export function lunar_pole(dateArg) {
 
 	var jd = dateArg.getJD();
 	var  d = dateArg.getMJD();
@@ -159,9 +159,9 @@ function lunar_pole(dateArg) {
     // var delta_pa_deg = delta_iau_deg + 0.0220 * Math.sin(rad * WP_iau_deg) + 0.0007 * Math.sin((rad * WP_iau_deg) + E1);
     // var W_pa_deg     = W_iau_deg     + 0.01775 - 0.0507 * Math.cos(rad * WP_iau_deg) - 0.00034 * Math.cos((rad * WP_iau_deg) + E1);
 
-    alpha_iau = deg_to_rad(normalize_deg(alpha_iau_deg));
-	delta_iau = deg_to_rad(normalize_deg(delta_iau_deg));
-    W_iau = deg_to_rad(normalize_deg(W_iau_deg));
+    var alpha_iau = deg_to_rad(normalize_deg(alpha_iau_deg));
+	var delta_iau = deg_to_rad(normalize_deg(delta_iau_deg));
+    var W_iau = deg_to_rad(normalize_deg(W_iau_deg));
 
 	return  {"alpha": alpha_iau, 
              "delta": delta_iau, 

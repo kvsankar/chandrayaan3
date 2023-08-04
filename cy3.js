@@ -1,6 +1,9 @@
 
 // Copyright (c) 2013-2019 Sankaranarayanan Viswanathan. All rights reserved.
 
+import { lunar_pole } from "./astro.js";
+import { deg_to_rad } from "./astro.js";
+
 // orbit and location related data
 
 // constants
@@ -142,6 +145,7 @@ var viewBoxHeight;
 var zoomFactor = 1;
 var panx = 0;
 var pany = 0;
+var defaultCameraDistance = 0;
 
 //
 // Time related variables
@@ -153,6 +157,9 @@ var epochDate;
 
 var startTime;
 var endTime;
+var endTimeCY3;
+var startTimeVikram;
+var endTimeVikram;
 var latestEndTime; 
 
 var timelineTotalSteps;
@@ -1057,6 +1064,10 @@ class AnimationScene {
         this.setCameraParameters();
     }
 
+    async addChandrayaanModel() {
+        // const loader = new THREE.GLTFLoader();
+    }
+
     async init3dRest() {
 
         // console.log("init3dRest() called");
@@ -1066,6 +1077,7 @@ class AnimationScene {
 
         this.computeDimensions(); render(); await wait20();
         this.addLight(); render(); await wait20();
+        this.addChandrayaanModel();
         this.addSky(); render(); await wait20();
         this.addEarth(); render(); await wait20();
         this.addMoon(); render(); await wait20();
@@ -1783,17 +1795,18 @@ async function initConfig() {
     // Add event buttons
 
     d3.select("#burnbuttons").html("");
-    for (var i = 0; i < eventInfos.length; ++i) {
+    for (let i = 0; i < eventInfos.length; ++i) {
         d3.select("#burnbuttons").append("button")
             .attr("id", "burn" + (i+1))
             .attr("type", "button")
             .attr("class", "button")
             .attr("title", eventInfos[i]["title"])
-            .attr("onclick", "burnButtonHandler(" + i + ")")
             .html(eventInfos[i]["label"]);
+
+        $("#burn" + (i+1)).on("click", function() { burnButtonHandler(i); });
     }
 
-    animationState = "done_initConfig";
+    animationState[config] = "done_initConfig";
 
     // console.log("initConfig() returning");
 }
@@ -1883,7 +1896,7 @@ function isLocationAvaialable(planet, date) {
     } else {
         flag = ((date >= startTime) && (date <= endTime));
     }
-    d = new Date(date);
+    // d = new Date(date);
     // console.log("isLocationAvaialable() called for body " + planet + " for time " + d + ": returning " + flag);
     return flag;
 }
@@ -2333,8 +2346,39 @@ function animateLoop() {
  
 }
 
-function onload() {
+export function main() {
     const onloadStartTime = performance.now();
+
+    $("#reset").on("click", reset);
+
+    $("#origin-earth").on("click", toggleMode);
+    $("#origin-moon").on("click", toggleMode);
+    $("#camera-default").on("click", toggleCamera);
+    $("#camera-moon").on("click", toggleCamera);
+    $("#checkbox-lock-cy3").on("click", toggleLockCY3);
+    $("#checkbox-lock-moon").on("click", toggleLockMoon);
+    $("#checkbox-lock-earth").on("click", toggleLockEarth);
+
+    $("#checkbox-lock-xy").on("click", togglePlane);
+    $("#checkbox-lock-xz").on("click", togglePlane);
+    $("#checkbox-lock-yz").on("click", togglePlane);
+
+    $("#view-orbit").on("click", setView);
+    $("#view-craters").on("click", setView);
+    $("#view-xyz-axes").on("click", setView);
+    $("#view-poles").on("click", setView);
+    $("#view-polar-axes").on("click", setView);
+    $("#view-sky").on("click", setView);
+
+    $("#dimension-2D").on("click", setDimension);
+    $("#dimension-3D").on("click", setDimension);
+
+    $("#animate").on("click", cy3Animate);
+    $("#joyride").on("click", toggleJoyRide);
+    $("#joyridebutton").on("click", toggleJoyRide);
+
+    $("#info-button").on("click", toggleInfo);
+
     initAnimation(); // no need to await here - we are just kickstarting the setup 
     const onloadEndTime = performance.now() - onloadStartTime;
     // console.log("onload() took " + onloadEndTime + " ms");
@@ -2773,8 +2817,8 @@ function initSVG() {
 }
 
 function handleZoom(event) {
-    x = d3.event.translate[0];
-    y = d3.event.translate[1];
+    var x = d3.event.translate[0];
+    var y = d3.event.translate[1];
     zoomFactor = d3.event.scale;
     panx = x - offsetx;
     pany = y - offsety;
@@ -3504,7 +3548,7 @@ function burnButtonHandler(index) {
 
 // adapted from - http://stackoverflow.com/questions/9318674/javascript-number-currency-formatting
 
-formatFloat = function formatFloat(rdecPlaces, thouSeparator, decSeparator) {
+function formatFloat(decPlaces, thouSeparator, decSeparator) {
     var n = this,
     decPlaces = isNaN(decPlaces = Math.abs(decPlaces)) ? 2 : decPlaces,
     decSeparator = decSeparator == undefined ? "." : decSeparator,
@@ -3576,5 +3620,7 @@ function getMST( now, lon )
 
     return GMST;
 }
+
+window.addEventListener('load', main);
 
 // end of file
