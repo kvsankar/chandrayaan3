@@ -40,13 +40,17 @@ var moonAxisColor = 0xFFFF00; // yellow
 var northPoleColor = 0xff6347; // tomato
 var southPoleColor = 0x6a5acd; // steel blue
 var primaryLightColor = 0xFFFFFF; // white
-var ambientLightColor = 0x222222; // 
+var ambientLightColor = 0x222222; // soft white
+var ambientLightForCraftColor = 0xFFFFFF; // soft white
 
 var primaryLightIntensity = 2.5;
 var ambientLightIntensity = 1.5;
+var ambientLightForCraftIntensity = 1.0;
+
+var craftSize = 5; // in pixels
 
 var planetProperties = {
-    "CY3":      { "id": CY3,        "name": "CY3",              "color": "#ffa000",     "orbitcolor": "orange",     "stroke-width": 1.0, "r": 3.2, "labelOffsetX": -30, "labelOffsetY": -10 },
+    "CY3":      { "id": CY3,        "name": "CY3",              "color": "#ffa000",     "orbitcolor": "#66CCFF",    "stroke-width": 1.0, "r": 3.2, "labelOffsetX": -30, "labelOffsetY": -10 },
     "VIKRAM":   { "id": VIKRAM,     "name": "VIKRAM",           "color": "#ffe000",     "orbitcolor": "#6a5acd",    "stroke-width": 1.0, "r": 3.2, "labelOffsetX": +30, "labelOffsetY": +10 },    
     "LRO":      { "id": LRO,        "name": "LRO",              "color": "#00FF00",     "orbitcolor": "#00FF00",    "stroke-width": 1.0, "r": 3.2, "labelOffsetX": +30, "labelOffsetY": +10 },    
     "SUN":      { "id": SUN,        "name": "Sun",              "color": "yellow",      "orbitcolor": "yellow",     "stroke-width": 1.0, "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
@@ -75,7 +79,7 @@ var FORMAT_METRIC = d3.format(" >10,.2f");
 
 var animationState = { "geo": "start", "lunar": "start", "lro": "start" };
 var craftId = "CY3";
-var config = "geo";
+var config = "lunar";
 var missionStartCalled = false;
 var orbitDataLoaded = { "geo": false, "lunar": false, "lro": false };
 var orbitDataProcessed = { "geo": false, "lunar": false, "lro": false };
@@ -380,7 +384,14 @@ class SceneHandler {
                 this.renderer.render(animationScene.scene, animationScene.craftCamera);
 
             } else {
+                this.renderer.autoClear = true;
+                animationScene.camera.layers.set(0);
                 this.renderer.render(animationScene.scene, animationScene.camera);    
+
+                this.renderer.autoClear = false;
+                animationScene.camera.layers.set(1);
+                this.renderer.render(animationScene.scene, animationScene.camera);    
+
             }
         }
     }
@@ -596,7 +607,7 @@ class AnimationScene {
             var nPoints = Math.min(scene.leftOrbitPoints, scene.pointsPerSlice);
             var arr = scene.curve.slice(scene.startingIndex, scene.startingIndex + nPoints);
             var curves = new THREE.CatmullRomCurve3(arr);
-            scene.startingIndex += nPoints;
+            scene.startingIndex += nPoints - 1;
             scene.leftOrbitPoints -= nPoints;
         
             var orbitGeometry = new THREE.BufferGeometry();
@@ -931,15 +942,24 @@ class AnimationScene {
 
         var craftColor = planetProperties["CY3"]["color"];
         var craftEdgeColor = 0xFF8000;
-        var craftGeometry = new THREE.BoxGeometry(5, 5, 5);
-        var craftMaterial = new THREE.MeshBasicMaterial({color: craftColor, transparent: false, opacity: 1.0});
-        this.craft = new THREE.Mesh(craftGeometry, craftMaterial);
+        // Based on https://stackoverflow.com/questions/49481332/how-to-create-3d-trapezoid-in-three-js 
+        var craftGeometry = new THREE.CylinderGeometry(craftSize*0.8 / Math.sqrt(2), craftSize*1 / Math.sqrt(2), craftSize*0.8*1, 4, 1); 
+        var craftMaterial = new THREE.MeshPhongMaterial({color: craftColor, transparent: false, opacity: 1.0});
+        this.craftInner = new THREE.Mesh(craftGeometry, craftMaterial);
         var craftEdgesGeometry = new THREE.EdgesGeometry(craftGeometry);
         this.craftEdges = new THREE.LineSegments(craftEdgesGeometry, new THREE.LineBasicMaterial({color: craftEdgeColor}));
-        this.craft.add(this.craftEdges);
+        this.craftInner.add(this.craftEdges);
+        this.craftInner.rotateX(Math.PI/2); // this is to get the "top" of the craft pointing to Z
+        this.craftInner.rotateY(Math.PI/4); // this is to get the orientation of the sides correct
+        this.craftInner.layers.set(1);
 
-        // this.creaft = new Rocket();
-
+        this.craft = new THREE.Group();
+        this.craft.add(this.craftInner);
+        this.craftAxesHelper = new THREE.AxesHelper(10);
+        this.craftAxesHelper.position.copy(this.craftInner.position);
+        this.craft.add(this.craftAxesHelper);
+        this.craftAxesHelper.visible = false;
+        this.craft.layers.set(1);
         this.craftVisible = true;
         this.craft.visible = this.craftVisible; 
 
@@ -1027,8 +1047,16 @@ class AnimationScene {
         this.light = new THREE.DirectionalLight(primaryLightColor, primaryLightIntensity);
         this.scene.add(this.light); // TODO attempt to fix lighting direction problem when piovoting on non-centered objects
 
+        this.light2 = new THREE.DirectionalLight(primaryLightColor, primaryLightIntensity);
+        this.light2.layers.set(1);
+        this.scene.add(this.light2); // TODO attempt to fix lighting direction problem when piovoting on non-centered objects
+
         var ambientLight = new THREE.AmbientLight(ambientLightColor, ambientLightIntensity); // soft white light
         this.motherContainer.add(ambientLight);
+
+        var ambientLightForCraft = new THREE.AmbientLight(ambientLightForCraftColor, ambientLightForCraftIntensity); // soft white light
+        ambientLightForCraft.layers.set(1);
+        this.motherContainer.add(ambientLightForCraft);
 
         this.scene.add(this.motherContainer);
     }
@@ -1079,8 +1107,9 @@ class AnimationScene {
         this.addLight(); render(); await wait20();
         this.addChandrayaanModel();
         this.addSky(); render(); await wait20();
-        this.addEarth(); render(); await wait20();
         this.addMoon(); render(); await wait20();
+        this.addEarth(); render(); await wait20();
+        
         this.setPrimaryAndSecondaryBodies(); render(); await wait20();
         this.addChandrayaan(); render(); await wait20();
         this.addCamera(); render(); await wait20();
@@ -1114,7 +1143,7 @@ class AnimationScene {
                 this.setCameraPosition(-1*defaultCameraDistance/6, -1*defaultCameraDistance/30, defaultCameraDistance/24);
                 // this.motherContainer.position.set(-1*defaultCameraDistance/24, 0, 0);    
             } else {
-                this.setCameraPosition(defaultCameraDistance/12, defaultCameraDistance/12, defaultCameraDistance/12);    
+                this.setCameraPosition(defaultCameraDistance/24, defaultCameraDistance/24, defaultCameraDistance/24);    
             }
             this.camera.up.set(0, 0, 1);
             this.craftVisible = true;
@@ -1638,10 +1667,10 @@ async function initConfig() {
 
     addEvents();
 
-    timeTransLunarInjection = Date.UTC(2023, 8-1, 1,  0,  0, 0, 0); // TODO Update for CY3
+    timeTransLunarInjection = Date.UTC(2023, 7-1, 31, 18, 43, 0, 0); // TODO Update for CY3
     /* The next maneuver is Trans Lunar Insertion (TLI), which is scheduled on August 14, 2019, between 0300 – 0400 hrs (IST).*/ 
     
-    timeLunarOrbitInsertion = Date.UTC(2023, 8-1, 5, 14, 30, 0, 0); // TODO Update for CY3
+    timeLunarOrbitInsertion = Date.UTC(2023, 8-1, 5,  13, 59, 0, 0); // TODO Update for CY3
 
     if (!theSceneHandler) {
         theSceneHandler = new SceneHandler();
@@ -1981,6 +2010,7 @@ function setLocation() {
 
         var animationScene = animationScenes[config];
         animationScene.light.position.set(Math.cos(sunLongitude), Math.sin(sunLongitude), 0).normalize();
+        animationScene.light2.position.set(Math.cos(sunLongitude), Math.sin(sunLongitude), 0).normalize();
         animationScene.rotateEarth();
         animationScene.rotateMoon();
 
@@ -2030,6 +2060,14 @@ function setLocation() {
             var realy_screen = +1 * (realy / KM_PER_AU) * PIXELS_PER_AU; // note the sign; it's +1
             var realz_screen = +1 * (realz / KM_PER_AU) * PIXELS_PER_AU;
 
+            var realx_next = vectors[index+1]["x"];
+            var realy_next = vectors[index+1]["y"];
+            var realz_next = vectors[index+1]["z"];
+
+            var realx_screen_next = +1 * (realx_next / KM_PER_AU) * PIXELS_PER_AU;
+            var realy_screen_next = +1 * (realy_next / KM_PER_AU) * PIXELS_PER_AU; // note the sign; it's +1
+            var realz_screen_next = +1 * (realz_next / KM_PER_AU) * PIXELS_PER_AU;
+
             var x = vectors[index][xVariable];
             var y = vectors[index][yVariable];
             var z = vectors[index][zVariable];
@@ -2050,6 +2088,7 @@ function setLocation() {
             } else if (planetKey == craftId) {
                 if (animationScenes[config] && animationScenes[config].initialized3D) {
                     animationScenes[config].craft.position.set(realx_screen, realy_screen, realz_screen);
+                    animationScenes[config].craft.lookAt(realx_screen_next, realy_screen_next, realz_screen_next);
                     updateCraftScale();
                 }                                
             } else if (planetKey == "VIKRAM") {
@@ -2299,6 +2338,7 @@ async function initAnimation() {
             if (!orbitDataProcessed[config]) {
                 setTimeout(waitUntilOrbitDataProcessed, 50);
             } else {
+                missionNow();
                 await setDimension();
                 await setView();
             }
