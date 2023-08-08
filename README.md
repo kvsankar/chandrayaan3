@@ -106,6 +106,9 @@ like Mongoose to test the local site.
 
 ## Credits
 
+* "Chandrayaan-2 in flight configuration" (https://skfb.ly/6SoMv) by tashtego is licensed under 
+  Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
+  
 * Jon D. Giorgini for helping with the JPL/HORIZONS interface and data. 
   He was very responsive whenever I mailed him my queries.
   He has been of great help since 2013 for the Mars Orbiter Mission until now

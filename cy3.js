@@ -4,6 +4,10 @@
 import { lunar_pole } from "./astro.js";
 import { deg_to_rad } from "./astro.js";
 
+import * as THREE from 'three';
+import { TrackballControls } from './third-party/TrackballControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
 // orbit and location related data
 
 // constants
@@ -39,13 +43,16 @@ var earthAxisColor = 0xFFFF00; // yellow
 var moonAxisColor = 0xFFFF00; // yellow
 var northPoleColor = 0xff6347; // tomato
 var southPoleColor = 0x6a5acd; // steel blue
-var primaryLightColor = 0xFFFFFF; // white
-var ambientLightColor = 0x222222; // soft white
-var ambientLightForCraftColor = 0xFFFFFF; // soft white
 
+var primaryLightColor = 0xFFFFFF; // white
 var primaryLightIntensity = 2.5;
+var ambientLightColor = 0x222222; // soft white
 var ambientLightIntensity = 1.5;
-var ambientLightForCraftIntensity = 1.0;
+
+var primaryLightColorForCraft = 0xFFFFFF; 
+var primaryLightIntensityForCraft = 2.5;
+var ambientLightColorForCraft = 0x777777;
+var ambientLightIntensityForCraft = 1.5;
 
 var craftSize = 5; // in pixels
 
@@ -191,7 +198,7 @@ var eventInfos = [];
 
 var currentDimension = "3D"; 
 var theSceneHandler = null;
-var animationScenes = {};
+export var animationScenes = {};
 var joyRideFlag = false;
 var moonPhaseCamera = false;
 
@@ -225,8 +232,8 @@ function fetchJson(url, callback = null, callbackError = null) {
 function getStartAndEndTimes(id) {
 
     var startTime                  = Date.UTC(2023, 7-1, 14,  9, 23, 0, 0);
-    var endTime                    = Date.UTC(2023, 8-1,  7,  0,  1, 0, 0);
-    var endTimeCY3                 = Date.UTC(2023, 8-1,  7,  0,  1, 0, 0);
+    var endTime                    = Date.UTC(2023, 8-1, 10,  0,  1, 0, 0);
+    var endTimeCY3                 = Date.UTC(2023, 8-1, 10,  0,  1, 0, 0);
     var startTimeVikram            = Date.UTC(2023, 8-1,  2,  7, 46, 0, 0); // TODO Update
     var endTimeVikram              = Date.UTC(2023, 8-1,  6, 20, 26, 0, 0); // TODO Update
 
@@ -274,6 +281,7 @@ class SceneHandler {
 
         // add renderer
         this.renderer = new THREE.WebGLRenderer({antialias: true});
+        this.renderer.outputEncoding = THREE.sRGBEncoding;
         this.renderer.setPixelRatio(window.devicePixelRatio);
         this.renderer.setSize(width, height);
         // this.renderer.domElement.style.display = "none";
@@ -380,7 +388,7 @@ class SceneHandler {
 
                 animationScene.craftCamera.lookAt(closerBody.position);    
 
-                animationScene.craftCamera.rotateX(closerAngleRads); // TODO doesn't seem to work
+                // animationScene.craftCamera.rotateX(closerAngleRads); // TODO doesn't seem to work
                 this.renderer.render(animationScene.scene, animationScene.craftCamera);
 
             } else {
@@ -603,11 +611,18 @@ class AnimationScene {
 
         var scene = this;
 
+        // [0  .. 420) => [370 .. 420), [320 .. 370), ...[0 .. 20)
+
+        scene.startingIndex = scene.leftOrbitPoints - scene.pointsPerSlice;
+        // console.log("addCurve(): startingIndex = " + scene.startingIndex, ", nPoints = " + scene.leftOrbitPoints);
+
         do {
+            scene.startingIndex = Math.max(scene.startingIndex, 0);
             var nPoints = Math.min(scene.leftOrbitPoints, scene.pointsPerSlice);
+            // console.log("addCurve(): startingIndex = " + scene.startingIndex, ", nPoints = " + nPoints); 
             var arr = scene.curve.slice(scene.startingIndex, scene.startingIndex + nPoints);
             var curves = new THREE.CatmullRomCurve3(arr);
-            scene.startingIndex += nPoints - 1;
+            scene.startingIndex -= nPoints;
             scene.leftOrbitPoints -= nPoints;
         
             var orbitGeometry = new THREE.BufferGeometry();
@@ -1045,16 +1060,16 @@ class AnimationScene {
     addLight() {
         // add light
         this.light = new THREE.DirectionalLight(primaryLightColor, primaryLightIntensity);
-        this.scene.add(this.light); // TODO attempt to fix lighting direction problem when piovoting on non-centered objects
+        this.motherContainer.add(this.light); // TODO attempt to fix lighting direction problem when piovoting on non-centered objects
 
-        this.light2 = new THREE.DirectionalLight(primaryLightColor, primaryLightIntensity);
+        this.light2 = new THREE.DirectionalLight(primaryLightColorForCraft, primaryLightIntensityForCraft);
         this.light2.layers.set(1);
-        this.scene.add(this.light2); // TODO attempt to fix lighting direction problem when piovoting on non-centered objects
+        this.motherContainer.add(this.light2);
 
         var ambientLight = new THREE.AmbientLight(ambientLightColor, ambientLightIntensity); // soft white light
         this.motherContainer.add(ambientLight);
 
-        var ambientLightForCraft = new THREE.AmbientLight(ambientLightForCraftColor, ambientLightForCraftIntensity); // soft white light
+        var ambientLightForCraft = new THREE.AmbientLight(ambientLightColorForCraft, ambientLightIntensityForCraft); // soft white light
         ambientLightForCraft.layers.set(1);
         this.motherContainer.add(ambientLightForCraft);
 
@@ -1075,7 +1090,7 @@ class AnimationScene {
 
         // add camera controls
         if (this.cameraControlsEnabled) {
-            this.cameraControls = new THREE.TrackballControls(this.camera, theSceneHandler.renderer.domElement, cameraControlsCallback);
+            this.cameraControls = new TrackballControls(this.camera, theSceneHandler.renderer.domElement, cameraControlsCallback);
 
             // TrackballControls settings
             this.cameraControls.rotateSpeed = 1.0;
@@ -1093,7 +1108,99 @@ class AnimationScene {
     }
 
     async addChandrayaanModel() {
-        // const loader = new THREE.GLTFLoader();
+        const loader = new GLTFLoader();
+        var animationScene = this;
+        var done = false;
+
+        loader.load('third-party/models/cy3-small.glb', function (gltf) {
+
+            console.log("Loaded GLB.");
+
+            animationScene.craft = new THREE.Group();
+
+            animationScene.craftInner = gltf.scene;
+            animationScene.craftInner.rotateX(Math.PI/2); // this is to get the "top" of the craft pointing to Z
+
+            var bbox = new THREE.Box3().setFromObject(animationScene.craftInner);
+            var bbox_xw = (bbox.max.x - bbox.min.x);
+            var bbox_yw = (bbox.max.y - bbox.min.y);
+            var bbox_zw = (bbox.max.z - bbox.min.z);
+            var bbox_max_side = Math.max(bbox_xw, bbox_yw, bbox_zw);
+
+            // var sphereGeometry = new THREE.SphereGeometry(bbox_max_side*0.5);
+            // var sphereMaterial = new THREE.MeshStandardMaterial({metalness: 1.0, roughness: 0.0});
+            // var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+            // sphere.layers.set(1);
+            // animationScene.craft.add(sphere);
+
+            // console.log("model (xw, yw, zw) = " +  bbox_xw + ", " +  bbox_yw + ", " + bbox_zw);
+
+            function setLayer(object, layer) {
+                object.layers.set(layer);
+                object.children.forEach(child => setLayer(child, layer));
+            }
+            setLayer(animationScene.craftInner, 1);
+
+            animationScene.craft.add(animationScene.craftInner);
+            animationScene.craftAxesHelper = new THREE.AxesHelper(10);
+            animationScene.craftAxesHelper.position.copy(animationScene.craftInner.position);
+            animationScene.craft.add(animationScene.craftAxesHelper);
+            animationScene.craftAxesHelper.visible = true;
+            animationScene.craft.layers.set(1);
+            animationScene.craftVisible = true;
+            animationScene.craft.visible = animationScene.craftVisible; 
+
+            // Using PointLight below as they are NOT directional.
+            // DirectionalLight has to be targeted, and that target direction seems to be absolute and not relative to the parent.
+            // See https://stackoverflow.com/questions/45039999/three-js-light-from-camera-straight-to-object 
+
+            var intensity = 2;
+            var light1 = new THREE.DirectionalLight(primaryLightColor, intensity);
+            var light2 = new THREE.DirectionalLight(primaryLightColor, intensity);
+            var light3 = new THREE.DirectionalLight(primaryLightColor, intensity);
+            var light4 = new THREE.DirectionalLight(primaryLightColor, intensity);
+            var light5 = new THREE.DirectionalLight(primaryLightColor, intensity);
+            var light6 = new THREE.DirectionalLight(primaryLightColor, intensity);
+            
+            light1.layers.set(1);
+            light2.layers.set(1);
+            light3.layers.set(1);
+            light4.layers.set(1);
+            light5.layers.set(1);
+            light6.layers.set(1);
+            
+            animationScene.craft.add(light1);
+            animationScene.craft.add(light2);
+            animationScene.craft.add(light3);
+            animationScene.craft.add(light4);
+            animationScene.craft.add(light5);
+            animationScene.craft.add(light6);
+
+            var scale = 0.6;
+            light1.position.set(+1*scale*bbox_max_side, 0, 0);
+            light2.position.set(0, +1*scale*bbox_max_side, 0);
+            light3.position.set(0, 0, +1*scale*bbox_max_side);
+            light4.position.set(-1*scale*bbox_max_side, 0, 0);
+            light5.position.set(0, -1*scale*bbox_max_side, 0);
+            light6.position.set(0, 0, -1*scale*bbox_max_side);
+
+            animationScene.motherContainer.add(animationScene.craft);
+
+            done = true;
+
+        }, undefined, function (error) {
+            console.error(error);        
+        } );
+
+        async function waitUntilDone() {
+            // console.log("waitUntilDone(): done = " + done);
+            while (!done) { 
+                // console.log("Waiting in waitUntilDone() ..."); 
+                await wait50(); 
+            } 
+        };
+
+        await waitUntilDone();
     }
 
     async init3dRest() {
@@ -1105,13 +1212,13 @@ class AnimationScene {
 
         this.computeDimensions(); render(); await wait20();
         this.addLight(); render(); await wait20();
-        this.addChandrayaanModel();
         this.addSky(); render(); await wait20();
         this.addMoon(); render(); await wait20();
         this.addEarth(); render(); await wait20();
         
         this.setPrimaryAndSecondaryBodies(); render(); await wait20();
         this.addChandrayaan(); render(); await wait20();
+        // await this.addChandrayaanModel(); render(); await wait20();
         this.addCamera(); render(); await wait20();
         this.initialized3D = true; render(); await wait20();
 
@@ -1497,22 +1604,22 @@ function addEvents() {
     var lbn1loiInfo = {
         // https://www.isro.gov.in/update/20-aug-2019/chandrayaan-2-update-lunar-orbit-insertion 
         //                 || Actual: 0902 IST - 1738 seconds - achieved 114 km x 18072 km
-        "startTime": new Date(Date.UTC(2023, 8-1, 5,  13, 59, 0, 0)),
+        "startTime": new Date(Date.UTC(2023, 8-1, 5,  14, 0, 0, 0)),
         "durationSeconds": 0,
         "label": "🌖 LBN#1/LOI", 
         "burnFlag": true,
-        "infoText": "LBN#1/LOI: 5th Aug, 19:29 IST",
+        "infoText": "LBN#1/LOI: 5th Aug, 19:30 IST",
         "body": "CY3"        
     }
 
     var lbn2Info = {
         // https://www.isro.gov.in/update/21-aug-2019/chandrayaan-2-update-second-lunar-orbit-maneuver
         // Aug 21, 2019 | 12:30 – 13:30 | 121 X 4303 || Actual: 1250 IST - 1228 seconds - achieved 118 km x 4412 km  
-        "startTime": new Date(Date.UTC(2019, 8-1, 21,  7, 20, 0, 0)),
+        "startTime": new Date(Date.UTC(2023, 8-1, 6, 17, 49, 0, 0)),
         "durationSeconds": 1228,
         "label": "LBN#2",
         "burnFlag": true,
-        "infoText": "LBN#2:     21st Aug, 12:50 IST - Target orbit: 121 x   4303, Achieved 118 x   4412",
+        "infoText": "LBN#2:     6th Aug, 23:19 IST",
         "body": "CY3"        
     }
 
@@ -1595,7 +1702,7 @@ function addEvents() {
     }
 
     var cy3EndInfo = {
-        "startTime": new Date(Date.UTC(2023, 8-1,  7, 0,  1, 0, 0)),
+        "startTime": new Date(Date.UTC(2023, 8-1, 10, 0, 1, 0, 0)),
         "durationSeconds": 0,
         "label": "🏁CY3 Data End",
         "burnFlag": false,
@@ -1624,13 +1731,13 @@ function addEvents() {
     if ((config == "geo") || (config == "lunar")) {
         eventInfos = [
             missionStartInfo,
-            ebn1Info,
-            ebn2Info,
-            ebn3Info,
-            ebn4Info,
+            // ebn1Info,
+            // ebn2Info,
+            // ebn3Info,
+            // ebn4Info,
             tliInfo,
             lbn1loiInfo,
-            // lbn2Info,
+            lbn2Info,
             // lbn3Info,
             // lbn4Info,
             // lbn5Info,
@@ -2089,6 +2196,7 @@ function setLocation() {
                 if (animationScenes[config] && animationScenes[config].initialized3D) {
                     animationScenes[config].craft.position.set(realx_screen, realy_screen, realz_screen);
                     animationScenes[config].craft.lookAt(realx_screen_next, realy_screen_next, realz_screen_next);
+                    animationScenes[config].craft.up.set(0, 0, 1);
                     updateCraftScale();
                 }                                
             } else if (planetKey == "VIKRAM") {
