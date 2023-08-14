@@ -232,8 +232,8 @@ function fetchJson(url, callback = null, callbackError = null) {
 function getStartAndEndTimes(id) {
 
     var startTime                  = Date.UTC(2023, 7-1, 14,  9, 23, 0, 0);
-    var endTime                    = Date.UTC(2023, 8-1, 10,  0,  1, 0, 0);
-    var endTimeCY3                 = Date.UTC(2023, 8-1, 10,  0,  1, 0, 0);
+    var endTime                    = Date.UTC(2023, 8-1, 16,  0,  1, 0, 0);
+    var endTimeCY3                 = Date.UTC(2023, 8-1, 16,  0,  1, 0, 0);
     var startTimeVikram            = Date.UTC(2023, 8-1,  2,  7, 46, 0, 0); // TODO Update
     var endTimeVikram              = Date.UTC(2023, 8-1,  6, 20, 26, 0, 0); // TODO Update
 
@@ -1702,7 +1702,7 @@ function addEvents() {
     }
 
     var cy3EndInfo = {
-        "startTime": new Date(Date.UTC(2023, 8-1, 10, 0, 1, 0, 0)),
+        "startTime": new Date(Date.UTC(2023, 8-1, 16, 0, 1, 0, 0)),
         "durationSeconds": 0,
         "label": "🏁CY3 Data End",
         "burnFlag": false,
