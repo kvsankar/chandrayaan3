@@ -1625,7 +1625,7 @@ function addEvents() {
 
     var lbn3Info = {
         // Aug 28, 2019 | 05:30 – 06:30 | 178 X 1411 || Actual: 0904 IST - 1190 seconds - achieved 179 km x 1412 km    
-        "startTime": new Date(Date.UTC(2019, 8-1, 28,  3, 34, 0, 0)),
+        "startTime": new Date(Date.UTC(2023, 8-1, 9, 8, 21, 0, 0)),
         "durationSeconds": 1190,
         "label": "LBN#3", 
         "burnFlag": true,
@@ -1738,7 +1738,7 @@ function addEvents() {
             tliInfo,
             lbn1loiInfo,
             lbn2Info,
-            // lbn3Info,
+            lbn3Info,
             // lbn4Info,
             // lbn5Info,
             // vikramSeparationInfo,
