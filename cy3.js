@@ -232,8 +232,8 @@ function fetchJson(url, callback = null, callbackError = null) {
 function getStartAndEndTimes(id) {
 
     var startTime                  = Date.UTC(2023, 7-1, 14,  9, 23, 0, 0);
-    var endTime                    = Date.UTC(2023, 8-1, 16,  0,  1, 0, 0);
-    var endTimeCY3                 = Date.UTC(2023, 8-1, 16,  0,  1, 0, 0);
+    var endTime                    = Date.UTC(2023, 8-1, 18,  0,  1, 0, 0);
+    var endTimeCY3                 = Date.UTC(2023, 8-1, 18,  0,  1, 0, 0);
     var startTimeVikram            = Date.UTC(2023, 8-1,  2,  7, 46, 0, 0); // TODO Update
     var endTimeVikram              = Date.UTC(2023, 8-1,  6, 20, 26, 0, 0); // TODO Update
 
@@ -1629,17 +1629,17 @@ function addEvents() {
         "durationSeconds": 1190,
         "label": "LBN#3", 
         "burnFlag": true,
-        "infoText": "LBN#3:     28th Aug, 09:04 IST - Target orbit: 178 X   1411, achieved 179 x   1412",
+        "infoText": "LBN#3:     9th Aug, 13:51 IST",
         "body": "CY3"        
     }
 
     var lbn4Info = {
         // Aug 30, 2019 | 18:00 – 19:00 || Actual: 1818 IST - 1155 seconds - 126 X 164 1818 hours        
-        "startTime": new Date(Date.UTC(2019, 8-1, 30, 12, 48, 0, 0)),
+        "startTime": new Date(Date.UTC(2023, 8-1, 14, 6, 38, 0, 0)),
         "durationSeconds": 1155,
         "label": "LBN#4",
         "burnFlag": true,
-        "infoText": "LBN#4:     30th Aug, 18:18 IST - Target orbit: 126 x    164, achieved 124 x    164",
+        "infoText": "LBN#4:     14th Aug, 12:08 IST",
         "body": "CY3"        
     }    
 
@@ -1702,7 +1702,7 @@ function addEvents() {
     }
 
     var cy3EndInfo = {
-        "startTime": new Date(Date.UTC(2023, 8-1, 16, 0, 1, 0, 0)),
+        "startTime": new Date(Date.UTC(2023, 8-1, 18, 0, 1, 0, 0)),
         "durationSeconds": 0,
         "label": "🏁CY3 Data End",
         "burnFlag": false,
@@ -1739,7 +1739,7 @@ function addEvents() {
             lbn1loiInfo,
             lbn2Info,
             lbn3Info,
-            // lbn4Info,
+            lbn4Info,
             // lbn5Info,
             // vikramSeparationInfo,
             // vikramDeboostOneInfo,
