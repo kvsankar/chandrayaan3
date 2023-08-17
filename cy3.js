@@ -232,8 +232,8 @@ function fetchJson(url, callback = null, callbackError = null) {
 function getStartAndEndTimes(id) {
 
     var startTime                  = Date.UTC(2023, 7-1, 14,  9, 23, 0, 0);
-    var endTime                    = Date.UTC(2023, 8-1, 18,  0,  1, 0, 0);
-    var endTimeCY3                 = Date.UTC(2023, 8-1, 18,  0,  1, 0, 0);
+    var endTime                    = Date.UTC(2023, 8-1, 18, 23, 59, 0, 0);
+    var endTimeCY3                 = Date.UTC(2023, 8-1, 18, 23, 59, 0, 0);
     var startTimeVikram            = Date.UTC(2023, 8-1,  2,  7, 46, 0, 0); // TODO Update
     var endTimeVikram              = Date.UTC(2023, 8-1,  6, 20, 26, 0, 0); // TODO Update
 
@@ -1557,7 +1557,7 @@ function addEvents() {
         "durationSeconds": 5*60,
         "label": "🔥EBN#1",
         "burnFlag": true,
-        "infoText": "EBN#1:     15th Jul, 11:11 IST",
+        "infoText": "EBN#1:     15th Jul, 11:11 IST - 173km x 41762km orbit",
         "body": "CY3"
     }
 
@@ -1567,7 +1567,7 @@ function addEvents() {
         "durationSeconds": 15*60,
         "label": "🔥EBN#2", 
         "burnFlag": true,
-        "infoText": "EBN#2:     18th Jul, 14:54 IST",
+        "infoText": "EBN#2:     18th Jul, 14:54 IST - 228km x 51400km orbit",
         "body": "CY3"        
     }
 
@@ -1577,7 +1577,7 @@ function addEvents() {
         "durationSeconds": 20*60,
         "label": "🔥EBN#3", 
         "burnFlag": true,
-        "infoText": "EBN#3:     12th Jul, 14:46 IST",
+        "infoText": "EBN#3:     12th Jul, 14:46 IST - 233km x 71351km orbit",
         "body": "CY3"    
     }
 
@@ -1587,7 +1587,7 @@ function addEvents() {
         "durationSeconds": 5*60,
         "label": "🔥EBN#4", 
         "burnFlag": true,
-        "infoText": "EBN#4:      25th Jul, 14:30 IST",
+        "infoText": "EBN#4:      25th Jul, 14:30 IST - 236km x 127603km orbit",
         "body": "CY3"        
     }
 
@@ -1597,7 +1597,7 @@ function addEvents() {
         "durationSeconds": 25*60,
         "label": "🔥TLI", 
         "burnFlag": true,
-        "infoText": "TLI:         1st Aug, 00:13 IST",
+        "infoText": "TLI:         1st Aug, 00:13 IST - 288km x 369328km orbit",
         "body": "CY3"        
     }
 
@@ -1608,7 +1608,7 @@ function addEvents() {
         "durationSeconds": 0,
         "label": "🌖 LBN#1/LOI", 
         "burnFlag": true,
-        "infoText": "LBN#1/LOI: 5th Aug, 19:30 IST",
+        "infoText": "LBN#1/LOI: 5th Aug, 19:30 IST - 164km x 18074km orbit",
         "body": "CY3"        
     }
 
@@ -1619,7 +1619,7 @@ function addEvents() {
         "durationSeconds": 1228,
         "label": "LBN#2",
         "burnFlag": true,
-        "infoText": "LBN#2:     6th Aug, 23:19 IST",
+        "infoText": "LBN#2:     6th Aug, 23:19 IST - 170km x 4313km orbit",
         "body": "CY3"        
     }
 
@@ -1629,7 +1629,7 @@ function addEvents() {
         "durationSeconds": 1190,
         "label": "LBN#3", 
         "burnFlag": true,
-        "infoText": "LBN#3:     9th Aug, 13:51 IST",
+        "infoText": "LBN#3:     9th Aug, 13:51 IST - 174km x 1437km orbit",
         "body": "CY3"        
     }
 
@@ -1639,17 +1639,17 @@ function addEvents() {
         "durationSeconds": 1155,
         "label": "LBN#4",
         "burnFlag": true,
-        "infoText": "LBN#4:     14th Aug, 12:08 IST",
+        "infoText": "LBN#4:    14th Aug, 12:08 IST - 150km x 177km orbit",
         "body": "CY3"        
     }    
 
     var lbn5Info = {
         // Sep 01, 2019 | 18:00 – 19:00 IST | 114 X 128 || Actual: 1821 IST - 52 seconds - achieved 119 km x 127 km
-        "startTime": new Date(Date.UTC(2019, 9-1,  1,  12, 51, 0, 0)),
+        "startTime": new Date(Date.UTC(2023, 8-1, 16,  3, 0, 0, 0)),
         "durationSeconds": 52,
         "label": "LBN#5", 
         "burnFlag": true,
-        "infoText":  "LBN#5:      1st Sep, 18:21 IST - Target orbit: 114 x   128, achieved 119 km x 127 km",
+        "infoText":  "LBN#5:   16th Aug, 8:30 IST - 153km x 163km orbit",
         "body": "CY3"        
     }
 
@@ -1702,7 +1702,7 @@ function addEvents() {
     }
 
     var cy3EndInfo = {
-        "startTime": new Date(Date.UTC(2023, 8-1, 18, 0, 1, 0, 0)),
+        "startTime": new Date(Date.UTC(2023, 8-1, 18, 23, 59, 0, 0)),
         "durationSeconds": 0,
         "label": "🏁CY3 Data End",
         "burnFlag": false,
@@ -1740,7 +1740,7 @@ function addEvents() {
             lbn2Info,
             lbn3Info,
             lbn4Info,
-            // lbn5Info,
+            lbn5Info,
             // vikramSeparationInfo,
             // vikramDeboostOneInfo,
             // vikramDeboostTwoInfo,
@@ -1932,6 +1932,17 @@ async function initConfig() {
 
     d3.select("#burnbuttons").html("");
     for (let i = 0; i < eventInfos.length; ++i) {
+
+        // d3.select("#burnbuttons")
+        //     .append("li")
+        //         .attr("class", "glide__slide")
+        //         .append("button")
+        //             .attr("id", "burn" + (i+1))
+        //             .attr("type", "button")
+        //             .attr("class", "button")
+        //             .attr("title", eventInfos[i]["title"])
+        //             .html(eventInfos[i]["label"]);
+
         d3.select("#burnbuttons").append("button")
             .attr("id", "burn" + (i+1))
             .attr("type", "button")
