@@ -28,8 +28,7 @@
         <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-        <!-- <link rel="stylesheet" href="node_modules/@glidejs/glide/dist/css/glide.core.min.css"> -->
-        <link rel="stylesheet" href="css/index.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css">
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -39,13 +38,12 @@
         {
             "imports": {
             "three": "https://unpkg.com/three@0.155.0/build/three.module.js",
-            "three/addons/": "https://unpkg.com/three@0.155.0/examples/jsm/"
+            "three/addons/": "https://unpkg.com/three@0.155.0/examples/jsm/",
+            "swiper": "https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.mjs"
             }
         }
         </script>
 
-        <!-- <script src="https://d3js.org/d3.v7.min.js"></script> -->
-        <!-- <script src="https://cdn.jsdelivr.net/npm/@glidejs/glide"></script> -->
         <script src="third-party/d3.v3.min.js"></script>
         <script src="third-party/jquery-1.9.1.js"></script>
         <script src="third-party/jquery-ui-1.10.3.custom.min.js"></script>
@@ -55,13 +53,11 @@
 
         <script type="module" src="astro.js"></script>
         <script type="module" src="cy3.js"></script>
-        <!-- <script src="space-rocket.js"></script> -->
         <script src="ga.js"></script> 
 
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
         <link rel="stylesheet" href="css/ui-darkness/jquery-ui-1.10.3.custom.min.css">
         <link rel="stylesheet" type="text/css" href="cy3.css">
-        <!-- <link rel="stylesheet" type="text/css" href="topnav.css"> -->
 
         <title>ISRO's Chandrayaan 3 Mission 2023 - An Orbit Animation</title>
     </head>
@@ -198,14 +194,13 @@
                     
                     <!-- <span class="config-label config-first-label">Timeline:</span> -->
     
-                    <span id="burnbuttons"></span>    
+                    <!-- <span id="burnbuttons"></span>     -->
 
-                    <!-- <div class="glide">
-                        <div class="glide__track" data-glide-el="track">
-                            <ul id="burnbuttons" class="glide__slides">
-                            </ul>
+                    <div class="swiper">
+                        <div id="burnbuttons" class="swiper-wrapper">
+                            <!-- burn buttons will get added here dynamically -->
                         </div>
-                    </div>     -->
+                    </div>
 
                     <div class="vspace"></div>
     

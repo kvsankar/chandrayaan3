@@ -5,6 +5,7 @@ import { lunar_pole } from "./astro.js";
 import { deg_to_rad } from "./astro.js";
 
 import * as THREE from 'three';
+import Swiper from 'swiper';
 import { TrackballControls } from './third-party/TrackballControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
@@ -1933,25 +1934,27 @@ async function initConfig() {
     d3.select("#burnbuttons").html("");
     for (let i = 0; i < eventInfos.length; ++i) {
 
-        // d3.select("#burnbuttons")
-        //     .append("li")
-        //         .attr("class", "glide__slide")
-        //         .append("button")
-        //             .attr("id", "burn" + (i+1))
-        //             .attr("type", "button")
-        //             .attr("class", "button")
-        //             .attr("title", eventInfos[i]["title"])
-        //             .html(eventInfos[i]["label"]);
+        // console.log("Adding button " + eventInfos[i]["label"]);
 
-        d3.select("#burnbuttons").append("button")
-            .attr("id", "burn" + (i+1))
-            .attr("type", "button")
-            .attr("class", "button")
-            .attr("title", eventInfos[i]["title"])
-            .html(eventInfos[i]["label"]);
+        d3.select("#burnbuttons")
+            .append("div")
+                .attr("class", "swiper-slide")
+                .append("button")
+                    .attr("id", "burn" + (i+1))
+                    .attr("type", "button")
+                    .attr("class", "button burnbutton")
+                    .attr("title", eventInfos[i]["label"])
+                    .html(eventInfos[i]["label"]);
 
         $("#burn" + (i+1)).on("click", function() { burnButtonHandler(i); });
     }
+
+    var swiper = new Swiper('.swiper', {
+        direction: 'horizontal',
+        loop: true,
+        slidesPerView: 'auto',
+      });
+
 
     animationState[config] = "done_initConfig";
 

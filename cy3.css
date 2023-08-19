@@ -170,6 +170,14 @@ a:link { color: lightskyblue; }
 a:visited { color: lightpink; }
 a:hover { color: white; }
 
+.swiper {
+    width: 100%;
+}
+
+.swiper-slide{
+    width: fit-content;
+}
+
 button.up {
     color: black;
     background: #ccc;
@@ -189,15 +197,6 @@ button.down {
     border-left: solid 2px #777;
     border-bottom:solid 2px  #eaeaea;
     border-right: solid 2px #eaeaea;
-}
-
-#burnbuttons {
-    display: flex;
-    overflow-x: auto;
-    overflow-y: hidden;
-    max-width: 200%;
-    max-height: 20px;
-    -webkit-overflow-scrolling: touch;
 }
 
 .transparent-panel {
