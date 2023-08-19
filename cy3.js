@@ -179,7 +179,7 @@ var stepsPerHop;
 var stepDurationInMilliSeconds;
 var orbitsJsonFileSizeInBytes;
 var animDate;
-var now;
+var animTime;
 var timelineIndex = 0;
 var timelineIndexStep = 1;
 var animationRunning = false;
@@ -430,14 +430,14 @@ function updateCraftScale() {
         
         // animationScenes[config].craft.scale.set(10, 10, 10);
 
-        if (isLocationAvaialable("CY3", now)) {
+        if (isLocationAvaialable("CY3", animTime)) {
             // console.log(`CY3 location avaialble: setting CY3 visibility to ${animationScenes[config].craftVisible}`);
             animationScenes[config].craft.visible = animationScenes[config].craftVisible;
         } else {
             // console.log(`CY3 location NOT avaialble: setting CY3 visibility to false`);
             animationScenes[config].craft.visible = false;
         }
-        // if (isLocationAvaialable("VIKRAM", now)) {
+        // if (isLocationAvaialable("VIKRAM", animTime)) {
             // console.log(`Vikram location avaialble: setting Vikram visibility to ${animationScenes[config].vikramCraftVisible}`);
             // animationScenes[config].vikramCraft.visible = animationScenes[config].vikramCraftVisible;
         // } else {
@@ -447,7 +447,7 @@ function updateCraftScale() {
 
         if (config == "lro") {
             animationScenes[config].lroCraft.scale.set(scale, scale, scale); // we'll use the same scale for LRO too
-            if (isLocationAvaialable("LRO", now)) {
+            if (isLocationAvaialable("LRO", animTime)) {
                 animationScenes[config].lroCraft.visible = animationScenes[config].lroCraftVisible;
             } else {
                 animationScenes[config].lroCraft.visible = false;
@@ -529,7 +529,7 @@ class AnimationScene {
 
         this.skyContainer.position.setFromMatrixPosition(this.camera.matrixWorld);
         this.camera.updateProjectionMatrix();
-        if (this.cameraControls) { this.cameraControls.update(); }
+        if (this.cameraControls) { this.cameraControls.update(); cameraControlsCallback(); }
     }
 
     init3d(callback) {
@@ -1261,6 +1261,7 @@ class AnimationScene {
 
         this.camera.updateProjectionMatrix();
         this.cameraControls.update();
+        cameraControlsCallback();
     }
 
     processOrbitVectorsData3D() {
@@ -1445,7 +1446,7 @@ class AnimationScene {
 
     rotateMoon() {
 
-        var today = new Date(now);
+        var today = new Date(animTime);
         var lp = lunar_pole(today);
         var alpha = lp["alpha"];
         var delta = lp["delta"];
@@ -1461,7 +1462,7 @@ class AnimationScene {
     }
 
     rotateEarth() {
-        var mst = deg_to_rad(getMST(new Date(now), GREENWICH_LONGITUDE));
+        var mst = deg_to_rad(getMST(new Date(animTime), GREENWICH_LONGITUDE));
         this.earthContainer.rotation.z = mst;
         // this.losLine.geometry.verticesNeedUpdate = true;
     } 
@@ -2069,7 +2070,7 @@ function setLabelLocation(planetKey) {
     var planet = orbits[planetId];
     var vectors = planet["vectors"];
 
-    if (isLocationAvaialable(planetKey, now)) {
+    if (isLocationAvaialable(planetKey, animTime)) {
 
         var index = timelineIndex - planetProperties[planetKey]["offset"];
 
@@ -2102,16 +2103,16 @@ function setLocation() {
 
     // console.log("setLocation(): timelineIndex = " + timelineIndex + ", timelineTotalSteps = " + timelineTotalSteps);
 
-    now = startTime + timelineIndex * stepDurationInMilliSeconds;
-    var nowDate = new Date(now);
-    animDate.html(nowDate); // TODO add custom formatting 
+    animTime = startTime + timelineIndex * stepDurationInMilliSeconds;
+    var animTimeDate = new Date(animTime);
+    animDate.html(animTimeDate); // TODO add custom formatting 
 
-    var ephemYear = nowDate.getUTCFullYear();
-    var ephemMonth = nowDate.getUTCMonth() + 1;
-    var ephemDay = nowDate.getUTCDate();
-    var ephemHours = nowDate.getUTCHours();
-    var ephemMinutes = nowDate.getUTCMinutes();
-    var ephemSeconds = nowDate.getUTCSeconds();
+    var ephemYear = animTimeDate.getUTCFullYear();
+    var ephemMonth = animTimeDate.getUTCMonth() + 1;
+    var ephemDay = animTimeDate.getUTCDate();
+    var ephemHours = animTimeDate.getUTCHours();
+    var ephemMinutes = animTimeDate.getUTCMinutes();
+    var ephemSeconds = animTimeDate.getUTCSeconds();
     var ephemDate = {'year': ephemYear, 'month': ephemMonth, 'day': ephemDay, 'hours': ephemHours, 'minutes': ephemMinutes, 'seconds': ephemSeconds};
     // console.log(ephemDate);
     $const.tlong = 0.0; // longitude
@@ -2138,10 +2139,11 @@ function setLocation() {
         if (animationScenes[config].cameraControlsEnabled) {
             animationScenes[config].skyContainer.position.setFromMatrixPosition(animationScenes[config].camera.matrixWorld);
             animationScenes[config].cameraControls.update();
+            cameraControlsCallback();
         }    
     }
     
-    // console.log("now = " + now);
+    // console.log("animTime = " + animTime);
     // console.log("helioCentricPhaseStartTime = " + helioCentricPhaseStartTime);
     // console.log("lunarPhaseStartTime = " + lunarPhaseStartTime);
 
@@ -2150,9 +2152,9 @@ function setLocation() {
     d3.select("#phase-3").html("Lunar Orbit Phase");
 
     // TODO find a better way to do this
-    if (now < timeTransLunarInjection) {
+    if (animTime < timeTransLunarInjection) {
         d3.select("#phase-1").html("<b><u>Earth Bound Phase</u></b>");
-    } else if (now < timeLunarOrbitInsertion) {
+    } else if (animTime < timeLunarOrbitInsertion) {
         d3.select("#phase-2").html("<b><u>Lunar Bound Phase</u></b>");
     } else {
         d3.select("#phase-3").html("<b><u>Lunar Orbit Phase</u></b>");
@@ -2167,7 +2169,7 @@ function setLocation() {
         var planet = orbits[planetId];
         var vectors = planet["vectors"];
 
-        if (isLocationAvaialable(planetKey, now)) {
+        if (isLocationAvaialable(planetKey, animTime)) {
 
             var index = timelineIndex - planetProperties[planetKey]["offset"];
 
@@ -2353,7 +2355,7 @@ function setLocation() {
         if (!burnFlag) {
             continue;
         }
-        var difftime = Math.abs(nowDate.getTime() - burnTime.getTime());
+        var difftime = Math.abs(animTimeDate.getTime() - burnTime.getTime());
         if (difftime < 1 * 20 * 60 * 1000) {
 
 
@@ -2379,7 +2381,7 @@ function setLocation() {
 function showGreenwichLongitude() {
     if (config == "helio") return;
 
-    var mst = getMST(new Date(now), GREENWICH_LONGITUDE);
+    var mst = getMST(new Date(animTime), GREENWICH_LONGITUDE);
 
     var radialLength = (EARTH_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU;
 
@@ -2442,7 +2444,7 @@ function adjustLabelLocations() {
     transformString += "scale (" + 1/burnZoomFactor + " " + 1/burnZoomFactor + ") ";
     d3.select("#burng").attr("transform", transformString);
 
-    if (isLocationAvaialable("VIKRAM", now)) {
+    if (isLocationAvaialable("VIKRAM", animTime)) {
         var transformStringVikram = "translate (" + vikramData["x"] + ", " + vikramData["y"] + ") ";
         transformStringVikram += "rotate(" + vikramData["angle"] + " 0 0) ";
         transformStringVikram += "scale (" + 1/burnZoomFactor + " " + 1/burnZoomFactor + ") ";
@@ -2463,6 +2465,7 @@ async function initAnimation() {
                 missionNow();
                 await setDimension();
                 await setView();
+                updateCraftScale();
             }
         })();    
     } catch (error) {
@@ -2502,6 +2505,7 @@ function animateLoop() {
     if (animationScenes[config] && animationScenes[config].initialized3D && animationScenes[config].cameraControlsEnabled) {
         animationScenes[config].skyContainer.position.setFromMatrixPosition(animationScenes[config].camera.matrixWorld);
         animationScenes[config].cameraControls.update();
+        cameraControlsCallback();
     }
 
     requestAnimationFrame(animateLoop);
@@ -3299,7 +3303,7 @@ function missionStart() {
 
 function missionSetTime() {
     stopAnimation();
-    var x = (now - startTime) / stepDurationInMilliSeconds;
+    var x = (animTime - startTime) / stepDurationInMilliSeconds;
     timelineIndex = Math.max(0, Math.floor(x));
     if (timelineIndex >= timelineTotalSteps) {
         timelineIndex = timelineTotalSteps - 1;
@@ -3308,23 +3312,23 @@ function missionSetTime() {
 }
 
 function missionNow() {
-    now = new Date().getTime();
-    // console.log(now);
+    animTime = new Date().getTime();
+    // console.log(animTime);
     missionSetTime();
 }
 
 function missionTLI() {
-    now = timeTransLunarInjection;
+    animTime = timeTransLunarInjection;
     missionSetTime();
 }
 
 function missionLunar() {
-    now = timeLunarOrbitInsertion;
+    animTime = timeLunarOrbitInsertion;
     missionSetTime();
 }
 
 function missionEnd() {
-    now = endTime;
+    animTime = endTime;
     missionSetTime();
 }
 
@@ -3697,12 +3701,12 @@ function toggleCamera() {
 
 function burnButtonHandler(index) {
     // console.log("burnButtonHandler() called for event index: " + index);
-    // now = eventInfos[index]["startTime"];
+    // animTime = eventInfos[index]["startTime"];
     if (eventInfos[index]["label"] == "⏰ Now") {
-        now = new Date();
+        animTime = new Date();
     } else {
-        // now = new Date(eventInfos[index]["startTime"].getTime() + (eventInfos[index]["durationSeconds"] * 1000 / 2));    
-        now = new Date(eventInfos[index]["startTime"].getTime());
+        // animTime = new Date(eventInfos[index]["startTime"].getTime() + (eventInfos[index]["durationSeconds"] * 1000 / 2));    
+        animTime = new Date(eventInfos[index]["startTime"].getTime());
     }
     
     missionSetTime();
@@ -3732,14 +3736,14 @@ function formatFloat(decPlaces, thouSeparator, decSeparator) {
 **
 ** returns: time in degrees
 */
-function getMST( now, lon )
+function getMST(t, lon)
 {
-    var year   = now.getUTCFullYear();
-    var month  = now.getUTCMonth() + 1;
-    var day    = now.getUTCDate();
-    var hour   = now.getUTCHours();
-    var minute = now.getUTCMinutes();
-    var second = now.getUTCSeconds();
+    var year   = t.getUTCFullYear();
+    var month  = t.getUTCMonth() + 1;
+    var day    = t.getUTCDate();
+    var hour   = t.getUTCHours();
+    var minute = t.getUTCMinutes();
+    var second = t.getUTCSeconds();
 
     // 1994 June 16th at 18h UT
     // days since J2000: -2024.75
