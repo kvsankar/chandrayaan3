@@ -184,6 +184,10 @@ var animTime;
 // var timelineIndex = 0;
 // var timelineIndexStep = 1;
 var animTimeStepMinutes = 1;
+var realtimespeed = false;
+var prevFrameTime = null;
+var curFrameTime = null;
+var deltaFrameTime = ONE_MINUTE_MS;
 var animationRunning = false;
 var stopAnimationFlag = false;
 var timeoutHandle;
@@ -550,9 +554,10 @@ class AnimationScene {
             
             "images/earth/2_no_clouds_8k.jpg",
             "images/earth/earthspec1k.jpg",
-            "images/moon/moon_8k_color_brim16.jpg",
+            "images/moon/lroc_color_poles_8k.png",
+            "images/moon/ldem_16.png",
             "images/sky/starmap_4k.jpg",
-            "images/sky/constellation_figures.jpg"
+            "images/sky/constellation_figures.jpg",
 
           ].map(filename=>loader.load(filename));
         });
@@ -563,20 +568,23 @@ class AnimationScene {
 
             var mapIndex = 0;
 
-            scene.earthTexture           = result[mapIndex++];
+            scene.earthTexture = result[mapIndex++];
             scene.earthTexture.minFilter = THREE.LinearFilter;
 
-            scene.earthSpecularTexture           = result[mapIndex++];
+            scene.earthSpecularTexture = result[mapIndex++];
             scene.earthSpecularTexture.minFilter = THREE.LinearFilter;
 
-            scene.moonMap           = result[mapIndex++];
+            scene.moonMap = result[mapIndex++];
             scene.moonMap.minFilter = THREE.LinearFilter;
 
-            scene.skyTexture           = result[mapIndex++];
+            scene.moonDisplacementMap = result[mapIndex++];
+            scene.moonDisplacementMap.minFilter = THREE.LinearFilter;
+
+            scene.skyTexture = result[mapIndex++];
             scene.skyTexture.minFilter = THREE.LinearFilter;
             // scene.skyTexture.flipY = false;
 
-            scene.skyConstellationTexture           = result[mapIndex++];
+            scene.skyConstellationTexture = result[mapIndex++];
             scene.skyConstellationTexture.minFilter = THREE.LinearFilter;
             // scene.skyConstellationTexture.flipY = false;
             
@@ -793,14 +801,14 @@ class AnimationScene {
         var moonColor = planetProperties["MOON"]["color"];
         var moonGeometry = new THREE.SphereGeometry(moonRadius, 100, 100);
         var moonMaterial = new THREE.MeshPhongMaterial({
+            color: 0xFFFFFF,
             map: this.moonMap,
-            // bumpMap: this.moonBumpMap,
-            // bumpScale: 0.05,
-            // normalMap: this.moonNormalMap,
-            // normalScale: new THREE.Vector2(0.5, 0.5),
-            // color: moonColor, 
-            specular: 0,
-            shininess: 1
+            displacementMap: this.moonDisplacementMap,
+            displacementScale: 0.005,
+            bumpMap: this.moonDisplacementMap,
+            bumpScale: 0.002,
+            reflectivity: 0.0,
+            shininess: 0.0
         });
         this.moon = new THREE.Mesh(moonGeometry, moonMaterial);
         this.moon.receiveShadow = true;
@@ -2489,14 +2497,26 @@ async function initAnimation() {
 
 function animateLoop() {
        
+    curFrameTime = (new Date()).getTime();
+
+    if (prevFrameTime != null) {    
+        deltaFrameTime = curFrameTime - prevFrameTime;
+    }
+    prevFrameTime = curFrameTime;
+    
     ++animateLoopCount;
     if (animateLoopCount % ticksPerAnimationStep < 0.1) {
         
         animateLoopCount = 0;
 
         if (animationRunning) {
-            animTime += animTimeStepMinutes * ONE_MINUTE_MS;
-            if (animTime > endTime) {
+            if (realtimespeed) {
+                animTime += deltaFrameTime;
+            } else {
+                animTime += animTimeStepMinutes * ONE_MINUTE_MS;
+            }
+            
+            if (animTime > endTime - ONE_MINUTE_MS) {
                 animTime = endTime - ONE_MINUTE_MS;
                 stopAnimation();
             }
@@ -2565,7 +2585,9 @@ function f8()  { fastForward();     timeoutHandleZoom = setTimeout(f8,  mousedow
 function f9()  { backward();        timeoutHandleZoom = setTimeout(f9,  mousedownTimeout); if (mousedownTimeout > 10) { mousedownTimeout -= 10; }}
 function f10() { fastBackward();    timeoutHandleZoom = setTimeout(f10, mousedownTimeout); if (mousedownTimeout > 10) { mousedownTimeout -= 10; }}
 function f11() { slower();          timeoutHandleZoom = setTimeout(f11, mousedownTimeout); if (mousedownTimeout > 10) { mousedownTimeout -= 10; }}
-function f12() { faster();          timeoutHandleZoom = setTimeout(f12, mousedownTimeout); if (mousedownTimeout > 10) { mousedownTimeout -= 10; }}
+function f12() { resetspeed();      timeoutHandleZoom = setTimeout(f12, mousedownTimeout); if (mousedownTimeout > 10) { mousedownTimeout -= 10; }}
+function f13() { faster();          timeoutHandleZoom = setTimeout(f13, mousedownTimeout); if (mousedownTimeout > 10) { mousedownTimeout -= 10; }}
+function f14() { realtime();        timeoutHandleZoom = setTimeout(f14, mousedownTimeout); if (mousedownTimeout > 10) { mousedownTimeout -= 10; }}
 
 function zoomFunction(f) {
     mouseDown = true;
@@ -2604,14 +2626,16 @@ async function init(callback) {
         "backward":     { "mousedown":  f9  },
         "fastbackward": { "mousedown":  f10 },
         "slower":       { "mousedown":  f11 },
-        "faster":       { "mousedown":  f12 }
+        "resetspeed":   { "mousedown":  f12 },
+        "faster":       { "mousedown":  f13 },
+        "realtime":     { "mousedown":  f14 },
     };
 
     var buttons = [
         "zoomin", "zoomout",
         "panleft", "panright", "panup", "pandown",
         "forward", "fastforward", "backward", "fastbackward",
-        "slower", "faster"
+        "slower", "resetspeed", "faster", "realtime"
     ];
 
     for (var i = 0; i < buttons.length; ++i) {
@@ -3240,7 +3264,7 @@ function cy3Animate() {
     } else {
         animationRunning = true;
         stopAnimationFlag = false;
-        if (animTime >= endTime) animTime = startTime;
+        if (animTime >= endTime - ONE_MINUTE_MS) animTime = startTime;
         d3.select("#animate").text("Pause");
     }
 }
@@ -3266,7 +3290,7 @@ function stopAnimation() {
 
 function forward() {
     animTime += ONE_MINUTE_MS;
-    if (animTime >= endTime) {
+    if (animTime > endTime - ONE_MINUTE_MS) {
         animTime = endTime - ONE_MINUTE_MS;
     }
     setLocation();
@@ -3274,7 +3298,7 @@ function forward() {
 
 function fastForward() {
     animTime += stepsPerHop * ONE_MINUTE_MS;
-    if (animTime >= endTime) {
+    if (animTime > endTime - ONE_MINUTE_MS) {
         animTime = endTime - ONE_MINUTE_MS;
     }
     setLocation();
@@ -3293,7 +3317,7 @@ function missionSetTime() {
     if (animTime < startTime) {
         // console.log("missionSetTime(): animTime < startTime");
         animTime = startTime;
-    } else if (animTime >= endTime) {
+    } else if (animTime > endTime - ONE_MINUTE_MS) {
         // console.log("missionSetTime(): animTime >= endTime");
         animTime = endTime - ONE_MINUTE_MS;
     }
@@ -3322,13 +3346,34 @@ function missionEnd() {
 }
 
 function faster() {
-    animTimeStepMinutes *= SPEED_CHANGE_FACTOR;	
+    if (realtimespeed) {
+        realtimespeed = false;
+        animTimeStepMinutes = deltaFrameTime / ONE_MINUTE_MS * SPEED_CHANGE_FACTOR;
+    } else {
+        animTimeStepMinutes *= SPEED_CHANGE_FACTOR;	
+    }
+    // console.log("animTimeStepMinutes = " + animTimeStepMinutes);
+}
+
+function resetspeed() {
+    realtimespeed = false;
+    animTimeStepMinutes = 1;	
     // console.log("animTimeStepMinutes = " + animTimeStepMinutes);
 }
 
 function slower() {
-    animTimeStepMinutes /= SPEED_CHANGE_FACTOR;	
+    if (realtimespeed) {
+        realtimespeed = false;
+        animTimeStepMinutes = deltaFrameTime / ONE_MINUTE_MS / SPEED_CHANGE_FACTOR;
+    } else {
+        animTimeStepMinutes /= SPEED_CHANGE_FACTOR;	
+    }
     // console.log("animTimeStepMinutes = " + animTimeStepMinutes);
+}
+
+function realtime() {
+    realtimespeed = true;
+    console.log("realtimespeed set to true");
 }
 
 function zoomChangeTransform(t) {
