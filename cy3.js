@@ -35,7 +35,7 @@ var EARTH_MOON_DISTANCE_MEAN_AU = 0.00257;
 var EARTH_RADIUS_KM = 6371;
 var EARTH_RADIUS_MAX_KM = 6378.1;
 var EARTH_RADIUS_MIN_KM = 6356.8;
-var MOON_RADIUS_KM = 1737.4;
+var MOON_RADIUS_KM = 1737.4 + 0.5; // TODO jugaad to get Vikram land at 18:04 IST instead of 17:59 IST and keep landing altitude at 0.0 km
 var EARTH_AXIS_INCLINATION_DEGREES = 23.439279444;
 var EARTH_AXIS_INCLINATION_RADS = EARTH_AXIS_INCLINATION_DEGREES * Math.PI / 180.0;
 
@@ -241,8 +241,8 @@ function getStartAndEndTimes(id) {
     // Note: we should keep end times 1 minute (current resolution) less than the last orbit data point time argument
 
     var startTime                  = Date.UTC(2023, 7-1, 14,  9, 23, 0, 0);
-    var endTime                    = Date.UTC(2023, 8-1, 18, 23, 58, 0, 0);
-    var endTimeCY3                 = Date.UTC(2023, 8-1, 18, 23, 58, 0, 0);
+    var endTime                    = Date.UTC(2023, 8-1, 31, 23, 59, 0, 0);
+    var endTimeCY3                 = Date.UTC(2023, 8-1, 31, 23, 59, 0, 0);
     var startTimeVikram            = Date.UTC(2023, 8-1,  2,  7, 46, 0, 0); // TODO Update
     var endTimeVikram              = Date.UTC(2023, 8-1,  6, 20, 26, 0, 0); // TODO Update
 
@@ -554,7 +554,8 @@ class AnimationScene {
             
             "images/earth/2_no_clouds_8k.jpg",
             "images/earth/earthspec1k.jpg",
-            "images/moon/lroc_color_poles_8k.png",
+            // "images/moon/lroc_color_poles_8k.png",
+            "images/moon/Solarsystemscope_texture_8k_moon.jpg",
             "images/moon/ldem_16.png",
             "images/sky/starmap_4k.jpg",
             "images/sky/constellation_figures.jpg",
@@ -862,7 +863,7 @@ class AnimationScene {
 
     addMoonLocations() {
         // Moon selenographic origin (Prime Meridian = 0 degrees, Equator = 0 degrees) for reference
-        this.plotMoonLocation(deg_to_rad(0), deg_to_rad(0), "#FF00FF"); // TODO 2021 - for testing - (0deg longitude == Prime Meridian, 0deg latitude)
+        // this.plotMoonLocation(deg_to_rad(0), deg_to_rad(0), "#FF00FF"); // TODO 2021 - for testing - (0deg longitude == Prime Meridian, 0deg latitude)
 
         // Some Moon locations for calibrsation
         //
@@ -879,7 +880,7 @@ class AnimationScene {
         // this.plotMoonLocation(deg_to_rad(24.103513),  deg_to_rad(-71.365233), "#FF0000"); // Simpelius N - https://en.wikipedia.org/wiki/Simpelius_(crater) 
 
         // Moon landing location according to orbit data available with JPL
-        this.plotMoonLocation(deg_to_rad(22.77050), deg_to_rad(-70.89754), "#BB3F3F"); // CY2
+        // this.plotMoonLocation(deg_to_rad(22.77050), deg_to_rad(-70.89754), "#BB3F3F"); // CY2
         this.plotMoonLocation(deg_to_rad(32.348126), deg_to_rad(-69.367621 ), "#FF00FF"); // CY3
 
         // Primary landing site as per https://www.reddit.com/r/ISRO/comments/d1b64p/submitting_this_as_post_but_for_anyone_looking/
@@ -1440,13 +1441,13 @@ class AnimationScene {
     }
 
     plotMoonLocation(long, lat, color) {
-        var locationRadiusScale = 0.001;
+        var locationRadiusScale = 0.005;
         var geometry = new THREE.SphereGeometry(locationRadiusScale * moonRadius, 100, 100);
-        var material = new THREE.MeshPhysicalMaterial({color: blackColor, emissive: color, reflectivity: 0.0, transparent: false, opacity: 0.2});
+        var material = new THREE.MeshStandardMaterial({color: color, transparent: true, opacity: 0.1});
         var sphere = new THREE.Mesh(geometry, material);
         sphere.castShadow = false;
         sphere.receiveShadow = false;
-        var radiusScale = 1 - (locationRadiusScale/2);
+        var radiusScale = 1.005 - (locationRadiusScale/2);
         var x = radiusScale * moonRadius * Math.cos(lat) * Math.cos(long); 
         var y = radiusScale * moonRadius * Math.cos(lat) * Math.sin(long);
         var z = radiusScale * moonRadius * Math.sin(lat);
@@ -1707,11 +1708,11 @@ function addEvents() {
     }
 
     var vikramLandingInfo = {
-        "startTime": new Date(Date.UTC(2023, 8-1, 23, 15, 30, 0, 0)), // 7th Sept 1:56 IST
+        "startTime": new Date(Date.UTC(2023, 8-1, 23, 12, 34, 0, 0)), // 23rd Aug, 18:04 IST
         "durationSeconds": 0,
         "label": "Vikram Landing",
         "burnFlag": true,
-        "infoText": "Vikram Landing planned for 23rd August, 20:30 UTC",
+        "infoText": "Vikram Landing - 23rd August, 18:04 IST",
         "body": "VIKRAM"        
     }
 
@@ -1861,7 +1862,7 @@ async function initConfig() {
         trackWidth = 0.6;
 
         earthRadius = (EARTH_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU;
-        moonRadius = (MOON_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU;        
+        moonRadius = (MOON_RADIUS_KM / KM_PER_AU) * PIXELS_PER_AU * 0.997;        
 
         primaryBody = "MOON";
         primaryBodyRadius = moonRadius;
@@ -1962,7 +1963,13 @@ async function initConfig() {
         $("#burn" + (i+1)).on("click", function() { burnButtonHandler(i); });
     }
 
-    var swiper = new Swiper('.swiper', {
+    var swiper1 = new Swiper('.swiper1', {
+        direction: 'horizontal',
+        loop: true,
+        slidesPerView: 'auto',
+      });
+
+    var swiper2 = new Swiper('.swiper2', {
         direction: 'horizontal',
         loop: true,
         slidesPerView: 'auto',
