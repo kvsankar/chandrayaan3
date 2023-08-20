@@ -24,6 +24,7 @@ var MARS    = "MARS";
 var MOON    = "MOON";
 var CSS     = "CSS";
 
+var ONE_MINUTE_MS = 60*1000;
 var KM_PER_AU = 149597870.691;
 var DEGREES_PER_RADIAN = 57.2957795;
 var DEGREES_PER_CIRCLE = 360.0;
@@ -180,8 +181,9 @@ var stepDurationInMilliSeconds;
 var orbitsJsonFileSizeInBytes;
 var animDate;
 var animTime;
-var timelineIndex = 0;
-var timelineIndexStep = 1;
+// var timelineIndex = 0;
+// var timelineIndexStep = 1;
+var animTimeStepMinutes = 1;
 var animationRunning = false;
 var stopAnimationFlag = false;
 var timeoutHandle;
@@ -232,9 +234,11 @@ function fetchJson(url, callback = null, callbackError = null) {
 
 function getStartAndEndTimes(id) {
 
+    // Note: we should keep end times 1 minute (current resolution) less than the last orbit data point time argument
+
     var startTime                  = Date.UTC(2023, 7-1, 14,  9, 23, 0, 0);
-    var endTime                    = Date.UTC(2023, 8-1, 18, 23, 59, 0, 0);
-    var endTimeCY3                 = Date.UTC(2023, 8-1, 18, 23, 59, 0, 0);
+    var endTime                    = Date.UTC(2023, 8-1, 18, 23, 58, 0, 0);
+    var endTimeCY3                 = Date.UTC(2023, 8-1, 18, 23, 58, 0, 0);
     var startTimeVikram            = Date.UTC(2023, 8-1,  2,  7, 46, 0, 0); // TODO Update
     var endTimeVikram              = Date.UTC(2023, 8-1,  6, 20, 26, 0, 0); // TODO Update
 
@@ -1704,7 +1708,7 @@ function addEvents() {
     }
 
     var cy3EndInfo = {
-        "startTime": new Date(Date.UTC(2023, 8-1, 18, 23, 59, 0, 0)),
+        "startTime": new Date(getStartAndEndTimes("CY3")[1]),
         "durationSeconds": 0,
         "label": "🏁CY3 Data End",
         "burnFlag": false,
@@ -2047,7 +2051,7 @@ function isLocationAvaialable(planet, date) {
     } else {
         flag = ((date >= startTime) && (date <= endTime));
     }
-    // d = new Date(date);
+    // var d = new Date(date);
     // console.log("isLocationAvaialable() called for body " + planet + " for time " + d + ": returning " + flag);
     return flag;
 }
@@ -2072,10 +2076,11 @@ function setLabelLocation(planetKey) {
 
     if (isLocationAvaialable(planetKey, animTime)) {
 
-        var index = timelineIndex - planetProperties[planetKey]["offset"];
+        // var index = timelineIndex - planetProperties[planetKey]["offset"];
 
-        var x = vectors[index][xVariable];
-        var y = vectors[index][yVariable];
+        var [planet_pos, planet_vel] = getBodyLocation(planetKey, animTime);
+        var x = planet_pos[xVariable];
+        var y = planet_pos[yVariable];
 
         var newx = +1 * (x / KM_PER_AU) * PIXELS_PER_AU;
         var newy = -1 * (y / KM_PER_AU) * PIXELS_PER_AU;
@@ -2095,6 +2100,30 @@ function setLabelLocation(planetKey) {
     }
 }
 
+function getBodyLocation(craftid, t) {
+    // console.log("getBodyLocation(" + craftId + ", " + t + ")");
+    
+    var orbitDataResolutionInMinutes = 1;
+    var num = t - startTime;
+    var denom = orbitDataResolutionInMinutes * ONE_MINUTE_MS;
+    var tlIndex1 = Math.floor(num / denom);
+    var tlIndex2 = tlIndex1 + 1;
+    var remainder = (num % denom) / ONE_MINUTE_MS;
+    // console.log("tlIndex1 = " + tlIndex1 + ", remainder = " + remainder);
+    // console.log("tlIndex = " + tlIndex);
+
+    var vectors = orbits[planetProperties[craftid].id]["vectors"];
+    var  x = (1 - remainder) * vectors[tlIndex1][ "x"] + remainder * (vectors[tlIndex2][ "x"]);
+    var  y = (1 - remainder) * vectors[tlIndex1][ "y"] + remainder * (vectors[tlIndex2][ "y"]);
+    var  z = (1 - remainder) * vectors[tlIndex1][ "z"] + remainder * (vectors[tlIndex2][ "z"]);
+    var vx = (1 - remainder) * vectors[tlIndex1]["vx"] + remainder * (vectors[tlIndex2]["vx"]);
+    var vy = (1 - remainder) * vectors[tlIndex1]["vy"] + remainder * (vectors[tlIndex2]["vy"]);
+    var vz = (1 - remainder) * vectors[tlIndex1]["vz"] + remainder * (vectors[tlIndex2]["vz"]);
+
+    // console.log("getBodyLocation(" + craftId + ", " + t + ") => x = " + x, ", y = " + y + ", z = " + z);
+    return [new THREE.Vector3(x, y, z), new THREE.Vector3(vx, vy, vz)];
+}
+
 function setLocation() {
 
     if (!orbitDataProcessed[config]) {
@@ -2103,8 +2132,9 @@ function setLocation() {
 
     // console.log("setLocation(): timelineIndex = " + timelineIndex + ", timelineTotalSteps = " + timelineTotalSteps);
 
-    animTime = startTime + timelineIndex * stepDurationInMilliSeconds;
+    // animTime = startTime + timelineIndex * stepDurationInMilliSeconds;
     var animTimeDate = new Date(animTime);
+    // console.log("animTimeDate = " + animTimeDate);
     animDate.html(animTimeDate); // TODO add custom formatting 
 
     var ephemYear = animTimeDate.getUTCFullYear();
@@ -2171,29 +2201,26 @@ function setLocation() {
 
         if (isLocationAvaialable(planetKey, animTime)) {
 
-            var index = timelineIndex - planetProperties[planetKey]["offset"];
+            // var index = timelineIndex - planetProperties[planetKey]["offset"];
 
             // console.log("About to access vectors[length: " + vectors.length + "] for " + planetKey + " using index: " + index);
 
-            var realx = vectors[index]["x"];
-            var realy = vectors[index]["y"];
-            var realz = vectors[index]["z"];
+            var [craft_pos, craft_vel] = getBodyLocation(planetKey, animTime);
+            var [realx, realy, realz] = [craft_pos.x, craft_pos.y, craft_pos.z]; 
+            // console.log("realx = " + realx + ", realy = " + realy + ", realz = " + realz);
+            var [craft_pos_next, craft_vel_next] = getBodyLocation(planetKey, animTime+ONE_MINUTE_MS);
+            var [realx_next, realy_next, realz_next] = [craft_pos_next.x, craft_pos_next.y, craft_pos_next.z]; 
 
             var realx_screen = +1 * (realx / KM_PER_AU) * PIXELS_PER_AU;
             var realy_screen = +1 * (realy / KM_PER_AU) * PIXELS_PER_AU; // note the sign; it's +1
             var realz_screen = +1 * (realz / KM_PER_AU) * PIXELS_PER_AU;
 
-            var realx_next = vectors[index+1]["x"];
-            var realy_next = vectors[index+1]["y"];
-            var realz_next = vectors[index+1]["z"];
-
             var realx_screen_next = +1 * (realx_next / KM_PER_AU) * PIXELS_PER_AU;
             var realy_screen_next = +1 * (realy_next / KM_PER_AU) * PIXELS_PER_AU; // note the sign; it's +1
             var realz_screen_next = +1 * (realz_next / KM_PER_AU) * PIXELS_PER_AU;
 
-            var x = vectors[index][xVariable];
-            var y = vectors[index][yVariable];
-            var z = vectors[index][zVariable];
+            var [x, y, z] = [craft_pos[xVariable], craft_pos[yVariable], craft_pos[zVariable]];
+            var [vx, vy, vz] = [craft_vel[xVariable], craft_vel[yVariable], craft_vel[zVariable]];
 
             var newx = +1 * (x / KM_PER_AU) * PIXELS_PER_AU;
             var newy = -1 * (y / KM_PER_AU) * PIXELS_PER_AU;
@@ -2235,10 +2262,7 @@ function setLocation() {
                 craftData["y"] = newy;
                 craftData["z"] = newz;
                 
-                // relative to center
-
-                var z = vectors[index][zVariable];
-                var r = Math.sqrt(x*x + y*y + z*z);
+                var r = craft_pos.length();
 
                 var pbr;
                 if (config == "geo") {
@@ -2251,46 +2275,33 @@ function setLocation() {
                 d3.select("#distance-" + planetKey + "-" + primaryBody).text(FORMAT_METRIC(r));
                 d3.select("#altitude-" + planetKey + "-" + primaryBody).text(FORMAT_METRIC(altitude));
 
-                var vx = vectors[index][vxVariable];
-                var vy = vectors[index][vyVariable];
-                var vz = vectors[index][vzVariable];
-                var v = Math.sqrt(vx*vx + vy*vy + vz*vz);
+                var v = craft_vel.length();
                 d3.select("#velocity-" + planetKey + "-" + primaryBody).text(FORMAT_METRIC(v));
 
                 if (config == "geo") {
                     // relative to Moon
 
-                    x = vectors[index][xVariable] - orbits[MOON]["vectors"][timelineIndex][xVariable];
-                    y = vectors[index][yVariable] - orbits[MOON]["vectors"][timelineIndex][yVariable];
-                    z = vectors[index][zVariable] - orbits[MOON]["vectors"][timelineIndex][zVariable];
-                    r = Math.sqrt(x*x + y*y + z*z);
-                    var altitudeMoon = r - MOON_RADIUS_KM;
-                    d3.select("#distance-" + planetKey +"-MOON").text(FORMAT_METRIC(r));
-                    d3.select("#altitude-" + planetKey +"-MOON").text(FORMAT_METRIC(altitudeMoon));
+                    var [moon_pos, moon_vel] = getBodyLocation("MOON", animTime);
+                    var dr = moon_pos.distanceTo(craft_pos);
+                    var dv = moon_vel.distanceTo(craft_vel);
 
-                    vx = vectors[index][vxVariable] - orbits[MOON]["vectors"][timelineIndex][vxVariable];
-                    vy = vectors[index][vyVariable] - orbits[MOON]["vectors"][timelineIndex][vyVariable];
-                    vz = vectors[index][vzVariable] - orbits[MOON]["vectors"][timelineIndex][vzVariable];
-                    v = Math.sqrt(vx*vx + vy*vy + vz*vz);
-                    d3.select("#velocity-" + planetKey +"-MOON").text(FORMAT_METRIC(v));
+                    var altitudeMoon = dr - MOON_RADIUS_KM;
+                    d3.select("#distance-" + planetKey +"-MOON").text(FORMAT_METRIC(dr));
+                    d3.select("#altitude-" + planetKey +"-MOON").text(FORMAT_METRIC(altitudeMoon));
+                    d3.select("#velocity-" + planetKey +"-MOON").text(FORMAT_METRIC(dv));
                 }
 
                 if ((config == "lunar") || (config == "lro")) {
                     // relative to Earth
 
-                    x = vectors[index][xVariable] - orbits[EARTH]["vectors"][timelineIndex][xVariable];
-                    y = vectors[index][yVariable] - orbits[EARTH]["vectors"][timelineIndex][yVariable];
-                    z = vectors[index][zVariable] - orbits[EARTH]["vectors"][timelineIndex][zVariable];
-                    r = Math.sqrt(x*x + y*y + z*z);
-                    var altitudeEarth = r - EARTH_RADIUS_KM;
-                    d3.select("#distance-" + planetKey +"-EARTH").text(FORMAT_METRIC(r));
-                    d3.select("#altitude-" + planetKey +"-EARTH").text(FORMAT_METRIC(altitudeEarth));
+                    var [earth_pos, earth_vel] = getBodyLocation("EARTH", animTime);
+                    var dr = earth_pos.distanceTo(craft_pos);
+                    var dv = earth_vel.distanceTo(craft_vel);
 
-                    vx = vectors[index][vzVariable] - orbits[EARTH]["vectors"][timelineIndex][vzVariable];
-                    vy = vectors[index][vyVariable] - orbits[EARTH]["vectors"][timelineIndex][vyVariable];
-                    vz = vectors[index][vzVariable] - orbits[EARTH]["vectors"][timelineIndex][vzVariable];
-                    v = Math.sqrt(vx*vx + vy*vy + vz*vz);
-                    d3.select("#velocity-" + planetKey +"-EARTH").text(FORMAT_METRIC(v));
+                    var altitudeEarth = dr - EARTH_RADIUS_KM;
+                    d3.select("#distance-" + planetKey +"-EARTH").text(FORMAT_METRIC(dr));
+                    d3.select("#altitude-" + planetKey +"-EARTH").text(FORMAT_METRIC(altitudeEarth));
+                    d3.select("#velocity-" + planetKey +"-EARTH").text(FORMAT_METRIC(dv));
                 }
 
                 // show burn
@@ -2305,9 +2316,6 @@ function setLocation() {
                 vikramData["x"] = newx;
                 vikramData["y"] = newy;
                 vikramData["z"] = newz;
-
-                var vx = vectors[index][vxVariable];
-                var vy = vectors[index][vyVariable];
 
         /*
                 // show burn
@@ -2486,19 +2494,13 @@ function animateLoop() {
         
         animateLoopCount = 0;
 
-        // console.log("timelineIndex = " + timelineIndex + ", timelineTotalSteps = " + timelineTotalSteps);
-
-        if (!stopAnimationFlag) {
-            // console.log("Running the next step of the animation");
-            setLocation();
-            timelineIndex += timelineIndexStep;
-            if (timelineIndex >= timelineTotalSteps) {
-                timelineIndex = timelineTotalSteps - 1;
-                setLocation();
-                d3.select("#animate").text("Play");
-                stopAnimationFlag = true;
-                animationRunning = false;
+        if (animationRunning) {
+            animTime += animTimeStepMinutes * ONE_MINUTE_MS;
+            if (animTime > endTime) {
+                animTime = endTime - ONE_MINUTE_MS;
+                stopAnimation();
             }
+            setLocation();
         }
     }
 
@@ -3231,21 +3233,6 @@ async function processOrbitVectorsData() {
     d3.select("#epochdate").html(epochDate);
 }
 
-function changeLocation() {
-
-    if (!stopAnimationFlag) {
-        setLocation();
-        timelineIndex += timelineIndexStep;
-        if (timelineIndex < timelineTotalSteps) {
-            // timeoutHandle = setTimeout(function() { changeLocation(); }, ticksPerAnimationStep);
-        } else {
-            timelineIndex = timelineTotalSteps - 1;
-            d3.select("#animate").text("Play");
-            animationRunning = false;
-        }
-    }
-}
-
 function cy3Animate() {
 
     if (animationRunning) {
@@ -3253,21 +3240,20 @@ function cy3Animate() {
     } else {
         animationRunning = true;
         stopAnimationFlag = false;
-        if (timelineIndex >= timelineTotalSteps - 1) timelineIndex = 0;
-        // changeLocation();
+        if (animTime >= endTime) animTime = startTime;
         d3.select("#animate").text("Pause");
     }
 }
 
 function fastBackward() {
-    timelineIndex -= stepsPerHop;
-    if (timelineIndex < 0) timelineIndex = 0;
+    animTime -= stepsPerHop * ONE_MINUTE_MS;
+    if (animTime < startTime) animTime = startTime;
     setLocation();
 }
 
 function backward() {
-    timelineIndex -= 1;
-    if (timelineIndex < 0) timelineIndex = 0;
+    animTime -= ONE_MINUTE_MS;
+    if (animTime < startTime) animTime = startTime;
     setLocation();
 }
 
@@ -3279,17 +3265,17 @@ function stopAnimation() {
 }
 
 function forward() {
-    timelineIndex += 1;
-    if (timelineIndex >= timelineTotalSteps) {
-        timelineIndex = timelineTotalSteps - 1;
+    animTime += ONE_MINUTE_MS;
+    if (animTime >= endTime) {
+        animTime = endTime - ONE_MINUTE_MS;
     }
     setLocation();
 }
 
 function fastForward() {
-    timelineIndex += stepsPerHop;
-    if (timelineIndex >= timelineTotalSteps) {
-        timelineIndex = timelineTotalSteps - 1;
+    animTime += stepsPerHop * ONE_MINUTE_MS;
+    if (animTime >= endTime) {
+        animTime = endTime - ONE_MINUTE_MS;
     }
     setLocation();
 }
@@ -3297,16 +3283,19 @@ function fastForward() {
 function missionStart() {
     missionStartCalled = true;
     stopAnimation();
-    timelineIndex = 0;
+    animTime = startTime;
+    // console.log("missionStart(): animTime = " + animTime);
     setLocation();
 }
 
 function missionSetTime() {
     stopAnimation();
-    var x = (animTime - startTime) / stepDurationInMilliSeconds;
-    timelineIndex = Math.max(0, Math.floor(x));
-    if (timelineIndex >= timelineTotalSteps) {
-        timelineIndex = timelineTotalSteps - 1;
+    if (animTime < startTime) {
+        // console.log("missionSetTime(): animTime < startTime");
+        animTime = startTime;
+    } else if (animTime >= endTime) {
+        // console.log("missionSetTime(): animTime >= endTime");
+        animTime = endTime - ONE_MINUTE_MS;
     }
     setLocation();
 }
@@ -3333,21 +3322,13 @@ function missionEnd() {
 }
 
 function faster() {
-    if (ticksPerAnimationStep > 1) {
-        ticksPerAnimationStep /= SPEED_CHANGE_FACTOR;
-    } else {
-        timelineIndexStep *= SPEED_CHANGE_FACTOR;	
-    }
-    // console.log("ticksPerAnimationStep = " + ticksPerAnimationStep + ", timelineIndexStep = " + timelineIndexStep);
+    animTimeStepMinutes *= SPEED_CHANGE_FACTOR;	
+    // console.log("animTimeStepMinutes = " + animTimeStepMinutes);
 }
 
 function slower() {
-    if (timelineIndexStep > 1) {
-        timelineIndexStep /= SPEED_CHANGE_FACTOR;
-    } else {
-        ticksPerAnimationStep *= SPEED_CHANGE_FACTOR;
-    }
-    // console.log("ticksPerAnimationStep = " + ticksPerAnimationStep + ", timelineIndexStep = " + timelineIndexStep);
+    animTimeStepMinutes /= SPEED_CHANGE_FACTOR;	
+    // console.log("animTimeStepMinutes = " + animTimeStepMinutes);
 }
 
 function zoomChangeTransform(t) {
@@ -3703,12 +3684,13 @@ function burnButtonHandler(index) {
     // console.log("burnButtonHandler() called for event index: " + index);
     // animTime = eventInfos[index]["startTime"];
     if (eventInfos[index]["label"] == "⏰ Now") {
-        animTime = new Date();
+        animTime = new Date().getTime();
     } else {
         // animTime = new Date(eventInfos[index]["startTime"].getTime() + (eventInfos[index]["durationSeconds"] * 1000 / 2));    
-        animTime = new Date(eventInfos[index]["startTime"].getTime());
+        animTime = new Date(eventInfos[index]["startTime"].getTime()).getTime();
     }
     
+    // console.log("burnButtonHandler(): animTime = " + animTime + ", startTime = " + startTime + ", endTime = " + endTime);
     missionSetTime();
 }
 
