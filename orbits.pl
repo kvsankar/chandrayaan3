@@ -107,7 +107,24 @@ my $config = {
         'center' => $JPL_MOON_CENTER,
 
         'orbits_file' => "$data_dir/lunar-lro.json"
-    },    
+    },
+    "landing" => {
+        'start_year'       => '2023', 'start_month'       => '08', 'start_day'       => '23', 'start_hour'          => '12', 'start_minute'         => '15', 
+        'stop_year'        => '2023', 'stop_month'        => '08', 'stop_day'        => '23', 'stop_hour'           => '12', 'stop_minute'          => '40',
+        'start_year_CY3'   => '2023', 'start_month_CY3'   => '08', 'start_day_CY3'   => '23', 'start_hour_CY3'      => '12', 'start_minute_CY3'     => '15',
+        'stop_year_CY3'    => '2023', 'stop_month_CY3'    => '08', 'stop_day_CY3'    => '23', 'stop_hour_CY3'       => '12', 'stop_minute_CY3'      => '40',
+        'start_year_vikram'=> '2023', 'start_month_vikram'=> '08', 'start_day_vikram'=> '23', 'start_hour_vikram'   => '12', 'start_minute_vikram'  => '15',
+        'stop_year_vikram' => '2023', 'stop_month_vikram' => '08', 'stop_day_vikram' => '23', 'stop_hour_vikram'    => '12', 'stop_minute_vikram'   => '40',
+
+        'step_size_in_minutes' => 1500, # TODO jugaad to get 1800 seconds of data -- see below
+
+        'planets' => ["CY3"], # TODO Add Vikram later
+
+        'center' => $JPL_MOON_CENTER,
+
+        'orbits_file' => "$data_dir/landing-CY3.json"
+    },
+
 };
 
 my ($start_year, $start_month, $start_day, $start_hour, $start_minute);
@@ -233,7 +250,7 @@ sub set_start_and_stop_times () {
     $stop_time ="$stop_year\-$stop_month\-$stop_day";
     $stop_time_gm = timegm(0, 0, 0, $stop_day, $stop_month-1, $stop_year);
 
-    $step_size = "${step_size_in_minutes}%20m";
+    $step_size = "${step_size_in_minutes}" . ($phase eq "landing" ? "" : "%20m"); # TODO jugaad for landing resolution
 }
 
 sub print_debug ($) {
@@ -579,7 +596,7 @@ sub main {
 
     $phase = 'geo' unless $phase; # Set default as geo for Chandrayaan 2
 
-    unless (($phase eq "geo") || ($phase eq "lro") || ($phase eq "lunar")) {
+    unless (($phase eq "geo") || ($phase eq "lro") || ($phase eq "lunar") || ($phase eq "landing")) {
         print_error("Argument 'phase' must be either 'geo' or 'helio' or 'lunar' (without quotes).");
         exit(1);
     }

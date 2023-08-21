@@ -24,6 +24,7 @@ var MARS    = "MARS";
 var MOON    = "MOON";
 var CSS     = "CSS";
 
+var ONE_SECOND_MS = 1000;
 var ONE_MINUTE_MS = 60*1000;
 var KM_PER_AU = 149597870.691;
 var DEGREES_PER_RADIAN = 57.2957795;
@@ -35,7 +36,7 @@ var EARTH_MOON_DISTANCE_MEAN_AU = 0.00257;
 var EARTH_RADIUS_KM = 6371;
 var EARTH_RADIUS_MAX_KM = 6378.1;
 var EARTH_RADIUS_MIN_KM = 6356.8;
-var MOON_RADIUS_KM = 1737.4 + 0.5; // TODO jugaad to get Vikram land at 18:04 IST instead of 17:59 IST and keep landing altitude at 0.0 km
+var MOON_RADIUS_KM = 1737.4 + 0.51; // TODO jugaad to get Vikram land at 18:04 IST instead of 17:59 IST and keep landing altitude at 0.0 km
 var EARTH_AXIS_INCLINATION_DEGREES = 23.439279444;
 var EARTH_AXIS_INCLINATION_RADS = EARTH_AXIS_INCLINATION_DEGREES * Math.PI / 180.0;
 
@@ -60,7 +61,7 @@ var craftSize = 5; // in pixels
 
 var planetProperties = {
     "CY3":      { "id": CY3,        "name": "CY3",              "color": "#ffa000",     "orbitcolor": "#66CCFF",    "stroke-width": 1.0, "r": 3.2, "labelOffsetX": -30, "labelOffsetY": -10 },
-    "VIKRAM":   { "id": VIKRAM,     "name": "VIKRAM",           "color": "#ffe000",     "orbitcolor": "#6a5acd",    "stroke-width": 1.0, "r": 3.2, "labelOffsetX": +30, "labelOffsetY": +10 },    
+    "VIKRAM":   { "id": VIKRAM,     "name": "VIKRAM",           "color": "#ffe000",     "orbitcolor": "#FFFF00",    "stroke-width": 1.0, "r": 3.2, "labelOffsetX": +30, "labelOffsetY": +10 },    
     "LRO":      { "id": LRO,        "name": "LRO",              "color": "#00FF00",     "orbitcolor": "#00FF00",    "stroke-width": 1.0, "r": 3.2, "labelOffsetX": +30, "labelOffsetY": +10 },    
     "SUN":      { "id": SUN,        "name": "Sun",              "color": "yellow",      "orbitcolor": "yellow",     "stroke-width": 1.0, "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
     "MERCURY":  { "id": MERCURY,    "name": "Mercury",          "color": "green",       "orbitcolor": "green",      "stroke-width": 1.0, "r": 5,   "labelOffsetX": +10, "labelOffsetY": +10 },
@@ -93,7 +94,11 @@ var missionStartCalled = false;
 var orbitDataLoaded = { "geo": false, "lunar": false, "lro": false };
 var orbitDataProcessed = { "geo": false, "lunar": false, "lro": false };
 var orbitData = {};
+var landingDataLoaded = false;
+var landingDataProcessed = false;
+var landingData = {};
 var nOrbitPoints = 0;
+var nLandingPoints = 0;
 var nOrbitPointsVikram = 0;
 var nOrbitPointsLRO = 0;
 var progress = 0;
@@ -174,6 +179,8 @@ var endTimeCY3;
 var startTimeVikram;
 var endTimeVikram;
 var latestEndTime; 
+var startLandingTime = Date.UTC(2023, 8-1, 23,  12, 13, 51, 0); // 12:13:51 UTC = 12:15:00 TDT
+var endLandingTime =   Date.UTC(2023, 8-1, 23,  12, 38, 51, 0); // 25 minutes high resolution data
 
 var timelineTotalSteps;
 var stepsPerHop;
@@ -212,6 +219,7 @@ var moonPhaseCamera = false;
 // View variables
 
 var viewOrbit = $("#view-orbit").is(":checked"); 
+var viewOrbitDescent = $("#view-orbit-descent").is(":checked"); 
 var viewOrbitVikram = $("#view-orbit-vikram").is(":checked"); 
 var viewOrbitLRO = $("#view-orbit-lro").is(":checked"); 
 var viewCraters = $("#view-craters").is(":checked"); 
@@ -240,11 +248,11 @@ function getStartAndEndTimes(id) {
 
     // Note: we should keep end times 1 minute (current resolution) less than the last orbit data point time argument
 
-    var startTime                  = Date.UTC(2023, 7-1, 14,  9, 23, 0, 0);
-    var endTime                    = Date.UTC(2023, 8-1, 31, 23, 59, 0, 0);
-    var endTimeCY3                 = Date.UTC(2023, 8-1, 31, 23, 59, 0, 0);
-    var startTimeVikram            = Date.UTC(2023, 8-1,  2,  7, 46, 0, 0); // TODO Update
-    var endTimeVikram              = Date.UTC(2023, 8-1,  6, 20, 26, 0, 0); // TODO Update
+    var startTime                  = Date.UTC(2023, 7-1, 14,  9, 21, 51, 0);
+    var endTime                    = Date.UTC(2023, 8-1, 31, 23, 59,  0, 0);
+    var endTimeCY3                 = Date.UTC(2023, 8-1, 31, 23, 59,  0, 0);
+    var startTimeVikram            = Date.UTC(2023, 8-1,  2,  7, 46,  0, 0); // TODO Update
+    var endTimeVikram              = Date.UTC(2023, 8-1,  6, 20, 26,  0, 0); // TODO Update
 
     if (config == "lro") { // TODO Not needed for CY3 mission (at least for now); Will disable in HTML
 
@@ -520,9 +528,11 @@ class AnimationScene {
         this.scene = null;
         this.renderer = null;
         this.curve = [];
+        this.landingCurve = [];
         this.vikramCurve = [];
         this.lroCurve = [];
         this.curveVelocities = [];
+        this.landingCurveVelocities = [];
 
         this.locations = [];
     }
@@ -881,7 +891,8 @@ class AnimationScene {
 
         // Moon landing location according to orbit data available with JPL
         // this.plotMoonLocation(deg_to_rad(22.77050), deg_to_rad(-70.89754), "#BB3F3F"); // CY2
-        this.plotMoonLocation(deg_to_rad(32.348126), deg_to_rad(-69.367621 ), "#FF00FF"); // CY3
+        this.plotMoonLocation(deg_to_rad(32.348126), deg_to_rad(-69.367621), "#FFFF00"); // CY3 primary site
+        this.plotMoonLocation(deg_to_rad(-17.33040), deg_to_rad(-69.497764), "#FFD700"); // CY3 secondary site
 
         // Primary landing site as per https://www.reddit.com/r/ISRO/comments/d1b64p/submitting_this_as_post_but_for_anyone_looking/
         //
@@ -941,6 +952,22 @@ class AnimationScene {
         this.orbitMaterial = new THREE.LineBasicMaterial({color: craftOrbitColor, linewidth: 0.2});
 
         this.addCurve(); // TODO should we prefix await here?
+
+
+        // console.log("Adding landing curve ...");
+        var landingCurves = new THREE.CatmullRomCurve3(this.landingCurve);
+        var landingOrbitGeometry = new THREE.BufferGeometry();
+        const vertexVectors = landingCurves.getSpacedPoints(nLandingPoints * 40);
+        const vertices = [];
+        vertexVectors.forEach(function(elem) { vertices.push(elem.x, elem.y, elem.z); }); 
+        landingOrbitGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+        var landingOrbitColor = planetProperties["VIKRAM"]["orbitcolor"];
+        var landingOrbitMaterial = new THREE.LineBasicMaterial({color: landingOrbitColor, linewidth: 0.2});
+        this.landingOrbitLine = new THREE.Line(landingOrbitGeometry, landingOrbitMaterial);
+        this.landingOrbitLine.visible = viewOrbitDescent;
+        this.motherContainer.add(this.landingOrbitLine);
+        render();
+        // console.log("Added landing curve.");
 
         /*
         // add Chandrayaan 3 lander orbit
@@ -1357,6 +1384,34 @@ class AnimationScene {
         }
 
         // console.log("nOrbitPoints = " + nOrbitPoints);
+    }
+
+    processLandingVectors() {
+        if (config != "lunar") return;
+
+        nLandingPoints = 0;    
+        var planet = landingData["CY3"];
+        var vectors = planet["vectors"];
+
+        for (var j = 0; j < vectors.length; ++j) {
+
+            var x = +1 * (vectors[j]["x"] / KM_PER_AU) * PIXELS_PER_AU;;
+            var y = +1 * (vectors[j]["y"] / KM_PER_AU) * PIXELS_PER_AU;;
+            var z = +1 * (vectors[j]["z"] / KM_PER_AU) * PIXELS_PER_AU;;
+
+
+            var vx = +1 * (vectors[j]["vx"] / KM_PER_AU) * PIXELS_PER_AU;;
+            var vy = +1 * (vectors[j]["vy"] / KM_PER_AU) * PIXELS_PER_AU;;
+            var vz = +1 * (vectors[j]["vz"] / KM_PER_AU) * PIXELS_PER_AU;;
+
+            var pos = new THREE.Vector3(x, y, z);
+            this.landingCurve.push(pos);
+
+            var vel = new THREE.Vector3(vx, vy, vz);
+            this.landingCurveVelocities.push(vel);
+
+            ++nLandingPoints;
+        }
     }
 
     toggleCameraPos(val) {
@@ -2015,7 +2070,8 @@ async function setDimension() {
             $("#progressbar").show();
             d3.select("#progressbar-label").html(msg);
 
-            animationScenes[config].processOrbitVectorsData3D();            
+            animationScenes[config].processOrbitVectorsData3D();
+            animationScenes[config].processLandingVectors();
             
             animationScenes[config].init3d(function() {
 
@@ -2118,25 +2174,47 @@ function setLabelLocation(planetKey) {
 function getBodyLocation(craftid, t) {
     // console.log("getBodyLocation(" + craftId + ", " + t + ")");
     
-    var orbitDataResolutionInMinutes = 1;
-    var num = t - startTime;
-    var denom = orbitDataResolutionInMinutes * ONE_MINUTE_MS;
-    var tlIndex1 = Math.floor(num / denom);
-    var tlIndex2 = tlIndex1 + 1;
-    var remainder = (num % denom) / ONE_MINUTE_MS;
-    // console.log("tlIndex1 = " + tlIndex1 + ", remainder = " + remainder);
-    // console.log("tlIndex = " + tlIndex);
+    if ((craftid == "CY3") && (t >= startLandingTime) && (t < endLandingTime - ONE_SECOND_MS)) {
 
-    var vectors = orbits[planetProperties[craftid].id]["vectors"];
-    var  x = (1 - remainder) * vectors[tlIndex1][ "x"] + remainder * (vectors[tlIndex2][ "x"]);
-    var  y = (1 - remainder) * vectors[tlIndex1][ "y"] + remainder * (vectors[tlIndex2][ "y"]);
-    var  z = (1 - remainder) * vectors[tlIndex1][ "z"] + remainder * (vectors[tlIndex2][ "z"]);
-    var vx = (1 - remainder) * vectors[tlIndex1]["vx"] + remainder * (vectors[tlIndex2]["vx"]);
-    var vy = (1 - remainder) * vectors[tlIndex1]["vy"] + remainder * (vectors[tlIndex2]["vy"]);
-    var vz = (1 - remainder) * vectors[tlIndex1]["vz"] + remainder * (vectors[tlIndex2]["vz"]);
+        var orbitDataResolutionInSeconds = 1;
+        var num = t - startLandingTime;
+        var denom = orbitDataResolutionInSeconds * ONE_SECOND_MS;
+        var tlIndex1 = Math.floor(num / denom);
+        var tlIndex2 = tlIndex1 + 1;
+        var remainder = (num % denom) / ONE_SECOND_MS;
+        // console.log("tlIndex1 = " + tlIndex1 + ", remainder = " + remainder);
+    
+        var vectors = landingData[planetProperties[craftid].id]["vectors"];
+        var  x = (1 - remainder) * vectors[tlIndex1][ "x"] + remainder * (vectors[tlIndex2][ "x"]);
+        var  y = (1 - remainder) * vectors[tlIndex1][ "y"] + remainder * (vectors[tlIndex2][ "y"]);
+        var  z = (1 - remainder) * vectors[tlIndex1][ "z"] + remainder * (vectors[tlIndex2][ "z"]);
+        var vx = (1 - remainder) * vectors[tlIndex1]["vx"] + remainder * (vectors[tlIndex2]["vx"]);
+        var vy = (1 - remainder) * vectors[tlIndex1]["vy"] + remainder * (vectors[tlIndex2]["vy"]);
+        var vz = (1 - remainder) * vectors[tlIndex1]["vz"] + remainder * (vectors[tlIndex2]["vz"]);
 
-    // console.log("getBodyLocation(" + craftId + ", " + t + ") => x = " + x, ", y = " + y + ", z = " + z);
-    return [new THREE.Vector3(x, y, z), new THREE.Vector3(vx, vy, vz)];
+        // console.log("getBodyLocation(" + craftId + ", " + t + ") => x = " + x, ", y = " + y + ", z = " + z);
+        return [new THREE.Vector3(x, y, z), new THREE.Vector3(vx, vy, vz)];
+    } else {
+        var orbitDataResolutionInMinutes = 1;
+        var num = t - startTime;
+        var denom = orbitDataResolutionInMinutes * ONE_MINUTE_MS;
+        var tlIndex1 = Math.floor(num / denom);
+        var tlIndex2 = tlIndex1 + 1;
+        var remainder = (num % denom) / ONE_MINUTE_MS;
+        // console.log("tlIndex1 = " + tlIndex1 + ", remainder = " + remainder);
+        // console.log("tlIndex = " + tlIndex);
+    
+        var vectors = orbits[planetProperties[craftid].id]["vectors"];
+        var  x = (1 - remainder) * vectors[tlIndex1][ "x"] + remainder * (vectors[tlIndex2][ "x"]);
+        var  y = (1 - remainder) * vectors[tlIndex1][ "y"] + remainder * (vectors[tlIndex2][ "y"]);
+        var  z = (1 - remainder) * vectors[tlIndex1][ "z"] + remainder * (vectors[tlIndex2][ "z"]);
+        var vx = (1 - remainder) * vectors[tlIndex1]["vx"] + remainder * (vectors[tlIndex2]["vx"]);
+        var vy = (1 - remainder) * vectors[tlIndex1]["vy"] + remainder * (vectors[tlIndex2]["vy"]);
+        var vz = (1 - remainder) * vectors[tlIndex1]["vz"] + remainder * (vectors[tlIndex2]["vz"]);
+    
+        // console.log("getBodyLocation(" + craftId + ", " + t + ") => x = " + x, ", y = " + y + ", z = " + z);
+        return [new THREE.Vector3(x, y, z), new THREE.Vector3(vx, vy, vz)];    
+    }
 }
 
 function setLocation() {
@@ -2559,6 +2637,7 @@ export function main() {
     $("#checkbox-lock-yz").on("click", togglePlane);
 
     $("#view-orbit").on("click", setView);
+    $("#view-orbit-descent").on("click", setView);
     $("#view-craters").on("click", setView);
     $("#view-xyz-axes").on("click", setView);
     $("#view-poles").on("click", setView);
@@ -2783,6 +2862,7 @@ async function init(callback) {
 
     await sleep();
     await loadOrbitDataIfNeededAndProcess(callback);
+    await loadLandingDataAndProcess();
 
     const fnDuration = performance.now() - fnStartTime;
     animationState[config] = "done_init";
@@ -2880,6 +2960,22 @@ async function processOrbitData(data) {
     orbitDataProcessed[config] = true;
 
     // console.log("processOrbitData() returning");
+}
+
+async function loadLandingDataAndProcess() {
+    if (!landingDataLoaded) {
+        var landingDataJson = "landing-CY3.json";
+        fetchJson(landingDataJson, async function(data) {
+
+            console.log("Landing orbit data load from " + landingDataJson + ": OK");
+            landingDataLoaded = true;
+            landingData = data;
+
+        }, async function(error) {
+            var msg = "Error: Orbit data load from " + orbitsJson + ": " + error;
+            console.log(msg);
+        });
+    }
 }
 
 async function loadOrbitDataIfNeededAndProcess(callback) {
@@ -3380,7 +3476,7 @@ function slower() {
 
 function realtime() {
     realtimespeed = true;
-    console.log("realtimespeed set to true");
+    // console.log("realtimespeed set to true");
 }
 
 function zoomChangeTransform(t) {
@@ -3648,6 +3744,7 @@ function toggleJoyRide() {
         animationScenes[config].motherContainer.position.set(0, 0, 0);    
         
         $("#view-orbit").prop("checked", false); 
+        $("#view-orbit-descent").prop("checked", false); 
         $("#view-orbit-vikram").prop("checked", false); 
         $("#view-orbit-lro").prop("checked", false); 
         $("#view-craters").prop("checked", false); 
@@ -3658,7 +3755,8 @@ function toggleJoyRide() {
         setView();
 
     } else {
-        $("#view-orbit").prop("checked", true); 
+        $("#view-orbit").prop("checked", true);
+        $("#view-orbit-descent").prop("checked", true);  
         $("#view-orbit-vikram").prop("checked", true); 
         $("#view-orbit-lro").prop("checked", true); 
         $("#view-craters").prop("checked", true); 
@@ -3675,6 +3773,7 @@ async function setView() {
     // console.log("setView() called");
 
     viewOrbit = $("#view-orbit").is(":checked"); 
+    viewOrbitDescent = $("#view-orbit-descent").is(":checked"); 
     viewOrbitVikram = $("#view-orbit-vikram").is(":checked"); 
     viewOrbitLRO = $("#view-orbit-lro").is(":checked"); 
     viewCraters = $("#view-craters").is(":checked"); 
@@ -3688,6 +3787,7 @@ async function setView() {
 
         if (animationScenes[cfg] && animationScenes[cfg].initialized3D) {
             animationScenes[cfg].orbitLines.map((orbitLine) => {orbitLine.visible = viewOrbit;});
+            animationScenes[cfg].landingOrbitLine.visible = viewOrbitDescent;
             // animationScenes[cfg].vikramOrbitLine.visible = viewOrbitVikram;
         
             if (cfg == "lro") {
