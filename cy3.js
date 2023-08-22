@@ -1,5 +1,5 @@
 
-// Copyright (c) 2013-2019 Sankaranarayanan Viswanathan. All rights reserved.
+// Copyright (c) 2013-2023 Sankaranarayanan Viswanathan. All rights reserved.
 
 import { lunar_pole } from "./astro.js";
 import { deg_to_rad } from "./astro.js";
@@ -214,6 +214,7 @@ var currentDimension = "3D";
 var theSceneHandler = null;
 export var animationScenes = {};
 var joyRideFlag = false;
+var landingFlag = false;
 var moonPhaseCamera = false;
 
 // View variables
@@ -363,7 +364,7 @@ class SceneHandler {
                 // animationScene.camera.lookAt(animationScene.craft.position);                
             }                
 
-            if (joyRideFlag) {
+            if (joyRideFlag || landingFlag) {
 
                 var craftEarthDistance = animationScene.craft.position.distanceTo(animationScene.earthContainer.position);
                 var craftMoonDistance = animationScene.craft.position.distanceTo(animationScene.moonContainer.position);
@@ -384,6 +385,7 @@ class SceneHandler {
                     distance = craftEarthDistance;
                     radius = earthRadius;
                     animationScene.craftCamera.up.set(0, 0, 1);
+                    animationScene.droneCamera.up.set(0, 1, 0);
 
                 } else {
 
@@ -392,6 +394,7 @@ class SceneHandler {
                     distance = craftMoonDistance;
                     radius = moonRadius;
                     animationScene.craftCamera.up.set(1, 0, 0);
+                    animationScene.droneCamera.up.set(1, 0, 0);
                 }
                 
                 // var v1 = new THREE.Vector3();
@@ -403,10 +406,19 @@ class SceneHandler {
                 // v2.add(animationScene.craft.position);
                 // var theta = Math.acos(radius/distance);
 
-                animationScene.craftCamera.lookAt(closerBody.position);    
+                animationScene.craftCamera.lookAt(closerBody.position); 
+                animationScene.droneCamera.lookAt(animationScene.craft.position); 
 
-                // animationScene.craftCamera.rotateX(closerAngleRads); // TODO doesn't seem to work
-                this.renderer.render(animationScene.scene, animationScene.craftCamera);
+                var specialCamera = joyRideFlag ? animationScene.craftCamera : animationScene.droneCamera;
+
+                this.renderer.autoClear = true;
+                specialCamera.layers.set(0);
+                this.renderer.render(animationScene.scene, specialCamera);    
+
+                this.renderer.autoClear = false;
+                specialCamera.layers.set(1);
+                this.renderer.render(animationScene.scene, specialCamera);    
+
 
             } else {
                 this.renderer.autoClear = true;
@@ -439,9 +451,11 @@ function updateCraftScale() {
 
         var distance = cameraLocation.distanceTo(craftLocation);
         var scale =  distance / defaultCameraDistance;
+        if (landingFlag) { scale = scale / 25; }
         // console.log(`Setting scale to ${scale}`); // TODO seems to be buggy
 
         animationScenes[config].craft.scale.set(scale, scale, scale);
+        animationScenes[config].drone.scale.set(scale, scale, scale);
         // animationScenes[config].vikramCraft.scale.set(scale, scale, scale); // we'll use the same scale for Vikram too
         
         // animationScenes[config].craft.scale.set(10, 10, 10);
@@ -449,9 +463,11 @@ function updateCraftScale() {
         if (isLocationAvaialable("CY3", animTime)) {
             // console.log(`CY3 location avaialble: setting CY3 visibility to ${animationScenes[config].craftVisible}`);
             animationScenes[config].craft.visible = animationScenes[config].craftVisible;
+            animationScenes[config].drone.visible = false;
         } else {
             // console.log(`CY3 location NOT avaialble: setting CY3 visibility to false`);
             animationScenes[config].craft.visible = false;
+            animationScenes[config].drone.visible = false;
         }
         // if (isLocationAvaialable("VIKRAM", animTime)) {
             // console.log(`Vikram location avaialble: setting Vikram visibility to ${animationScenes[config].vikramCraftVisible}`);
@@ -954,20 +970,22 @@ class AnimationScene {
         this.addCurve(); // TODO should we prefix await here?
 
 
-        // console.log("Adding landing curve ...");
-        var landingCurves = new THREE.CatmullRomCurve3(this.landingCurve);
-        var landingOrbitGeometry = new THREE.BufferGeometry();
-        const vertexVectors = landingCurves.getSpacedPoints(nLandingPoints * 40);
-        const vertices = [];
-        vertexVectors.forEach(function(elem) { vertices.push(elem.x, elem.y, elem.z); }); 
-        landingOrbitGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-        var landingOrbitColor = planetProperties["VIKRAM"]["orbitcolor"];
-        var landingOrbitMaterial = new THREE.LineBasicMaterial({color: landingOrbitColor, linewidth: 0.2});
-        this.landingOrbitLine = new THREE.Line(landingOrbitGeometry, landingOrbitMaterial);
-        this.landingOrbitLine.visible = viewOrbitDescent;
-        this.motherContainer.add(this.landingOrbitLine);
-        render();
-        // console.log("Added landing curve.");
+        if (config == "lunar") {
+            // console.log("Adding landing curve ...");
+            var landingCurves = new THREE.CatmullRomCurve3(this.landingCurve);
+            var landingOrbitGeometry = new THREE.BufferGeometry();
+            const vertexVectors = landingCurves.getSpacedPoints(nLandingPoints * 40);
+            const vertices = [];
+            vertexVectors.forEach(function(elem) { vertices.push(elem.x, elem.y, elem.z); }); 
+            landingOrbitGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+            var landingOrbitColor = planetProperties["VIKRAM"]["orbitcolor"];
+            var landingOrbitMaterial = new THREE.LineBasicMaterial({color: landingOrbitColor, linewidth: 0.2});
+            this.landingOrbitLine = new THREE.Line(landingOrbitGeometry, landingOrbitMaterial);
+            this.landingOrbitLine.visible = viewOrbitDescent;
+            this.motherContainer.add(this.landingOrbitLine);
+            render();
+            // console.log("Added landing curve.");
+        }
 
         /*
         // add Chandrayaan 3 lander orbit
@@ -1020,6 +1038,13 @@ class AnimationScene {
         this.craft.visible = this.craftVisible; 
 
         this.motherContainer.add(this.craft);
+
+        var cubeGeometry = new THREE.BoxGeometry(craftSize, craftSize, craftSize);
+        var cubeMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff });
+        this.drone = new THREE.Mesh(cubeGeometry, cubeMaterial);
+        this.drone.layers.set(1);
+        this.drone.visible = false;
+        this.motherContainer.add(this.drone);
 
         /*
         // add Chandrayaan 3 lander Vikram
@@ -1128,6 +1153,9 @@ class AnimationScene {
         this.craftCamera = new THREE.PerspectiveCamera(50, this.width/this.height, 0.0001, 100000);
         this.craft.add(this.craftCamera);
         this.craftCamera.up.set(0, 0, 1);
+
+        this.droneCamera = new THREE.PerspectiveCamera(100, this.width/this.height, 0.0001, 100000);
+        this.drone.add(this.droneCamera);
 
         // add camera controls
         if (this.cameraControlsEnabled) {
@@ -1498,7 +1526,7 @@ class AnimationScene {
     plotMoonLocation(long, lat, color) {
         var locationRadiusScale = 0.005;
         var geometry = new THREE.SphereGeometry(locationRadiusScale * moonRadius, 100, 100);
-        var material = new THREE.MeshStandardMaterial({color: color, transparent: true, opacity: 0.1});
+        var material = new THREE.MeshStandardMaterial({color: color, transparent: true, opacity: 0.3});
         var sphere = new THREE.Mesh(geometry, material);
         sphere.castShadow = false;
         sphere.receiveShadow = false;
@@ -2174,7 +2202,7 @@ function setLabelLocation(planetKey) {
 function getBodyLocation(craftid, t) {
     // console.log("getBodyLocation(" + craftId + ", " + t + ")");
     
-    if ((craftid == "CY3") && (t >= startLandingTime) && (t < endLandingTime - ONE_SECOND_MS)) {
+    if ((config == "lunar") && (craftid == "CY3") && (t >= startLandingTime) && (t < endLandingTime - ONE_SECOND_MS)) {
 
         var orbitDataResolutionInSeconds = 1;
         var num = t - startLandingTime;
@@ -2331,8 +2359,16 @@ function setLocation() {
             } else if (planetKey == craftId) {
                 if (animationScenes[config] && animationScenes[config].initialized3D) {
                     animationScenes[config].craft.position.set(realx_screen, realy_screen, realz_screen);
+                    var droneScale = 1.05;
+                    var [deltax, deltay, deltaz] = [realx_screen_next - realx_screen, realy_screen_next - realy_screen, realz_screen_next - realz_screen];
+                    animationScenes[config].drone.position.set(
+                        droneScale*(realx_screen-deltax), 
+                        droneScale*(realy_screen-deltay), 
+                        droneScale*(realz_screen-deltaz));
                     animationScenes[config].craft.lookAt(realx_screen_next, realy_screen_next, realz_screen_next);
+                    animationScenes[config].drone.lookAt(realx_screen, realy_screen, realz_screen);
                     animationScenes[config].craft.up.set(0, 0, 1);
+                    // animationScenes[config].drone.up.set(0, 0, 1);
                     updateCraftScale();
                 }                                
             } else if (planetKey == "VIKRAM") {
@@ -2650,6 +2686,8 @@ export function main() {
     $("#animate").on("click", cy3Animate);
     $("#joyride").on("click", toggleJoyRide);
     $("#joyridebutton").on("click", toggleJoyRide);
+    $("#landing").on("click", toggleLanding);
+    $("#landingbutton").on("click", toggleLanding);
 
     $("#info-button").on("click", toggleInfo);
 
@@ -3735,6 +3773,7 @@ function togglePlane() {
 }
 
 function toggleJoyRide() {
+    if (landingFlag) { toggleLanding(); }
     joyRideFlag = !joyRideFlag;
     animationScenes[config].craft.visible = !joyRideFlag;
     animationScenes[config].craftEdges.visible = !joyRideFlag;
@@ -3745,6 +3784,42 @@ function toggleJoyRide() {
         
         $("#view-orbit").prop("checked", false); 
         $("#view-orbit-descent").prop("checked", false); 
+        $("#view-orbit-vikram").prop("checked", false); 
+        $("#view-orbit-lro").prop("checked", false); 
+        $("#view-craters").prop("checked", false); 
+        $("#view-xyz-axes").prop("checked", false); 
+        $("#view-poles").prop("checked", false); 
+        $("#view-polar-axes").prop("checked", false); 
+        $("#view-sky").prop("checked", true); 
+        setView();
+
+    } else {
+        $("#view-orbit").prop("checked", true);
+        $("#view-orbit-descent").prop("checked", true);  
+        $("#view-orbit-vikram").prop("checked", true); 
+        $("#view-orbit-lro").prop("checked", true); 
+        $("#view-craters").prop("checked", true); 
+        $("#view-xyz-axes").prop("checked", true); 
+        $("#view-poles").prop("checked", true); 
+        $("#view-polar-axes").prop("checked", true);
+        $("#view-sky").prop("checked", true); 
+        setView();
+    }
+    render();
+}
+
+function toggleLanding() {
+    if (joyRideFlag) { toggleJoyRide(); }
+    landingFlag = !landingFlag;
+    animationScenes[config].craft.visible = true;
+    animationScenes[config].craftEdges.visible = true;
+    $("#landingbutton").toggleClass("down");
+    $("#landing").prop("checked", landingFlag);
+    if (landingFlag) {
+        animationScenes[config].motherContainer.position.set(0, 0, 0);    
+        
+        $("#view-orbit").prop("checked", false); 
+        $("#view-orbit-descent").prop("checked", true); 
         $("#view-orbit-vikram").prop("checked", false); 
         $("#view-orbit-lro").prop("checked", false); 
         $("#view-craters").prop("checked", false); 
@@ -3787,7 +3862,7 @@ async function setView() {
 
         if (animationScenes[cfg] && animationScenes[cfg].initialized3D) {
             animationScenes[cfg].orbitLines.map((orbitLine) => {orbitLine.visible = viewOrbit;});
-            animationScenes[cfg].landingOrbitLine.visible = viewOrbitDescent;
+            if (cfg == "lunar") { animationScenes[cfg].landingOrbitLine.visible = viewOrbitDescent; }
             // animationScenes[cfg].vikramOrbitLine.visible = viewOrbitVikram;
         
             if (cfg == "lro") {
