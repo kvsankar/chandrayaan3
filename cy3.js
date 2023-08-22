@@ -249,8 +249,8 @@ function getStartAndEndTimes(id) {
     // Note: we should keep end times 1 minute (current resolution) less than the last orbit data point time argument
 
     var startTime                  = Date.UTC(2023, 7-1, 14,  9, 21, 51, 0);
-    var endTime                    = Date.UTC(2023, 8-1, 31, 23, 59,  0, 0);
-    var endTimeCY3                 = Date.UTC(2023, 8-1, 31, 23, 59,  0, 0);
+    var endTime                    = Date.UTC(2023, 9-1,  6, 12, 32, 51, 0);
+    var endTimeCY3                 = Date.UTC(2023, 9-1,  6, 12, 32, 51, 0);
     var startTimeVikram            = Date.UTC(2023, 8-1,  2,  7, 46,  0, 0); // TODO Update
     var endTimeVikram              = Date.UTC(2023, 8-1,  6, 20, 26,  0, 0); // TODO Update
 
@@ -1291,7 +1291,7 @@ class AnimationScene {
                 this.setCameraPosition(-1*defaultCameraDistance/6, -1*defaultCameraDistance/30, defaultCameraDistance/24);
                 // this.motherContainer.position.set(-1*defaultCameraDistance/24, 0, 0);    
             } else {
-                this.setCameraPosition(defaultCameraDistance/24, defaultCameraDistance/24, defaultCameraDistance/24);    
+                this.setCameraPosition(defaultCameraDistance/96, defaultCameraDistance/96, defaultCameraDistance/96);    
             }
             this.camera.up.set(0, 0, 1);
             this.craftVisible = true;

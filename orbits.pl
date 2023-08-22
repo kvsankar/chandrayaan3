@@ -62,11 +62,11 @@ my $config = {
 
     "geo" => {
         'start_year'       => '2023', 'start_month'       => '07', 'start_day'       => '14', 'start_hour'          => '09', 'start_minute'         => '23', 
-        'stop_year'        => '2023', 'stop_month'        => '09', 'stop_day'        => '01', 'stop_hour'           => '00', 'stop_minute'          => '00',
+        'stop_year'        => '2023', 'stop_month'        => '09', 'stop_day'        => '06', 'stop_hour'           => '12', 'stop_minute'          => '35',
         'start_year_CY3'   => '2023', 'start_month_CY3'   => '07', 'start_day_CY3'   => '14', 'start_hour_CY3'      => '09', 'start_minute_CY3'     => '23',
-        'stop_year_CY3'    => '2023', 'stop_month_CY3'    => '09', 'stop_day_CY3'    => '01', 'stop_hour_CY3'       => '00', 'stop_minute_CY3'      => '00',
+        'stop_year_CY3'    => '2023', 'stop_month_CY3'    => '09', 'stop_day_CY3'    => '06', 'stop_hour_CY3'       => '12', 'stop_minute_CY3'      => '35',
         'start_year_vikram'=> '2023', 'start_month_vikram'=> '09', 'start_day_vikram'=> '14', 'start_hour_vikram'   => '09', 'start_minute_vikram'  => '23',
-        'stop_year_vikram' => '2023', 'stop_month_vikram' => '09', 'stop_day_vikram' => '01', 'stop_hour_vikram'    => '00', 'stop_minute_vikram'   => '00',
+        'stop_year_vikram' => '2023', 'stop_month_vikram' => '09', 'stop_day_vikram' => '06', 'stop_hour_vikram'    => '12', 'stop_minute_vikram'   => '35',
 
         'step_size_in_minutes' => 1,
 
@@ -78,11 +78,11 @@ my $config = {
     },
     "lunar" => {
         'start_year'       => '2023', 'start_month'       => '07', 'start_day'       => '14', 'start_hour'          => '09', 'start_minute'         => '23', 
-        'stop_year'        => '2023', 'stop_month'        => '09', 'stop_day'        => '01', 'stop_hour'           => '00', 'stop_minute'          => '00',
+        'stop_year'        => '2023', 'stop_month'        => '09', 'stop_day'        => '06', 'stop_hour'           => '12', 'stop_minute'          => '35',
         'start_year_CY3'   => '2023', 'start_month_CY3'   => '07', 'start_day_CY3'   => '14', 'start_hour_CY3'      => '09', 'start_minute_CY3'     => '23',
-        'stop_year_CY3'    => '2023', 'stop_month_CY3'    => '09', 'stop_day_CY3'    => '01', 'stop_hour_CY3'       => '00', 'stop_minute_CY3'      => '00',
+        'stop_year_CY3'    => '2023', 'stop_month_CY3'    => '09', 'stop_day_CY3'    => '06', 'stop_hour_CY3'       => '12', 'stop_minute_CY3'      => '35',
         'start_year_vikram'=> '2023', 'start_month_vikram'=> '09', 'start_day_vikram'=> '14', 'start_hour_vikram'   => '09', 'start_minute_vikram'  => '23',
-        'stop_year_vikram' => '2023', 'stop_month_vikram' => '09', 'stop_day_vikram' => '01', 'stop_hour_vikram'    => '00', 'stop_minute_vikram'   => '00',
+        'stop_year_vikram' => '2023', 'stop_month_vikram' => '09', 'stop_day_vikram' => '06', 'stop_hour_vikram'    => '12', 'stop_minute_vikram'   => '35',
 
         'step_size_in_minutes' => 1,
 
@@ -94,11 +94,11 @@ my $config = {
     },
     "lro" => {
         'start_year'       => '2023', 'start_month'       => '07', 'start_day'       => '14', 'start_hour'          => '09', 'start_minute'         => '23', 
-        'stop_year'        => '2023', 'stop_month'        => '09', 'stop_day'        => '01', 'stop_hour'           => '00', 'stop_minute'          => '00',
+        'stop_year'        => '2023', 'stop_month'        => '09', 'stop_day'        => '06', 'stop_hour'           => '12', 'stop_minute'          => '35',
         'start_year_CY3'   => '2023', 'start_month_CY3'   => '07', 'start_day_CY3'   => '14', 'start_hour_CY3'      => '09', 'start_minute_CY3'     => '23',
-        'stop_year_CY3'    => '2023', 'stop_month_CY3'    => '09', 'stop_day_CY3'    => '01', 'stop_hour_CY3'       => '00', 'stop_minute_CY3'      => '00',
+        'stop_year_CY3'    => '2023', 'stop_month_CY3'    => '09', 'stop_day_CY3'    => '06', 'stop_hour_CY3'       => '12', 'stop_minute_CY3'      => '35',
         'start_year_vikram'=> '2023', 'start_month_vikram'=> '09', 'start_day_vikram'=> '14', 'start_hour_vikram'   => '09', 'start_minute_vikram'  => '23',
-        'stop_year_vikram' => '2023', 'stop_month_vikram' => '09', 'stop_day_vikram' => '01', 'stop_hour_vikram'    => '00', 'stop_minute_vikram'   => '00',
+        'stop_year_vikram' => '2023', 'stop_month_vikram' => '09', 'stop_day_vikram' => '06', 'stop_hour_vikram'    => '12', 'stop_minute_vikram'   => '35',
 
         'step_size_in_minutes' => 5,
 
