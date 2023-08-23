@@ -124,7 +124,7 @@
                     <fieldset autocomplete="off" class="dimension-3D">
                         <legend class="config-label">View</legend>
                         <input id="landing" type="checkbox">
-                        <label for="landing">Drone!</label>
+                        <label for="landing">Landing!</label>
                         <input id="joyride" type="checkbox">
                         <label for="joyride">Joy Ride!</label>
                         <input type="checkbox" name="view" value="orbit" id="view-orbit" checked="checked">
@@ -185,18 +185,19 @@
                             <div class="swiper-slide"><button id="resetspeed" type="button" class="button">Reset</button></div>
                             <div class="swiper-slide"><button id="faster"     type="button" class="button">Faster</button></div>
                             <div class="swiper-slide"><button id="realtime"   type="button" class="button">Realtime</button></div>
+                            <!-- <div class="swiper-slide"><span id="animspeed"></span></div> -->
             
                             <div class="swiper-slide"><span class="hspace">|</span></div>
+
+                            <div class="swiper-slide"><button id="landingbutton" type="button" class="button" title="Landing!">✈ Landing!</button></div>
+                            <div class="swiper-slide"><button id="joyridebutton" type="button" class="button" title="🎢 Joy Ride!">🎢 Joy Ride!</button></div>
             
+                            <div class="swiper-slide"><span class="hspace">|</span></div>
+
                             <div class="swiper-slide"><button id="fastbackward"       type="button" class="button" title="Fast rewind">&lt;&lt;</button></div> <!-- &#x25C1; --> 
                             <div class="swiper-slide"><button id="backward"           type="button" class="button" title="Rewind">&lt;</button></div> <!-- &#x25C3; --> 
                             <div class="swiper-slide"><button id="forward"            type="button" class="button" title="Forward">&gt;</button></div> <!-- &#x25B9; -->  
-                            <div class="swiper-slide"><button id="fastforward"        type="button" class="button" title="Fast forward">&gt;&gt;</button></div> <!-- &#x25B7; --> 
-            
-                            <div class="swiper-slide"><span class="hspace">|</span></div>
-            
-                            <div class="swiper-slide"><button id="landingbutton" type="button" class="button" title="Drone!">✈ Drone!</button></div>
-                            <div class="swiper-slide"><button id="joyridebutton" type="button" class="button" title="🎢 Joy Ride!">🎢 Joy Ride!</button></div>
+                            <div class="swiper-slide"><button id="fastforward"        type="button" class="button" title="Fast forward">&gt;&gt;</button></div> <!-- &#x25B7; -->             
                         </div>
                     </div>
                     <div class="vspace"></div>
@@ -273,7 +274,7 @@
 
             <div id="stats" class="stats prevent-select">
 
-                <div> <!-- extended statistics / Relative to Earth -->
+                <div style="display: none"> <!-- extended statistics / Relative to Earth -->
                     <table>
                     <tr>
                         <th colspan="2"><b>Relative to Earth</b></th>

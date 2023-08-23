@@ -36,7 +36,7 @@ var EARTH_MOON_DISTANCE_MEAN_AU = 0.00257;
 var EARTH_RADIUS_KM = 6371;
 var EARTH_RADIUS_MAX_KM = 6378.1;
 var EARTH_RADIUS_MIN_KM = 6356.8;
-var MOON_RADIUS_KM = 1737.4 + 0.51; // TODO jugaad to get Vikram land at 18:04 IST instead of 17:59 IST and keep landing altitude at 0.0 km
+var MOON_RADIUS_KM = 1737.4 + 0.52; // TODO jugaad to get Vikram land at 18:04 IST instead of 17:59 IST and keep landing altitude at 0.0 km
 var EARTH_AXIS_INCLINATION_DEGREES = 23.439279444;
 var EARTH_AXIS_INCLINATION_RADS = EARTH_AXIS_INCLINATION_DEGREES * Math.PI / 180.0;
 
@@ -197,6 +197,7 @@ var curFrameTime = null;
 var deltaFrameTime = ONE_MINUTE_MS;
 var animationRunning = false;
 var stopAnimationFlag = false;
+var startLandingFlag = false;
 var timeoutHandle;
 var timeoutHandleZoom;
 var dataLoaded = false;
@@ -250,8 +251,8 @@ function getStartAndEndTimes(id) {
     // Note: we should keep end times 1 minute (current resolution) less than the last orbit data point time argument
 
     var startTime                  = Date.UTC(2023, 7-1, 14,  9, 21, 51, 0);
-    var endTime                    = Date.UTC(2023, 9-1,  6, 12, 32, 51, 0);
-    var endTimeCY3                 = Date.UTC(2023, 9-1,  6, 12, 32, 51, 0);
+    var endTime                    = Date.UTC(2023, 9-1,  6, 12, 30, 51, 0);
+    var endTimeCY3                 = Date.UTC(2023, 9-1,  6, 12, 30, 51, 0);
     var startTimeVikram            = Date.UTC(2023, 8-1,  2,  7, 46,  0, 0); // TODO Update
     var endTimeVikram              = Date.UTC(2023, 8-1,  6, 20, 26,  0, 0); // TODO Update
 
@@ -447,11 +448,18 @@ function updateCraftScale() {
         animationScenes[config].craft.getWorldPosition(craftLocation);
         
         var cameraLocation = new THREE.Vector3();
-        animationScenes[config].camera.getWorldPosition(cameraLocation);
 
+        if (joyRideFlag) {
+            animationScenes[config].camera.getWorldPosition(cameraLocation); // not craftCamera
+        } else if (landingFlag) {
+            animationScenes[config].droneCamera.getWorldPosition(cameraLocation);
+        } else {
+            animationScenes[config].camera.getWorldPosition(cameraLocation);
+        }
+        
         var distance = cameraLocation.distanceTo(craftLocation);
         var scale =  distance / defaultCameraDistance;
-        if (landingFlag) { scale = scale / 25; }
+        if (landingFlag) { scale = scale * 5; }
         // console.log(`Setting scale to ${scale}`); // TODO seems to be buggy
 
         animationScenes[config].craft.scale.set(scale, scale, scale);
@@ -2108,17 +2116,20 @@ async function setDimension() {
                 $("#progressbar").hide();
                 handleDimensionSwitch(val);
                 setLocation();
+                if (startLandingFlag) { startLandingFlag = false; toggleLanding(); }
             });
 
         } else {
 
             handleDimensionSwitch(val);
             setLocation();
+            if (startLandingFlag) { startLandingFlag = false; toggleLanding(); }
         }
     } else {
 
         handleDimensionSwitch(val);
         setLocation();
+        if (startLandingFlag) { startLandingFlag = false; toggleLanding(); }
     }
 }
 
@@ -2358,13 +2369,17 @@ function setLocation() {
                 }                
             } else if (planetKey == craftId) {
                 if (animationScenes[config] && animationScenes[config].initialized3D) {
+                    
                     animationScenes[config].craft.position.set(realx_screen, realy_screen, realz_screen);
+                    
                     var droneScale = 1.05;
                     var [deltax, deltay, deltaz] = [realx_screen_next - realx_screen, realy_screen_next - realy_screen, realz_screen_next - realz_screen];
                     animationScenes[config].drone.position.set(
                         droneScale*(realx_screen-deltax), 
                         droneScale*(realy_screen-deltay), 
                         droneScale*(realz_screen-deltaz));
+                    // console.log("drone position 1 = ", animationScenes[config].drone.position);
+
                     animationScenes[config].craft.lookAt(realx_screen_next, realy_screen_next, realz_screen_next);
                     animationScenes[config].drone.lookAt(realx_screen, realy_screen, realz_screen);
                     animationScenes[config].craft.up.set(0, 0, 1);
@@ -2600,9 +2615,12 @@ async function initAnimation() {
                 setTimeout(waitUntilOrbitDataProcessed, 50);
             } else {
                 missionNow();
+                realtime();
                 await setDimension();
                 await setView();
                 updateCraftScale();
+                startLandingFlag = true;
+                cy3Animate();
             }
         })();    
     } catch (error) {
@@ -3493,12 +3511,12 @@ function faster() {
     } else {
         animTimeStepMinutes *= SPEED_CHANGE_FACTOR;	
     }
-    // console.log("animTimeStepMinutes = " + animTimeStepMinutes);
+// console.log("animTimeStepMinutes = " + animTimeStepMinutes);
 }
 
 function resetspeed() {
     realtimespeed = false;
-    animTimeStepMinutes = 1;	
+    animTimeStepMinutes = 1;
     // console.log("animTimeStepMinutes = " + animTimeStepMinutes);
 }
 
@@ -3805,6 +3823,7 @@ function toggleJoyRide() {
         $("#view-sky").prop("checked", true); 
         setView();
     }
+    updateCraftScale();
     render();
 }
 
@@ -3841,6 +3860,7 @@ function toggleLanding() {
         $("#view-sky").prop("checked", true); 
         setView();
     }
+    updateCraftScale();
     render();
 }
 

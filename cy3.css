@@ -260,7 +260,7 @@ fieldset {
     .blurb h2 { font-size: 0.8em; margin: 0px; padding: 0px; }
     .blurb p { font-size:0.8em; }
     .date { font-size: 1.0em; }
-    .stats { font-size: 0.8em; }
+    .stats { font-size: 1.5em; }
     .notitledialog .ui-dialog-titlebar {display:none}
 }
 
@@ -275,9 +275,11 @@ fieldset {
 
 .stats {
     background: transparent;
+    background-color: #111111;
+    opacity: 0.2;
     margin-bottom: 10px;
     z-index: 2;
-    color: grey; 
+    color: white; 
     pointer-events: none;
 }
 
