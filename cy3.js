@@ -1327,7 +1327,7 @@ class AnimationScene {
                 this.setCameraPosition(-1*defaultCameraDistance/6, -1*defaultCameraDistance/30, defaultCameraDistance/24);
                 // this.motherContainer.position.set(-1*defaultCameraDistance/24, 0, 0);    
             } else {
-                this.setCameraPosition(defaultCameraDistance/96, defaultCameraDistance/96, defaultCameraDistance/96);    
+                this.setCameraPosition(0, 0, -defaultCameraDistance/96);    
             }
             this.camera.up.set(0, 0, 1);
             this.craftVisible = true;
@@ -2615,12 +2615,12 @@ async function initAnimation() {
                 setTimeout(waitUntilOrbitDataProcessed, 50);
             } else {
                 missionNow();
-                realtime();
+                // realtime();
                 await setDimension();
                 await setView();
                 updateCraftScale();
-                startLandingFlag = true;
-                cy3Animate();
+                // startLandingFlag = true;
+                // cy3Animate();
             }
         })();    
     } catch (error) {
