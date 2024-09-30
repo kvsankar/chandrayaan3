@@ -117,14 +117,6 @@ var sunLongitude = 0.0;
 // animation control
 var mouseDown = false;
 
-// locks on objects
-var lockOnCY3 = false;
-var previousLockOnCY3 = false;
-var lockOnMoon = false;
-var previousLockOnMoon = false;
-var lockOnEarth = false;
-var previousLockOnEarth = false;
-
 // defaults for XY plane
 var plane = "XY";
 var xVariable = "x";
@@ -359,7 +351,7 @@ class SceneHandler {
                 animationScene.camera.lookAt(animationScene.secondaryBody3D.position);            
             }
             
-            if (lockOnEarth || lockOnMoon) {
+            if (animationScene.lockOnEarth || animationScene.lockOnMoon) {
             
                 var x = animationScene.secondaryBody3D.position.x;
                 var y = animationScene.secondaryBody3D.position.y;
@@ -367,7 +359,7 @@ class SceneHandler {
                 animationScene.motherContainer.position.set(-x, -y, -z);
                 // animationScene.camera.lookAt(animationScene.secondaryBody3D.position);
 
-            } else if (lockOnCY3) {
+            } else if (animationScene.lockOnCY3) {
                 
                 var x = animationScene.craft.position.x;
                 var y = animationScene.craft.position.y;
@@ -615,9 +607,9 @@ class AnimationScene {
             
             "images/earth/2_no_clouds_8k.jpg",
             "images/earth/earthspec1k.jpg",
-            // "images/moon/lroc_color_poles_8k.png",
+            // "images/moon/lroc_color_poles_4k.png",
             "images/moon/Solarsystemscope_texture_8k_moon.jpg",
-            "images/moon/ldem_16.png",
+            "images/moon/ldem_16_gsfc.png",
             "images/sky/starmap_4k.jpg",
             "images/sky/constellation_figures.jpg",
 
@@ -1003,16 +995,19 @@ class AnimationScene {
         
         var moonColor = planetProperties["MOON"]["color"];
         var moonGeometry = new THREE.SphereGeometry(moonRadius, 100, 100);
-        var moonMaterial = new THREE.MeshPhongMaterial({
-            color: 0xFFFFFF,
+        var moonMaterial = new THREE.MeshStandardMaterial({
             map: this.moonMap,
-            displacementMap: this.moonDisplacementMap,
-            displacementScale: 0.005,
             bumpMap: this.moonDisplacementMap,
-            bumpScale: 0.002,
-            reflectivity: 0.0,
-            shininess: 0.0
+            bumpScale: 0.003,  // Slightly adjusting for smoother surface details
+            displacementMap: this.moonDisplacementMap,
+            displacementScale: 0.008,  // Fine-tuning the displacement
+            displacementBias: -0.004, // Fine-tuning the displacement
+            roughness: 0.9,  // High roughness for a more matte finish
+            metalness: 0.0,  // No metallic reflections
+            emissive: 0x000000,  // No emissive light from the moon
+            emissiveIntensity: 0.0,  // Ensure no self-illumination
         });
+        
         this.moon = new THREE.Mesh(moonGeometry, moonMaterial);
         this.moon.receiveShadow = true;
         this.moon.castShadow = true;
@@ -2557,6 +2552,18 @@ function initConfig() {
 
     if (animationScenes[config] && animationScenes[config].state >= AnimationScene.SCENE_STATE_INIT_CONFIG_DONE) {
         // console.log("initConfig() returning as already initialized");
+        if (config == "geo") {
+            handleModeSwitchToGeo();
+        } else if (config == "lunar") {
+            handleModeSwitchToLunar();
+        } else if (config == "lro") {
+            handleModeSwitchToLRO();
+        }
+        
+        d3.select("#checkbox-lock-moon").property("checked", animationScenes[config].lockOnMoon);
+        d3.select("#checkbox-lock-earth").property("checked", animationScenes[config].lockOnEarth);   
+        d3.select("#checkbox-lock-cy3").property("checked", animationScenes[config].lockOnCY3);
+
         return;
     }
 
@@ -3460,9 +3467,9 @@ function init(callback) {
     panx = 0;
     pany = 0;
     
-    lockOnCY3 = false;
-    lockOnMoon = false;
-    lockOnEarth = false;
+    animationScenes[config].lockOnCY3 = false;
+    animationScenes[config].lockOnMoon = false;
+    animationScenes[config].lockOnEarth = false;
     
     d3.select("#checkbox-lock-cy3").property("checked", false);
     d3.select("#checkbox-lock-moon").property("checked", false);
@@ -4254,17 +4261,17 @@ function zoomChangeTransform(t) {
     var cy3x = 0;
     var cy3y = 0;
 
-    if (lockOnCY3) {
+    if (animationScenes[config].lockOnCY3) {
         cy3x = parseFloat(d3.select("#CY3").attr("cx"));
         cy3y = parseFloat(d3.select("#CY3").attr("cy"));
     }
 
-    if (lockOnMoon) {
+    if (animationScenes[config].lockOnMoon) {
         cy3x = parseFloat(d3.select("#MOON").attr("cx"));
         cy3y = parseFloat(d3.select("#MOON").attr("cy"));
     }
 
-    if (lockOnEarth) {
+    if (animationScenes[config].lockOnEarth) {
         cy3x = parseFloat(d3.select("#EARTH").attr("cx"));
         cy3y = parseFloat(d3.select("#EARTH").attr("cy"));
     }
@@ -4348,45 +4355,44 @@ function toggleInfo() {
 }
 
 function toggleLockCY3() {
-    previousLockOnCY3 = lockOnCY3;
-    lockOnCY3 = !lockOnCY3;
+    animationScenes[config].previousLockOnCY3 = animationScenes[config].lockOnCY3;
+    animationScenes[config].lockOnCY3 = !animationScenes[config].lockOnCY3;
     
-    previousLockOnMoon = lockOnMoon;
-    lockOnMoon = false;
+    animationScenes[config].previousLockOnMoon = animationScenes[config].lockOnMoon;
+    animationScenes[config].lockOnMoon = false;
     d3.select("#checkbox-lock-moon").property("checked", false);
     
-    previousLockOnEarth = lockOnEarth;
-    lockOnEarth = false;
+    animationScenes[config].previousLockOnEarth = animationScenes[config].lockOnEarth;
+    animationScenes[config].lockOnEarth = false;
     d3.select("#checkbox-lock-earth").property("checked", false);
 
     reset();
 }
 
 function toggleLockMoon() {
-    previousLockOnMoon = lockOnMoon;
-    lockOnMoon = !lockOnMoon;
+    animationScenes[config].previousLockOnMoon = animationScenes[config].lockOnMoon;
+    animationScenes[config].lockOnMoon = !animationScenes[config].lockOnMoon;
 
-    previousLockOnCY3 = lockOnCY3;
-    lockOnCY3 = false;
+    animationScenes[config].previousLockOnCY3 = animationScenes[config].lockOnCY3;
+    animationScenes[config].lockOnCY3 = false;
     d3.select("#checkbox-lock-cy3").property("checked", false);
 
-    previousLockOnEarth = lockOnEarth;
-    lockOnEarth = false;
+    animationScenes[config].previousLockOnEarth = animationScenes[config].lockOnEarth;
+    animationScenes[config].lockOnEarth = false;
     d3.select("#checkbox-lock-earth").property("checked", false);
 
     reset();
 }
 
 function toggleLockEarth() {
-    previousLockOnEarth = lockOnEarth;
-
-    lockOnEarth = !lockOnEarth;
-    previousLockOnCY3 = lockOnCY3;
-    lockOnCY3 = false;
+    animationScenes[config].previousLockOnEarth = animationScenes[config].lockOnEarth;
+    animationScenes[config].lockOnEarth = !animationScenes[config].lockOnEarth;
+    animationScenes[config].previousLockOnCY3 = animationScenes[config].lockOnCY3;
+    animationScenes[config].lockOnCY3 = false;
     d3.select("#checkbox-lock-cy3").property("checked", false);
     
-    previousLockOnMoon = lockOnMoon;
-    lockOnMoon = false;
+    animationScenes[config].previousLockOnMoon = animationScenes[config].lockOnMoon;
+    animationScenes[config].lockOnMoon = false;
     d3.select("#checkbox-lock-moon").property("checked", false);
 
     reset();
