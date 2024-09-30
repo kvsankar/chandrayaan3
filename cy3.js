@@ -97,7 +97,7 @@ var FORMAT_METRIC = d3.format(" >10,.2f");
 //
 
 var craftId = "CY3";
-// var config = "geo";
+var config = "geo";
 var missionStartCalled = false;
 var orbitDataLoaded = { "geo": false, "lunar": false, "lro": false };
 var orbitDataProcessed = { "geo": false, "lunar": false, "lro": false };
@@ -141,10 +141,6 @@ var zFactor = 1;
 // Orbit data related variables
 //
 
-// var planetsForOrbits;
-// var planetsForLocations;
-// var orbitsJson;
-// var orbits = {};
 var craftData = {};
 var vikramData = {};
 
@@ -163,10 +159,6 @@ var trackWidth;
 var earthRadius;
 var skyRadius;
 var moonRadius;
-var primaryBody;
-var primaryBodyRadius;
-var secondaryBody;
-var secondaryBodyRadius;
 var svgContainer;
 var svgRect;
 var viewBoxWidth;
@@ -3314,7 +3306,7 @@ function adjustLabelLocations() {
 
 async function initAnimation(flags) {
     
-    // try {
+    try {
         initConfig();
         init(function() {});
     
@@ -3333,12 +3325,12 @@ async function initAnimation(flags) {
                 // cy3Animate();
             }
         })();    
-    // } catch (error) {
-    //     d3.select("#eventinfo").text("Failed to load the aninmation. Please restart the browser and try again.");
-    //     console.log("Error: exception in initAnimation(): " + error);
-    //     d3.selectAll("button").attr("disabled", true);
-    //     return;
-    // }
+    } catch (error) {
+        d3.select("#eventinfo").text("Failed to load the aninmation. Please restart the browser and try again.");
+        console.log("Error: exception in initAnimation(): " + error);
+        d3.selectAll("button").attr("disabled", true);
+        return;
+    }
 
     render();
     requestAnimationFrame(animateLoop);
@@ -4151,7 +4143,7 @@ function cy3Animate() {
 }
 
 function fastBackward() {
-    animTime -= stepsPerHop * ONE_MINUTE_MS;
+    animTime -= animationScenes[config].stepsPerHop * ONE_MINUTE_MS;
     if (animTime < startTime) animTime = startTime;
     setLocation();
 }
@@ -4178,7 +4170,7 @@ function forward() {
 }
 
 function fastForward() {
-    animTime += stepsPerHop * ONE_MINUTE_MS;
+    animTime += animationScenes[config].stepsPerHop * ONE_MINUTE_MS;
     if (animTime > endTime - ONE_MINUTE_MS) {
         animTime = endTime - ONE_MINUTE_MS;
     }
