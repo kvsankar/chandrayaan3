@@ -86,9 +86,9 @@
                     <!-- <legend>Settings</legend> -->
                     <fieldset autocomplete="off">
                         <legend class="config-label config-first-label">Origin/Phase:</legend>
-                        <input id="origin-earth" type="radio" name="mode" value="geo">
+                        <input id="origin-earth" type="radio" name="mode" value="geo" checked="checked">
                         <label for="origin-earth">Earth</label>
-                        <input id="origin-moon" type="radio" name="mode" value="lunar" checked="checked">
+                        <input id="origin-moon" type="radio" name="mode" value="lunar">
                         <label for="origin-moon">Moon</label>
                         <!-- <input type="radio" name="mode" value="lro"   onclick="toggleMode()">Moon/Post Vikram LOS</input> -->
                     </fieldset>
@@ -119,6 +119,12 @@
                         <label for="checkbox-lock-xy">YZ</label>
                         <input type="radio" name="plane" value="ZX" id="checkbox-lock-yz">
                         <label for="checkbox-lock-xy">ZX</label>
+                        <input type="radio" name="plane" value="XY-" id="checkbox-lock-xy-minus">
+                        <label for="checkbox-lock-xy">XY-</label>
+                        <input type="radio" name="plane" value="YZ-" id="checkbox-lock-xz-minus">
+                        <label for="checkbox-lock-xy">YZ-</label>
+                        <input type="radio" name="plane" value="ZX-" id="checkbox-lock-yz-minus">
+                        <label for="checkbox-lock-xy">ZX-</label>
                     </fieldset>
                 
                     <fieldset autocomplete="off" class="dimension-3D">
@@ -143,6 +149,12 @@
                         <label for="view-polar-axes">Polar Axes</label>
                         <input type="checkbox" name="view" value="sky" id="view-sky" checked="checked">
                         <label for="view-sky">Stellar Sky</label>
+                        <input type="checkbox" name="view" value="moonsoi" id="view-moonsoi">
+                        <label for="view-moonsoi">Moon's SOI</label>                        
+                        <input type="checkbox" name="view" value="eclipticplane" id="view-eclipticplane">
+                        <label for="view-eclipticplane">Ecliptic Plane</label>                       
+                        <input type="checkbox" name="view" value="equatorialplane" id="view-equatorialplane">
+                        <label for="view-equatorialplane">Equatorial Plane</label>                       
 
                                             <!--
                         <span class="config-label">Camera Placed At:</span>
@@ -274,7 +286,7 @@
 
             <div id="stats" class="stats prevent-select">
 
-                <div style="display: none"> <!-- extended statistics / Relative to Earth -->
+                <div> <!-- extended statistics / Relative to Earth -->
                     <table>
                     <tr>
                         <th colspan="2"><b>Relative to Earth</b></th>
