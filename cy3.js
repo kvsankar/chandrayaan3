@@ -366,7 +366,9 @@ class SceneHandler {
                 var z = animationScene.craft.position.z;
                 animationScene.motherContainer.position.set(-x, -y, -z);
                 // animationScene.camera.lookAt(animationScene.craft.position);                
-            }                
+            } else {
+                animationScene.motherContainer.position.set(0, 0, 0);
+            }               
 
             if (joyRideFlag || landingFlag) {
 
@@ -2559,10 +2561,17 @@ function initConfig() {
         } else if (config == "lro") {
             handleModeSwitchToLRO();
         }
-        
+
         d3.select("#checkbox-lock-moon").property("checked", animationScenes[config].lockOnMoon);
         d3.select("#checkbox-lock-earth").property("checked", animationScenes[config].lockOnEarth);   
         d3.select("#checkbox-lock-cy3").property("checked", animationScenes[config].lockOnCY3);
+
+        d3.select("#checkbox-lock-xy").property("checked", animationScenes[config].lockOnXY);
+        d3.select("#checkbox-lock-xz").property("checked", animationScenes[config].lockOnXZ);
+        d3.select("#checkbox-lock-yz").property("checked", animationScenes[config].lockOnYZ);
+        d3.select("#checkbox-lock-xy-minus").property("checked", animationScenes[config].lockOnXYMinus);
+        d3.select("#checkbox-lock-xz-minus").property("checked", animationScenes[config].lockOnXZMinus);
+        d3.select("#checkbox-lock-yz-minus").property("checked", animationScenes[config].lockOnYZMinus);
 
         return;
     }
