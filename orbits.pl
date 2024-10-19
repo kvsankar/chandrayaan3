@@ -49,6 +49,7 @@ my %planet_codes =
      "MARS"     => $JPL_MARS,
      "CSS"      => $JPL_CSS);
 
+my $help = 0;
 my $phase;
 my $use_cached_data = 0;
 my $date = 'today';
@@ -243,14 +244,16 @@ sub get_horizons_stop_time($) {
 }
 
 sub set_start_and_stop_times () {
-
     $start_time ="$start_year\-$start_month\-$start_day";
-    $start_time_gm = timegm(0, 0, 0, $start_day, $start_month-1, $start_year);
+    $start_time_gm = timegm(0, $start_minute, $start_hour, $start_day, $start_month-1, $start_year-1900);
 
     $stop_time ="$stop_year\-$stop_month\-$stop_day";
-    $stop_time_gm = timegm(0, 0, 0, $stop_day, $stop_month-1, $stop_year);
+    $stop_time_gm = timegm(0, $stop_minute, $stop_hour, $stop_day, $stop_month-1, $stop_year-1900);
 
     $step_size = "${step_size_in_minutes}" . ($phase eq "landing" ? "" : "%20m"); # TODO jugaad for landing resolution
+
+    # Calculate JD for start time
+    $jd = my_jd($start_time_gm);
 }
 
 sub print_debug ($) {
@@ -578,14 +581,29 @@ sub print_elements ($$) {
     # print $fh "Y = ", $rec->{'y'}, "\n";
 }
 
+sub print_help () {
+    print "Usage: $0 [options]\n";
+    print "Options:\n";
+    print "  --help            Print this help message\n";
+    print "  --phase           Phase of the mission: geo (default) | lunar | landing\n";
+    print "  --use-cache       Use cached data (default: no)\n";
+    print "  --data-dir        Data directory (default: ./data-fetched/today)\n";
+}
+
 sub main {
 
     print "Running ...\n";
 
     GetOptions(
+        "help" => \$help,
         "phase=s" => \$phase, 
         "use-cache" => \$use_cached_data,
         "data-dir=s" => \$data_dir);
+
+    if ($help) {
+        print_help();
+        exit(0);
+    }
 
     unless (-d $data_dir) {
       unless (mkdir($data_dir)) {
@@ -606,11 +624,11 @@ sub main {
 
     set_start_and_stop_times();
 
+    print_debug("Using a JD of $jd for start time: $start_year-$start_month-$start_day $start_hour:$start_minute");
+
     if ($use_cached_data) {
         load_cached_data();
     }
-
-    print_debug("Using a JD of $jd");
 
     foreach my $planet (@planets) {
         
