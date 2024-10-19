@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# Copyright (c) 2013 Sankaranarayanan K V. All rights reserved.
+# Copyright (c) 2013-2024 Sankaranarayanan Viswanathan. All rights reserved.
 
 use strict;
 
