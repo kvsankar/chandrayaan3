@@ -12,6 +12,7 @@ import requests
 import json
 from datetime import datetime, timezone
 import re
+import numpy as np
 
 # constants - ephemerides related
 
@@ -56,7 +57,7 @@ planet_codes = {
 help = False
 phase = None
 use_cached_data = False
-date = datetime.now().strftime('%Y-%m-%d')
+date = datetime.now().strftime('%Y%m%d')
 data_dir = os.path.join("data-fetched", date)
 debugging = True
 
@@ -75,7 +76,7 @@ config = {
 
         'center'               : JPL_EARTH_CENTER,
 
-        'orbits_file'          : f"{data_dir}/geo-CY3.json"
+        'orbits_file'   : f"{data_dir}/geo-CY3"
     },
     "lunar": {
         'start_year'           : '2023', 'start_month'           : '07', 'start_day'           : '14', 'start_hour'              : '09', 'start_minute'             : '23', 
@@ -91,7 +92,7 @@ config = {
 
         'center'               : JPL_MOON_CENTER,
 
-        'orbits_file'          : f"{data_dir}/lunar-CY3.json"
+        'orbits_file'          : f"{data_dir}/lunar-CY3"
     },
     "lro": {
         'start_year'           : '2023', 'start_month'           : '07', 'start_day'           : '14', 'start_hour'              : '09', 'start_minute'             : '23', 
@@ -107,7 +108,7 @@ config = {
 
         'center'               : JPL_MOON_CENTER,
 
-        'orbits_file'          : f"{data_dir}/lunar-lro.json"
+        'orbits_file'          : f"{data_dir}/lunar-lro"
     },
     "landing": {
         'start_year'           : '2023', 'start_month'           : '08', 'start_day'           : '23', 'start_hour'              : '12', 'start_minute'             : '15', 
@@ -123,7 +124,7 @@ config = {
 
         'center'               : JPL_MOON_CENTER,
 
-        'orbits_file'          : f"{data_dir}/landing-CY3.json"
+        'orbits_file'          : f"{data_dir}/landing-CY3"
     },
 }
 
@@ -270,31 +271,40 @@ def is_craft(planet):
     return (planet < 0) or ((planet == "MOON") and (phase == "geo"))
 
 def save_fetched_data():
-    cache_file_name = f"{data_dir}/momcache.txt"
     try:
-        with open(cache_file_name, 'w') as fh:
-            fh.write(f"jd={jd}\n")
+        cache_file_name = f"{data_dir}/momcache.txt"
+        try:
+            with open(cache_file_name, 'w') as fh:
+                fh.write(f"jd={jd}\n")
+        except IOError as e:
+            print_error(f"Failed to write to {cache_file_name}: {e}")
+            return False
+
+        for planet in planets:
+            fn = filename_for_planet(planet)
+            
+            ho_file_name = f"{data_dir}/ho-{fn}-elements.txt"
+            try:
+                with open(ho_file_name, 'w') as fh:
+                    horizons = orbits_raw[planet]['elements_content']
+                    fh.write(horizons)
+            except IOError as e:
+                print_error(f"Can't write to {ho_file_name}: {e}")
+                return False
+
+            ho_file_name = f"{data_dir}/ho-{fn}-vectors.txt"
+            try:
+                with open(ho_file_name, 'w') as fh:
+                    horizons = orbits_raw[planet]['vectors_content']
+                    fh.write(horizons)
+            except IOError as e:
+                print_error(f"Can't write to {ho_file_name}: {e}")
+                return False
+
+        return True
     except IOError as e:
-        print_error(f"Failed to write to {cache_file_name}: {e}")
-
-    for planet in planets:
-        fn = filename_for_planet(planet)
-        
-        ho_file_name = f"{data_dir}/ho-{fn}-elements.txt"
-        try:
-            with open(ho_file_name, 'w') as fh:
-                horizons = orbits_raw[planet]['elements_content']
-                fh.write(horizons)
-        except IOError as e:
-            print_error(f"Can't write to {ho_file_name}: {e}")
-
-        ho_file_name = f"{data_dir}/ho-{fn}-vectors.txt"
-        try:
-            with open(ho_file_name, 'w') as fh:
-                horizons = orbits_raw[planet]['vectors_content']
-                fh.write(horizons)
-        except IOError as e:
-            print_error(f"Can't write to {ho_file_name}: {e}")
+        print_error(f"Failed to save fetched data: {e}")
+        return False
 
 def save_orbit_data_json():
     print_debug(f"Entering save_orbit_data_json")
@@ -304,20 +314,20 @@ def save_orbit_data_json():
         # Ensure the directory exists
         os.makedirs(os.path.dirname(orbits_file), exist_ok=True)
         
-        with open(orbits_file, 'w') as fh:
+        with open(f"{orbits_file}.json", 'w') as fh:
             json.dump(orbits, fh, indent=2)
         
-        print_debug(f"JSON data written to {orbits_file}")
+        print_debug(f"JSON data written to {orbits_file}.json")
         
         # Verify the file was created and has content
-        if os.path.exists(orbits_file) and os.path.getsize(orbits_file) > 0:
-            print_debug(f"File {orbits_file} exists and has content")
+        if os.path.exists(f"{orbits_file}.json") and os.path.getsize(f"{orbits_file}.json") > 0:
+            print_debug(f"File {orbits_file}.json exists and has content")
         else:
-            print_error(f"File {orbits_file} either doesn't exist or is empty")
+            print_error(f"File {orbits_file}.json either doesn't exist or is empty")
         
         return True
     except IOError as e:
-        print_error(f"IOError when writing to {orbits_file}: {e}")
+        print_error(f"IOError when writing to {orbits_file}.json: {e}")
     except json.JSONEncodeError as e:
         print_error(f"JSON encoding error: {e}")
     except Exception as e:
@@ -477,7 +487,6 @@ def parse_horizons_elements(code, planet):
                     orbits[planet] = {'elements': {}}
                 if 'elements' not in orbits[planet]:
                     orbits[planet]['elements'] = {}
-                
                 if jdct in orbits[planet]['elements']:
                     # print_debug(f"Merging elements for planet={planet}, jdct={jdct}")
                     orbits[planet]['elements'][jdct].update(rec)
@@ -532,17 +541,65 @@ def print_elements(fh, rec):
     # fh.write(f"X = {rec['x']}\n")
     # fh.write(f"Y = {rec['y']}\n")
 
+def save_orbit_data_npy():
+    print_debug(f"Entering save_orbit_data_npy")
+    
+    try:
+        # Ensure the directory exists
+        npy_dir = os.path.dirname(orbits_file)
+        os.makedirs(npy_dir, exist_ok=True)
+        
+        for planet, data in orbits.items():
+            elements_file = f"{orbits_file}_elements.npy"
+            vectors_file = f"{orbits_file}_vectors.npy"
+            
+            # Save elements data
+            if 'elements' in data:
+                elements_array = np.array([(float(e['jdct']), float(e['ec']), float(e['qr']), float(e['in']), 
+                                            float(e['om']), float(e['w']), float(e['tp']), float(e['n']), 
+                                            float(e['ma']), float(e['ta']), float(e['a']), float(e['ad']), 
+                                            float(e['pr'])) 
+                                           for e in data['elements'].values()],
+                                          dtype=[('jdct', 'f8'), ('ec', 'f8'), ('qr', 'f8'), ('in', 'f8'),
+                                                 ('om', 'f8'), ('w', 'f8'), ('tp', 'f8'), ('n', 'f8'),
+                                                 ('ma', 'f8'), ('ta', 'f8'), ('a', 'f8'), ('ad', 'f8'),
+                                                 ('pr', 'f8')])
+                np.save(elements_file, elements_array)
+                print_debug(f"Elements data for {planet} saved to {elements_file}")
+            
+            # Save vectors data
+            if 'vectors' in data:
+                vectors_array = np.array([(float(v['jdct']), float(v['x']), float(v['y']), float(v['z']),
+                                           float(v['vx']), float(v['vy']), float(v['vz']))
+                                          for v in data['vectors']],
+                                         dtype=[('jdct', 'f8'), ('x', 'f8'), ('y', 'f8'), ('z', 'f8'),
+                                                ('vx', 'f8'), ('vy', 'f8'), ('vz', 'f8')])
+                np.save(vectors_file, vectors_array)
+                print_debug(f"Vectors data for {planet} saved to {vectors_file}")
+        
+        print_debug(f"NPY data written to {npy_dir}")
+        return True
+    except IOError as e:
+        print_error(f"IOError when writing NPY files: {e}")
+    except ValueError as e:
+        print_error(f"Value error when converting data: {e}")
+    except Exception as e:
+        print_error(f"Unexpected error when saving NPY data: {e}")
+    
+    return False
+
 def main():
+    global phase, use_cached_data, data_dir
+
     print("Running ...")
 
     parser = argparse.ArgumentParser(description="Orbit data fetcher and processor")
     parser.add_argument("--phase", choices=['geo', 'lro', 'lunar', 'landing'], default='geo', help="Phase of the mission")
     parser.add_argument("--use-cache", action="store_true", help="Use cached data")
-    parser.add_argument("--data-dir", default="./data-fetched/today", help="Data directory")
+    parser.add_argument("--data-dir", default=data_dir, help="Data directory")
     
     args = parser.parse_args()
 
-    global phase, use_cached_data, data_dir
     phase = args.phase
     use_cached_data = args.use_cache
     data_dir = args.data_dir
@@ -566,19 +623,24 @@ def main():
 
     for planet in planets:
         if not use_cached_data:
-            fetch_elements(planet)
+            if not fetch_elements(planet):
+                print_error(f"Failed to fetch elements for {planet}. Exiting.")
+                sys.exit(1)
             
-            # fetch_vectors(planet)
-        
-            fetch_horizons_data(planet, {
+            if not fetch_horizons_data(planet, {
                 'table_type': 'vectors',
                 'range': 1,
                 'start_time': get_horizons_start_time(planet),
                 'stop_time': get_horizons_stop_time(planet),
-                'step_size': step_size})        
-
+                'step_size': step_size
+            }):
+                print_error(f"Failed to fetch vector data for {planet}. Exiting.")
+                sys.exit(1)
+        
     if not use_cached_data:
-        save_fetched_data()
+        if not save_fetched_data():
+            print_error("Failed to save fetched data. Exiting.")
+            sys.exit(1)
     
     for planet in planets:
         parse_horizons_elements('elements', planet)
@@ -586,6 +648,11 @@ def main():
 
     save_orbit_data()
     save_orbit_data_json()
+
+    if save_orbit_data_npy():
+        print("NPY data saved successfully")
+    else:
+        print("Failed to save NPY data")
 
 if __name__ == "__main__":
     main()
